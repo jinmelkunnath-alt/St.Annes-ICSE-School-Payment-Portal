@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>St. Annes ICSE | Fee Portal Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(145deg, #f0f4fa 0%, #e9eef5 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        /* Login Card Container */
+        .login-container {
+            width: 100%;
+            max-width: 460px;
+            margin: 0 auto;
+        }
+
+        .login-card {
+            background: #ffffff;
+            border-radius: 2rem;
+            padding: 2rem 1.8rem 2.2rem;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.02);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .login-card:hover {
+            box-shadow: 0 25px 40px -14px rgba(0, 0, 0, 0.12);
+        }
+
+        /* School Branding */
+        .school-header {
+            text-align: center;
+            margin-bottom: 1.8rem;
+        }
+
+        .school-name {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #0f2b3d;
+            letter-spacing: -0.3px;
+            margin-bottom: 0.4rem;
+            background: linear-gradient(120deg, #1e4a76, #2c6e9e);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .portal-subtitle {
+            font-size: 0.85rem;
+            color: #5a6e8a;
+            font-weight: 500;
+            border-top: 1px solid #eef2f8;
+            display: inline-block;
+            padding-top: 0.5rem;
+        }
+
+        /* Form */
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.4rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .input-group label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #2c4c6e;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-left: 0.25rem;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            border: 1.5px solid #e2e9f0;
+            border-radius: 1.2rem;
+            font-size: 0.95rem;
+            font-family: inherit;
+            background: #ffffff;
+            transition: all 0.2s ease;
+            color: #1a2c3e;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #1e4a76;
+            box-shadow: 0 0 0 3px rgba(30, 74, 118, 0.15);
+        }
+
+        .input-field::placeholder {
+            color: #b7c3d2;
+            font-weight: 400;
+        }
+
+        /* Login Button */
+        .login-btn {
+            background: #1e4a76;
+            color: white;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 0.9rem 1rem;
+            border: none;
+            border-radius: 1.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            margin-top: 0.4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .login-btn:hover {
+            background: #0f3a5c;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 14px rgba(30, 74, 118, 0.25);
+        }
+
+        .login-btn:active {
+            transform: translateY(1px);
+        }
+
+        .login-btn:disabled {
+            background: #8aaec9;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Error Message */
+        .error-message {
+            background: #fff4f2;
+            color: #bc4e2c;
+            font-size: 0.75rem;
+            padding: 0.6rem 1rem;
+            border-radius: 1rem;
+            text-align: center;
+            border-left: 3px solid #bc4e2c;
+            margin-top: 0.2rem;
+        }
+
+        /* Footer */
+        .login-footer {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #8da0b0;
+            margin-top: 1.8rem;
+            padding-top: 0.8rem;
+            border-top: 1px solid #eef2f8;
+        }
+
+        /* Spinner animation */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive touches */
+        @media (max-width: 520px) {
+            body {
+                padding: 1rem;
+            }
+            .login-card {
+                padding: 1.6rem 1.4rem 1.8rem;
+            }
+            .school-name {
+                font-size: 1.5rem;
+            }
+            .input-field {
+                padding: 0.75rem 0.9rem;
+            }
+        }
+
+        /* Remove default number spinner for password */
+        input[type="password"]::-ms-reveal,
+        input[type="password"]::-ms-clear {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div class="login-container">
+    <div class="login-card">
+        <div class="school-header">
+            <div class="school-name">St. Annes ICSE School Kottody</div>
+            <div class="portal-subtitle">Student Fee Portal Login</div>
+        </div>
+
+        <form id="loginForm" class="login-form" novalidate>
+            <div class="input-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" class="input-field" placeholder="Enter your username" autocomplete="off" required>
+            </div>
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" class="input-field" placeholder="••••••••" autocomplete="off" required>
+            </div>
+            <div id="errorMsg" class="error-message" style="display: none;"></div>
+            <button type="submit" id="loginButton" class="login-btn">Login →</button>
+        </form>
+        <div class="login-footer">
+            Authorized access only
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // ---------- HARDCODED CREDENTIALS ----------
+        const USERS = [
+            { username: "Mariya Melbin", password: "Mariya_Melbin_VII", redirect: "mariya.html" },
+            { username: "Daron Mathew", password: "Daron_Mathew_II", redirect: "daron.html" }
+        ];
+
+        const loginForm = document.getElementById('loginForm');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const loginBtn = document.getElementById('loginButton');
+        const errorDiv = document.getElementById('errorMsg');
+
+        // Helper: show error message
+        function showError(message) {
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            // auto-hide after 3 seconds? but not required, but better UX
+            setTimeout(() => {
+                if (errorDiv.style.display === 'block') {
+                    errorDiv.style.opacity = '0';
+                    setTimeout(() => {
+                        if (errorDiv.textContent === message) errorDiv.style.display = 'none';
+                        errorDiv.style.opacity = '';
+                    }, 200);
+                }
+            }, 3500);
+        }
+
+        function clearError() {
+            errorDiv.style.display = 'none';
+            errorDiv.textContent = '';
+        }
+
+        // Simulate loading + authentication
+        async function authenticate(username, password) {
+            // Find matching user (case-sensitive, exact match)
+            const matchedUser = USERS.find(user => user.username === username && user.password === password);
+            if (matchedUser) {
+                return { success: true, redirectUrl: matchedUser.redirect };
+            }
+            return { success: false };
+        }
+
+        // Disable button temporarily with loading state
+        function setButtonLoading(isLoading, originalText = "Login →") {
+            if (isLoading) {
+                loginBtn.disabled = true;
+                loginBtn.innerHTML = '<span class="spinner"></span> Logging in...';
+            } else {
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = originalText;
+            }
+        }
+
+        // Main login handler
+        async function handleLogin(event) {
+            event.preventDefault();
+            clearError();
+
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value;  // do not trim password intentionally, but allow exact
+
+            // Basic validation (both fields not empty)
+            if (!username || !password) {
+                showError("Please enter both username and password.");
+                return;
+            }
+
+            // Disable button and show loading state (short delay for realism)
+            setButtonLoading(true);
+            
+            // Simulate network/delay (0.4 sec) - also prevents double-click
+            await new Promise(resolve => setTimeout(resolve, 400));
+            
+            const authResult = await authenticate(username, password);
+            
+            if (authResult.success) {
+                // Redirect to respective page
+                window.location.href = authResult.redirectUrl;
+            } else {
+                setButtonLoading(false);
+                showError("Invalid username or password");
+                // shake effect? not needed, but we'll focus password field
+                passwordInput.focus();
+            }
+        }
+
+        // Enable enter key anywhere in form
+        loginForm.addEventListener('submit', handleLogin);
+        
+        // Optional: remove error when user starts typing
+        usernameInput.addEventListener('input', () => clearError());
+        passwordInput.addEventListener('input', () => clearError());
+
+        // Small accessibility: prevent accidental double submission
+        loginBtn.addEventListener('click', (e) => {
+            if (loginBtn.disabled) {
+                e.preventDefault();
+            }
+        });
+    })();
+</script>
+</body>
+</html>
