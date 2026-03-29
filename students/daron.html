@@ -787,6 +787,9 @@
 
     function logout() {
         toast("🔒 Logged out");
+        setTimeout(() => {
+        window.location.href = "../index.html";
+    }, 500);
     }
 
     // ---------- INIT ----------
