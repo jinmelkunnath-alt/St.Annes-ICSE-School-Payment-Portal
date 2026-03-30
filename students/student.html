@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>St. Annes ICSE | Term Fee System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f5f7fc;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #1a2c3e;
+            line-height: 1.4;
+        }
+
+        h1, h2, h3 {
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        /* Blue stripe accent design */
+        .blue-stripe {
+            position: relative;
+        }
+        .blue-stripe::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(135deg, #1e4a76, #3b82f6);
+            border-radius: 1rem 0 0 1rem;
+        }
+
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 1.25rem 2rem;
+        }
+
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: #ffffff;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+            border-radius: 0 0 1.5rem 1.5rem;
+            margin-bottom: 1.8rem;
+            padding: 0.9rem 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .school-brand h1 {
+            font-size: 1.5rem;
+            color: #0f2b3d;
+            margin-bottom: 0.2rem;
+            position: relative;
+            display: inline-block;
+        }
+        .school-brand h1::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, #1e4a76, #60a5fa);
+            border-radius: 3px;
+        }
+
+        .school-brand .accent {
+            height: 3px;
+            width: 50px;
+            background: #2c6e9e;
+            border-radius: 4px;
+            margin-top: 4px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border: none;
+            background: transparent;
+            font-weight: 500;
+            padding: 0.6rem 1.2rem;
+            border-radius: 2rem;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: #1e4a76;
+            color: white;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .btn-primary:hover {
+            background: #0f3a5c;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(30,74,118,0.2);
+        }
+
+        .btn-secondary {
+            background: #eef2f8;
+            color: #2c4c6e;
+            border: 1px solid #dce5ef;
+        }
+        .btn-secondary:hover {
+            background: #e2e9f2;
+        }
+
+        .student-card {
+            background: #ffffff;
+            border-radius: 1.5rem;
+            padding: 1.4rem 1.8rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            position: relative;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .student-info h2 {
+            font-size: 1.6rem;
+            color: #0b2b40;
+        }
+        .student-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+        .student-meta span {
+            background: #f0f4fa;
+            padding: 0.3rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #1e4a76;
+        }
+
+        .progress-wrapper {
+            min-width: 200px;
+        }
+        .progress-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #4a627a;
+            margin-bottom: 6px;
+        }
+        .progress-bar-bg {
+            background: #e4e9f0;
+            border-radius: 40px;
+            height: 8px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            background: linear-gradient(90deg, #2c6e9e, #60a5fa);
+            width: 0%;
+            height: 100%;
+            border-radius: 40px;
+            transition: width 0.3s ease;
+        }
+        .progress-percent {
+            font-size: 0.75rem;
+            text-align: right;
+            margin-top: 6px;
+            color: #1e4a76;
+            font-weight: 600;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 1.8rem 0 1.5rem;
+            border-radius: 1rem;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02), 0 1px 2px rgba(0, 0, 0, 0.03);
+            border: 1px solid #eef2f8;
+        }
+        .fee-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            min-width: 560px;
+        }
+        .fee-table th {
+            background: #f8fafd;
+            color: #1f3b4c;
+            padding: 1rem 0.8rem;
+            font-weight: 600;
+            border-bottom: 2px solid #e2e9f0;
+            position: sticky;
+            top: 0;
+        }
+        .fee-table td {
+            padding: 0.9rem 0.6rem;
+            text-align: center;
+            border-bottom: 1px solid #eff3f8;
+            font-weight: 500;
+        }
+        .fee-table tr:hover td {
+            background-color: #fafcff;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.9rem;
+            border-radius: 2rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+        .status-paid {
+            background: #e1f7ea;
+            color: #1f7840;
+        }
+        .status-pending {
+            background: #ffe6e5;
+            color: #bc4e2c;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-start;
+            margin: 1rem 0 0.8rem;
+            flex-wrap: wrap;
+        }
+        .payment-note {
+            font-size: 0.8rem;
+            color: #5a6e8a;
+            background: #f0f4fa;
+            padding: 0.6rem 1rem;
+            border-radius: 1rem;
+            display: inline-block;
+            margin-top: 0.5rem;
+            border-left: 3px solid #3b82f6;
+        }
+
+        .qr-code-img {
+            width: 140px;
+            height: 140px;
+            object-fit: contain;
+            margin: 0 auto 1rem;
+            display: block;
+            border-radius: 1rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .upi-copy-area {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #f8fafd;
+            padding: 0.5rem 0.8rem;
+            border-radius: 2rem;
+            justify-content: space-between;
+            margin: 0.8rem 0;
+            border: 1px solid #e2e8f0;
+        }
+        .copy-icon {
+            cursor: pointer;
+            background: #eef2f8;
+            padding: 0.3rem 0.8rem;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            transition: all 0.2s ease;
+        }
+        .copy-icon:hover {
+            background: #e2e9f2;
+            transform: scale(0.98);
+        }
+        .whatsapp-link {
+            color: #25D366;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: underline;
+            transition: all 0.2s ease;
+            display: inline-block;
+        }
+        .whatsapp-link:hover {
+            opacity: 0.8;
+            transform: scale(1.02);
+        }
+
+        .total-card {
+            background: white;
+            border-radius: 1.2rem;
+            padding: 1.2rem 1.5rem;
+            margin: 1rem 0 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+            border: 1px solid #eef2f8;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            border-top: 3px solid #3b82f6;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(2px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0.2s, opacity 0.2s;
+        }
+        .modal-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        .modal-card {
+            background: white;
+            width: 90%;
+            max-width: 400px;
+            border-radius: 1.5rem;
+            padding: 1.6rem;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.2);
+            transform: scale(0.96);
+            transition: transform 0.2s;
+            border: 1px solid rgba(59,130,246,0.2);
+        }
+        .modal-overlay.active .modal-card {
+            transform: scale(1);
+        }
+        .modal-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: #1f3b4c;
+            border-left: 3px solid #3b82f6;
+            padding-left: 0.75rem;
+        }
+        .modal-card input, .modal-card select {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            margin: 0.6rem 0;
+            border: 1px solid #cbdde9;
+            border-radius: 1rem;
+            font-size: 0.9rem;
+            background: white;
+            font-family: inherit;
+        }
+        .modal-card input:focus, .modal-card select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59,130,246,0.2);
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.8rem;
+            margin-top: 1.4rem;
+        }
+        .modal-btn {
+            border: none;
+            background: #eef2f8;
+            padding: 0.5rem 1.2rem;
+            border-radius: 2rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .modal-btn.primary {
+            background: #1e4a76;
+            color: white;
+        }
+        .modal-btn.primary:hover {
+            background: #0f3a5c;
+            transform: translateY(-1px);
+        }
+        .error-message {
+            color: #bc4e2c;
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .toast-message {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e2a3a;
+            color: white;
+            padding: 0.6rem 1.4rem;
+            border-radius: 3rem;
+            font-size: 0.85rem;
+            z-index: 1100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            animation: fadeOutUp 2.5s forwards;
+        }
+        @keyframes fadeOutUp {
+            0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+            15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            85% { opacity: 1; }
+            100% { opacity: 0; visibility: hidden; }
+        }
+
+        .loader-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #ffffff;
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            transition: opacity 0.4s;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #e2e9f0;
+            border-top-color: #1e4a76;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loader-text {
+            margin-top: 1rem;
+            color: #2c6e9e;
+            font-weight: 500;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #8da0b0;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 640px) {
+            .app-container {
+                padding: 0.8rem;
+            }
+            .sticky-header {
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+            }
+            .student-card {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .student-info h2 {
+                font-size: 1.4rem;
+            }
+            .btn {
+                padding: 0.5rem 1rem;
+            }
+            .total-card {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div id="loader" class="loader-screen">
+    <div class="spinner"></div>
+    <div class="loader-text">Loading term fee system ...</div>
+</div>
+
+<div class="app-container" id="appContainer" style="display: none;">
+    <div class="sticky-header">
+        <div class="school-brand">
+            <h1>St. Annes ICSE School Kottody</h1>
+            <div class="accent"></div>
+        </div>
+        <div class="header-actions">
+            <button id="adminLoginBtn" class="btn btn-primary">🔐 Admin Login</button>
+            <button id="logoutBtn" class="btn btn-secondary">🚪 Logout</button>
+        </div>
+    </div>
+
+    <div class="student-card">
+        <div class="student-info">
+            <h2 id="studentNameDisplay">Mariya Melbin</h2>
+            <div class="student-meta">
+                <span>📖 Class: VII</span>
+                <span>🎫 Roll No: 11</span>
+            </div>
+        </div>
+        <div class="progress-wrapper">
+            <div class="progress-label">OVERALL PAYMENT</div>
+            <div class="progress-bar-bg"><div class="progress-fill" id="progressFill"></div></div>
+            <div class="progress-percent" id="progressPercent">0%</div>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table class="fee-table">
+            <thead>
+                <tr><th>Term</th><th>Total Fee (₹)</th><th>Paid (₹)</th><th>Remaining (₹)</th><th>Status</th></tr>
+            </thead>
+            <tbody id="feeTableBody"></tbody>
+        </table>
+    </div>
+
+    <div class="action-buttons">
+        <button id="payFeesBtn" class="btn btn-primary">💳 Pay Fees</button>
+        <button id="helpBtn" class="btn btn-secondary">❓ Help</button>
+    </div>
+    <div class="payment-note">
+        💡 The fee paid will be updated within 36 working hours.
+    </div>
+
+    <div id="overallSummaryCard" class="total-card"></div>
+    <footer>Official fee record • Authorized personnel only</footer>
+</div>
+
+<div id="globalModal" class="modal-overlay">
+    <div class="modal-card">
+        <h3 id="modalTitle">Authentication</h3>
+        <div id="modalBody"></div>
+        <div class="modal-actions">
+            <button class="modal-btn" id="modalCancelBtn">Cancel</button>
+            <button class="modal-btn primary" id="modalConfirmBtn">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+
+// ---------- FIREBASE ----------
+const firebaseConfig = {
+  apiKey: "AIzaSyArC1RsGTkS0cr5glTfgUdTktjcfj_Ad88",
+  authDomain: "fee-payment-portal.firebaseapp.com",
+  projectId: "fee-payment-portal",
+  storageBucket: "fee-payment-portal.firebasestorage.app",
+  messagingSenderId: "1036013822615",
+  appId: "1:1036013822615:web:6c4159f84bae9882963fd2"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ---------- CONSTANTS ----------
+const ADMIN_PASSWORD = "ADMIN123";
+const UPI_ID = "jinmelkunnath@oksbi";
+const WHATSAPP_URL = "https://wa.me/917012808911";
+const QR_IMAGE_URL = "https://i.ibb.co/8RSZRz0/IMG-20260329-160905.png";
+
+// ---------- GET STUDENT ID ----------
+const params = new URLSearchParams(window.location.search);
+const studentId = params.get("id");
+
+// ---------- STATE ----------
+let TERMS = [];
+
+// ---------- GLOBAL CLICK HANDLER ----------
+document.addEventListener("click", function (e) {
+  if (e.target.id === "copyUpiBtn") copyUPI();
+  if (e.target.id === "upiPayBtn") openUPI();
+  if (e.target.id === "whatsappLink") openWhatsApp();
+});
+
+// ---------- MODAL ----------
+const modalOverlay = document.getElementById("globalModal");
+const modalTitle = document.getElementById("modalTitle");
+const modalBody = document.getElementById("modalBody");
+let confirmBtn = document.getElementById("modalConfirmBtn");
+let cancelBtn = document.getElementById("modalCancelBtn");
+
+function openModal(title, html) {
+  return new Promise((resolve) => {
+    modalTitle.innerText = title;
+    modalBody.innerHTML = html;
+    modalOverlay.classList.add("active");
+
+    confirmBtn.onclick = () => {
+      const inputs = modalBody.querySelectorAll("input, select");
+      resolve(Array.from(inputs).map(i => i.value));
+      modalOverlay.classList.remove("active");
+    };
+
+    cancelBtn.onclick = () => {
+      resolve(null);
+      modalOverlay.classList.remove("active");
+    };
+  });
+}
+
+// ---------- TOAST ----------
+function toast(msg) {
+  const t = document.createElement("div");
+  t.className = "toast-message";
+  t.innerText = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2500);
+}
+
+// ---------- LOAD STUDENT ----------
+async function loadStudent() {
+  if (!studentId) {
+    alert("No student ID");
+    return;
+  }
+
+  const ref = doc(db, "students", studentId);
+  const snap = await getDoc(ref);
+
+  if (!snap.exists()) {
+    alert("Student not found");
+    return;
+  }
+
+  const data = snap.data();
+
+  document.getElementById("studentNameDisplay").innerText = data.name;
+
+  TERMS = data.terms;
+
+  render();
+}
+
+// ---------- RENDER ----------
+function render() {
+  const tbody = document.getElementById("feeTableBody");
+  tbody.innerHTML = "";
+
+  let total = 0, paid = 0;
+
+  TERMS.forEach(t => {
+    const remaining = t.total - t.paid;
+
+    total += t.total;
+    paid += t.paid;
+
+    tbody.innerHTML += `
+      <tr>
+        <td>${t.name}</td>
+        <td>₹${t.total}</td>
+        <td>₹${t.paid}</td>
+        <td>₹${remaining}</td>
+        <td>
+          <span class="status-badge ${remaining === 0 ? "status-paid" : "status-pending"}">
+            ${remaining === 0 ? "Paid" : "Pending"}
+          </span>
+        </td>
+      </tr>
+    `;
+  });
+
+  const remaining = total - paid;
+
+  document.getElementById("overallSummaryCard").innerHTML = `
+    <span><strong>Total:</strong> ₹${total}</span>
+    <span><strong>Paid:</strong> ₹${paid}</span>
+    <span><strong>Remaining:</strong> ₹${remaining}</span>
+  `;
+
+  const percent = (paid / total) * 100 || 0;
+  document.getElementById("progressFill").style.width = percent + "%";
+  document.getElementById("progressPercent").innerText = Math.round(percent) + "%";
+}
+
+// ---------- SAVE ----------
+async function saveData() {
+  await updateDoc(doc(db, "students", studentId), {
+    terms: TERMS
+  });
+}
+
+// ---------- PAYMENTS ----------
+async function fullPayment(i) {
+  TERMS[i].paid = TERMS[i].total;
+  await saveData();
+  render();
+  toast("Marked as Paid");
+}
+
+async function partialPayment(i, amt) {
+  let t = TERMS[i];
+  let newVal = t.paid + amt;
+
+  if (newVal > t.total) {
+    toast("Amount exceeds balance");
+    return;
+  }
+
+  if (newVal < 0) newVal = 0;
+
+  t.paid = newVal;
+
+  await saveData();
+  render();
+  toast("Payment updated");
+}
+
+// ---------- ADMIN ----------
+async function adminLogin() {
+  const pass = await openModal("Admin Login", `<input type="password">`);
+
+  if (!pass || pass[0] !== ADMIN_PASSWORD) {
+    toast("Wrong password");
+    return;
+  }
+
+  const action = await openModal("Select Action", `
+    <select>
+      <option value="full">Full</option>
+      <option value="partial">Partial</option>
+    </select>
+  `);
+
+  if (!action) return;
+
+  const term = await openModal("Select Term", `
+    <select>
+      ${TERMS.map((t,i)=>`<option value="${i}">${t.name}</option>`).join("")}
+    </select>
+  `);
+
+  if (!term) return;
+
+  const i = parseInt(term[0]);
+
+  if (action[0] === "full") {
+    fullPayment(i);
+  } else {
+    const amt = await openModal("Enter Amount", `<input type="number">`);
+    if (!amt) return;
+    partialPayment(i, parseFloat(amt[0]));
+  }
+}
+
+// ---------- UPI / WHATSAPP ----------
+function copyUPI() {
+  navigator.clipboard.writeText(UPI_ID);
+  toast("UPI copied");
+}
+
+function openUPI() {
+  window.location.href = `upi://pay?pa=${UPI_ID}&pn=St%20Annes`;
+}
+
+function openWhatsApp() {
+  window.open(WHATSAPP_URL, "_blank");
+}
+
+// ---------- PAY MODAL ----------
+function payModal() {
+  openModal("Pay Fees", `
+    <div style="text-align:center">
+      <img src="${QR_IMAGE_URL}" class="qr-code-img">
+      <div class="upi-copy-area">
+        <span>${UPI_ID}</span>
+        <span id="copyUpiBtn" class="copy-icon">Copy</span>
+      </div>
+      <button id="upiPayBtn" class="modal-btn primary">Pay via UPI</button>
+      <p>Send the screenshot to <span id="whatsappLink" class="whatsapp-link">Office WhatsApp</span></p>
+    </div>
+  `);
+}
+
+// ---------- LOGOUT ----------
+function logout() {
+  window.location.href = "../index.html";
+}
+
+// ---------- INIT ----------
+function init() {
+  loadStudent();
+
+  document.getElementById("payFeesBtn").onclick = payModal;
+  document.getElementById("helpBtn").onclick = () => alert("Contact school office");
+  document.getElementById("adminLoginBtn").onclick = adminLogin;
+  document.getElementById("logoutBtn").onclick = logout;
+
+  setTimeout(() => {
+    document.getElementById("loader").style.display = "none";
+    document.getElementById("appContainer").style.display = "block";
+  }, 800);
+}
+
+init();
+</script>
+</body>
+  </html>
