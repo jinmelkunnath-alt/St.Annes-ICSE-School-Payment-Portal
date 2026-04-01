@@ -583,10 +583,10 @@ async function loadStudent() {
     studentData = snap.data();
     TERMS = studentData.terms || [];
 
-    // SAFE DOM
+    // ✅ FIXED IDs HERE
     const nameEl = document.getElementById("studentNameDisplay");
-    const classEl = document.getElementById("classDisplay");
-    const rollEl = document.getElementById("rollDisplay");
+    const classEl = document.getElementById("studentClassSpan");
+    const rollEl = document.getElementById("studentRollSpan");
 
     if (nameEl) nameEl.innerText = studentData.name || "-";
     if (classEl) classEl.innerText = "📖 Class: " + (studentData["class"] || "-");
@@ -596,10 +596,10 @@ async function loadStudent() {
 
     // HIDE LOADER
     const loader = document.getElementById("loader");
-    const app = document.getElementById("appContainer");
+    const appContainer = document.getElementById("appContainer");
 
     if (loader) loader.style.display = "none";
-    if (app) app.style.display = "block";
+    if (appContainer) appContainer.style.display = "block";
 
   } catch (err) {
     console.error(err);
@@ -620,7 +620,7 @@ function render() {
 
   let total = 0, paid = 0;
 
-  TERMS.forEach((t, i) => {
+  TERMS.forEach((t) => {
 
     const remaining = t.total - t.paid;
 
@@ -652,6 +652,7 @@ function render() {
   }
 
   const percent = total ? (paid / total) * 100 : 0;
+
   const bar = document.getElementById("progressFill");
   const percentText = document.getElementById("progressPercent");
 
@@ -804,12 +805,40 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const adminBtn = document.getElementById("adminLoginBtn");
   const logoutBtn = document.getElementById("logoutBtn");
+  const payBtn = document.getElementById("payFeesBtn");
+  const helpBtn = document.getElementById("helpBtn");
 
   if (adminBtn) adminBtn.onclick = adminLogin;
 
   if (logoutBtn) {
     logoutBtn.onclick = () => {
       window.location.href = "../index.html";
+    };
+  }
+
+  // PAY BUTTON
+  if (payBtn) {
+    payBtn.onclick = () => {
+      openModal("Pay Fees", `
+        <p style="text-align:center;">
+          UPI ID: <br><b>jinmelkunnath@oksbi</b>
+        </p>
+        <p style="text-align:center;margin-top:10px;">
+          <a href="https://wa.me/917012808911" target="_blank">
+            Send Screenshot via WhatsApp
+          </a>
+        </p>
+      `);
+    };
+  }
+
+  // HELP BUTTON
+  if (helpBtn) {
+    helpBtn.onclick = () => {
+      openModal("Help", `
+        <p>📞 Contact School</p>
+        <p>+91 7012808911</p>
+      `);
     };
   }
 
