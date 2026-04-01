@@ -120,6 +120,11 @@
         .student-info h2 {
             font-size: 1.6rem;
             color: #0b2b40;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
         }
         .student-meta {
             display: flex;
@@ -493,10 +498,7 @@
             to { opacity: 1; }
         }
         @keyframes scaleIn {
-            to {
-                transform: scale(1);
-                opacity: 1;
-            }
+            to { transform: scale(1); opacity: 1; }
         }
         .popup-card h3 {
             font-size: 1.3rem;
@@ -674,7 +676,6 @@
             <h2 id="studentNameDisplay">Loading...</h2>
             <div class="student-meta">
                 <span id="studentClassSpan">📖 Class: --</span>
-                <!-- Roll number span removed -->
             </div>
         </div>
         <div class="progress-wrapper">
@@ -690,7 +691,7 @@
                 <tr><th>Term</th><th>Total Fee (₹)</th><th>Paid (₹)</th><th>Remaining (₹)</th><th>Status</th>‹
             </thead>
             <tbody id="feeTableBody"></tbody>
-         </table>
+          </table>
     </div>
 
     <div class="action-buttons">
@@ -787,8 +788,6 @@ async function loadStudent() {
     if (getEl("studentClassSpan"))
       getEl("studentClassSpan").innerText = "📖 Class: " + (studentData.class || "-");
 
-    // Roll number line removed
-
     render();
     hideLoader();
 
@@ -816,17 +815,17 @@ function render() {
     paid += t.paid;
 
     tbody.innerHTML += `
-       <tr>
-         <td>${t.name}</td>
-         <td>₹${t.total}</td>
-         <td>₹${t.paid}</td>
-         <td>₹${remaining}</td>
-         <td>
+        <tr>
+          <td>${t.name}</td>
+          <td>₹${t.total}</td>
+          <td>₹${t.paid}</td>
+          <td>₹${remaining}</td>
+          <td>
           <span class="status-badge ${remaining === 0 ? "status-paid" : "status-pending"}">
             ${remaining === 0 ? "Paid" : "Pending"}
           </span>
-         </td>
-       </tr>
+          </td>
+        </tr>
     `;
   });
 
@@ -891,15 +890,7 @@ function showSuccess(term, amount) {
   getEl("closeSuccess").onclick = () => overlay.remove();
 
   getEl("notifyBtn").onclick = () => {
-    const msg = `Dear ${studentData.name},
-
-Your fee payment has been successfully updated.
-
-Term: ${term}
-Amount Paid: ₹${amount}
-
-Please check the St. Annes app to confirm.`;
-
+    const msg = `DEAR ${studentData.name.toUpperCase()}, YOUR FEE PAYMENT HAS BEEN UPDATED. PLEASE CHECK THE ST. ANNE'S APP TO CONFIRM.`;
     window.open(`https://wa.me/${studentData.phone}?text=${encodeURIComponent(msg)}`);
   };
 }
@@ -1070,6 +1061,38 @@ async function adminLogin() {
         () => {} // cancel
     );
 }
+
+// ---------- HIDDEN ADMIN ACCESS (Desktop & Mobile) ----------
+function openAdminAccess() {
+    // Call the existing admin login flow
+    adminLogin();
+}
+
+// Desktop: Ctrl + Shift + A
+document.addEventListener("keydown", function(e) {
+    if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "a") {
+        e.preventDefault(); // prevent browser shortcut (if any)
+        openAdminAccess();
+    }
+});
+
+// Mobile: long press on student name
+const nameEl = document.getElementById("studentNameDisplay");
+let pressTimer;
+
+nameEl.addEventListener("touchstart", (e) => {
+    pressTimer = setTimeout(() => {
+        openAdminAccess();
+    }, 1200);
+});
+
+nameEl.addEventListener("touchend", () => {
+    clearTimeout(pressTimer);
+});
+
+nameEl.addEventListener("touchcancel", () => {
+    clearTimeout(pressTimer);
+});
 
 // ---------- INIT ----------
 window.onload = () => {
