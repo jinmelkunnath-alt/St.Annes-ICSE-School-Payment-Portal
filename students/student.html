@@ -414,6 +414,36 @@
                 align-items: flex-start;
             }
         }
+        @keyframes scaleIn {
+  from { transform: scale(0.7); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.tick-container {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #4CAF50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: auto;
+}
+
+.tick {
+  width: 25px;
+  height: 50px;
+  border-right: 5px solid white;
+  border-bottom: 5px solid white;
+  transform: rotate(45deg) scale(0);
+  animation: tickAnim 0.4s ease forwards;
+}
+
+@keyframes tickAnim {
+  to {
+    transform: rotate(45deg) scale(1);
+  }
+}
     </style>
 </head>
 <body>
@@ -523,7 +553,7 @@ async function loadStudent() {
 
     document.getElementById("studentNameDisplay").innerText = studentData.name;
 
-    // ✅ CLASS & ROLL
+    // CLASS & ROLL
     document.getElementById("classDisplay").innerText =
       "📖 Class: " + (studentData.class || "-");
 
@@ -578,8 +608,9 @@ async function saveData() {
   });
 }
 
-// ---------- POPUP ----------
+// ---------- POPUP (UPDATED DESIGN) ----------
 function showPopup(term, amount) {
+
   const div = document.createElement("div");
 
   div.style.position = "fixed";
@@ -598,36 +629,44 @@ function showPopup(term, amount) {
       background:white;
       padding:25px;
       border-radius:16px;
-      text-align:center;
       width:90%;
-      max-width:320px;
+      max-width:340px;
+      text-align:center;
+      position:relative;
       animation:scaleIn 0.3s;
     ">
-      <div style="font-size:40px;color:green;">✔</div>
-      <h3 style="margin:10px 0;">Payment Updated</h3>
+
+      <div id="closeBtn" style="
+        position:absolute;
+        top:10px;
+        right:15px;
+        font-size:20px;
+        cursor:pointer;
+      ">✖</div>
+
+      <h3 style="margin-bottom:15px;">Payment Updated</h3>
+
+      <div class="tick-container">
+        <div class="tick"></div>
+      </div>
+
+      <p style="margin-top:15px;font-weight:600;">${term}</p>
+      <p>Amount: ₹${amount}</p>
 
       <button id="waBtn" style="
+        margin-top:15px;
         background:#1e4a76;
         color:white;
-        padding:10px 20px;
+        padding:12px;
+        width:100%;
         border:none;
         border-radius:25px;
+        font-weight:600;
         cursor:pointer;
       ">
-        Inform Student
+        📱 Notify via WhatsApp
       </button>
 
-      <br><br>
-
-      <button id="closeBtn" style="
-        background:#eee;
-        padding:8px 18px;
-        border:none;
-        border-radius:20px;
-        cursor:pointer;
-      ">
-        Close
-      </button>
     </div>
   `;
 
@@ -712,6 +751,7 @@ async function adminLogin() {
 
 // ---------- INIT ----------
 document.addEventListener("DOMContentLoaded", () => {
+
   document.getElementById("adminLoginBtn").onclick = adminLogin;
 
   document.getElementById("logoutBtn").onclick = () => {
