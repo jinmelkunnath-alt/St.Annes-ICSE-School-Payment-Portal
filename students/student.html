@@ -82,17 +82,6 @@
             font-family: inherit;
         }
 
-        .btn-primary {
-            background: #1e4a76;
-            color: white;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-        }
-        .btn-primary:hover {
-            background: #0f3a5c;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(30,74,118,0.2);
-        }
-
         .btn-secondary {
             background: #eef2f8;
             color: #2c4c6e;
@@ -666,7 +655,6 @@
             <h1>St. Annes ICSE School Kottody</h1>
         </div>
         <div class="header-actions">
-            <button id="adminLoginBtn" class="btn btn-primary">🔐 Admin Login</button>
             <button id="logoutBtn" class="btn btn-secondary">🚪 Logout</button>
         </div>
     </div>
@@ -691,7 +679,7 @@
                 <tr><th>Term</th><th>Total Fee (₹)</th><th>Paid (₹)</th><th>Remaining (₹)</th><th>Status</th>‹
             </thead>
             <tbody id="feeTableBody"></tbody>
-          </table>
+           </table>
     </div>
 
     <div class="action-buttons">
@@ -1080,25 +1068,24 @@ document.addEventListener("keydown", function(e) {
 const nameEl = document.getElementById("studentNameDisplay");
 let pressTimer;
 
-nameEl.addEventListener("touchstart", (e) => {
-    pressTimer = setTimeout(() => {
-        openAdminAccess();
-    }, 1200);
-});
+if (nameEl) {
+    nameEl.addEventListener("touchstart", (e) => {
+        pressTimer = setTimeout(() => {
+            openAdminAccess();
+        }, 1200);
+    });
 
-nameEl.addEventListener("touchend", () => {
-    clearTimeout(pressTimer);
-});
+    nameEl.addEventListener("touchend", () => {
+        clearTimeout(pressTimer);
+    });
 
-nameEl.addEventListener("touchcancel", () => {
-    clearTimeout(pressTimer);
-});
+    nameEl.addEventListener("touchcancel", () => {
+        clearTimeout(pressTimer);
+    });
+}
 
 // ---------- INIT ----------
 window.onload = () => {
-  if (getEl("adminLoginBtn"))
-    getEl("adminLoginBtn").onclick = adminLogin;
-
   if (getEl("logoutBtn"))
     getEl("logoutBtn").onclick = () => location.href = "../index.html";
 
