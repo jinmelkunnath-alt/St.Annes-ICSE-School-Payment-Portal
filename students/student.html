@@ -482,352 +482,244 @@
 </div>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-    import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 
-    // Firebase config
-    const firebaseConfig = {
-        apiKey: "AIzaSyArC1RsGTkS0cr5glTfgUdTktjcfj_Ad88",
-        authDomain: "fee-payment-portal.firebaseapp.com",
-        projectId: "fee-payment-portal",
-        storageBucket: "fee-payment-portal.firebasestorage.app",
-        messagingSenderId: "1036013822615",
-        appId: "1:1036013822615:web:6c4159f84bae9882963fd2"
-    };
+// ---------- FIREBASE ----------
+const firebaseConfig = {
+  apiKey: "AIzaSyArC1RsGTkS0cr5glTfgUdTktjcfj_Ad88",
+  authDomain: "fee-payment-portal.firebaseapp.com",
+  projectId: "fee-payment-portal"
+};
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-    // URL params
-    const params = new URLSearchParams(window.location.search);
-    const studentId = params.get("id");
+// ---------- GET STUDENT ID ----------
+const params = new URLSearchParams(window.location.search);
+const studentId = params.get("id");
 
-    // Global state
-    let TERMS = [];
-    let studentData = {};
+if (!studentId) {
+  alert("Invalid URL. Student ID missing.");
+  throw new Error("No student ID");
+}
 
-    // DOM elements
-    const loader = document.getElementById("loader");
-    const appContainer = document.getElementById("appContainer");
-    const studentNameSpan = document.getElementById("studentNameDisplay");
-    const classSpan = document.getElementById("studentClassSpan");
-    const rollSpan = document.getElementById("studentRollSpan");
-    const feeTableBody = document.getElementById("feeTableBody");
-    const overallCard = document.getElementById("overallSummaryCard");
-    const progressFill = document.getElementById("progressFill");
-    const progressPercentSpan = document.getElementById("progressPercent");
-    const adminLoginBtn = document.getElementById("adminLoginBtn");
-    const logoutBtn = document.getElementById("logoutBtn");
-    const payFeesBtn = document.getElementById("payFeesBtn");
-    const helpBtn = document.getElementById("helpBtn");
+// ---------- STATE ----------
+let TERMS = [];
+let studentData = {};
 
-    // Modal system (reused)
-    const modalOverlay = document.getElementById("globalModal");
-    const modalTitle = document.getElementById("modalTitle");
-    const modalBodyDiv = document.getElementById("modalBody");
-    let modalConfirmBtn = document.getElementById("modalConfirmBtn");
-    let modalCancelBtn = document.getElementById("modalCancelBtn");
+// ---------- LOAD STUDENT ----------
+async function loadStudent() {
+  try {
+    const snap = await getDoc(doc(db, "students", studentId));
 
-    function openModal(title, html) {
-        return new Promise((resolve) => {
-            modalTitle.innerText = title;
-            modalBodyDiv.innerHTML = html;
-            modalOverlay.classList.add("active");
-
-            // Clean up old listeners
-            const newConfirm = modalConfirmBtn.cloneNode(true);
-            const newCancel = modalCancelBtn.cloneNode(true);
-            modalConfirmBtn.parentNode.replaceChild(newConfirm, modalConfirmBtn);
-            modalCancelBtn.parentNode.replaceChild(newCancel, modalCancelBtn);
-            modalConfirmBtn = newConfirm;
-            modalCancelBtn = newCancel;
-
-            modalConfirmBtn.onclick = () => {
-                const inputs = modalBodyDiv.querySelectorAll("input, select");
-                const values = Array.from(inputs).map(i => i.value);
-                modalOverlay.classList.remove("active");
-                resolve(values);
-            };
-            modalCancelBtn.onclick = () => {
-                modalOverlay.classList.remove("active");
-                resolve(null);
-            };
-        });
+    if (!snap.exists()) {
+      alert("Student not found");
+      return;
     }
 
-    function toast(message, isError = false) {
-        const toastDiv = document.createElement("div");
-        toastDiv.className = "toast-message";
-        toastDiv.style.background = isError ? "#b33b2c" : "#1e4a76";
-        toastDiv.innerText = message;
-        document.body.appendChild(toastDiv);
-        setTimeout(() => toastDiv.remove(), 2500);
+    studentData = snap.data();
+    TERMS = studentData.terms || [];
+
+    document.getElementById("studentNameDisplay").innerText = studentData.name;
+
+    // ✅ CLASS & ROLL
+    document.getElementById("classDisplay").innerText =
+      "📖 Class: " + (studentData.class || "-");
+
+    document.getElementById("rollDisplay").innerText =
+      "🎫 Roll No: " + (studentData.roll || "-");
+
+    render();
+
+  } catch (err) {
+    console.error(err);
+    alert("Error loading student data");
+  }
+}
+
+// ---------- RENDER ----------
+function render() {
+  const tbody = document.getElementById("feeTableBody");
+  tbody.innerHTML = "";
+
+  let total = 0, paid = 0;
+
+  TERMS.forEach(t => {
+    const remaining = t.total - t.paid;
+
+    total += t.total;
+    paid += t.paid;
+
+    tbody.innerHTML += `
+      <tr>
+        <td>${t.name}</td>
+        <td>₹${t.total}</td>
+        <td>₹${t.paid}</td>
+        <td>₹${remaining}</td>
+        <td class="${remaining === 0 ? "status-paid" : "status-pending"}">
+          ${remaining === 0 ? "Paid" : "Pending"}
+        </td>
+      </tr>
+    `;
+  });
+
+  document.getElementById("overallSummaryCard").innerHTML = `
+    <span>Total: ₹${total}</span><br>
+    <span>Paid: ₹${paid}</span><br>
+    <span>Remaining: ₹${total - paid}</span>
+  `;
+}
+
+// ---------- SAVE ----------
+async function saveData() {
+  await updateDoc(doc(db, "students", studentId), {
+    terms: TERMS
+  });
+}
+
+// ---------- POPUP ----------
+function showPopup(term, amount) {
+  const div = document.createElement("div");
+
+  div.style.position = "fixed";
+  div.style.top = "0";
+  div.style.left = "0";
+  div.style.width = "100%";
+  div.style.height = "100%";
+  div.style.background = "rgba(0,0,0,0.4)";
+  div.style.display = "flex";
+  div.style.alignItems = "center";
+  div.style.justifyContent = "center";
+  div.style.zIndex = "9999";
+
+  div.innerHTML = `
+    <div style="
+      background:white;
+      padding:25px;
+      border-radius:16px;
+      text-align:center;
+      width:90%;
+      max-width:320px;
+      animation:scaleIn 0.3s;
+    ">
+      <div style="font-size:40px;color:green;">✔</div>
+      <h3 style="margin:10px 0;">Payment Updated</h3>
+
+      <button id="waBtn" style="
+        background:#1e4a76;
+        color:white;
+        padding:10px 20px;
+        border:none;
+        border-radius:25px;
+        cursor:pointer;
+      ">
+        Inform Student
+      </button>
+
+      <br><br>
+
+      <button id="closeBtn" style="
+        background:#eee;
+        padding:8px 18px;
+        border:none;
+        border-radius:20px;
+        cursor:pointer;
+      ">
+        Close
+      </button>
+    </div>
+  `;
+
+  document.body.appendChild(div);
+
+  document.getElementById("closeBtn").onclick = () => div.remove();
+
+  document.getElementById("waBtn").onclick = () => {
+
+    if (!studentData.phone) {
+      alert("Phone number missing");
+      return;
     }
 
-    // ---------- Load student data ----------
-    async function loadStudent() {
-        try {
-            const docRef = doc(db, "students", studentId);
-            const docSnap = await getDoc(docRef);
-            if (!docSnap.exists()) {
-                alert("Student not found. Please check the link.");
-                return false;
-            }
-            studentData = docSnap.data();
-            TERMS = studentData.terms || [];
-
-            // Update UI
-            studentNameSpan.innerText = studentData.name || "Student";
-            classSpan.innerHTML = `📖 Class: ${studentData.class || "--"}`;
-            rollSpan.innerHTML = `🎫 Roll No: ${studentData.roll || "--"}`;
-
-            render();
-            return true;
-        } catch (error) {
-            console.error("Error loading student:", error);
-            toast("Failed to load student data. Please refresh.", true);
-            return false;
-        }
-    }
-
-    // ---------- Render table and summary ----------
-    function render() {
-        // Build table rows
-        let total = 0, paid = 0;
-        feeTableBody.innerHTML = "";
-        TERMS.forEach(term => {
-            const remaining = term.total - term.paid;
-            total += term.total;
-            paid += term.paid;
-
-            const statusClass = remaining === 0 ? "status-paid" : "status-pending";
-            const statusText = remaining === 0 ? "Paid" : "Pending";
-
-            const row = document.createElement("tr");
-            row.innerHTML = `
-                <td>${term.name}</td>
-                <td>₹${term.total.toLocaleString()}</td>
-                <td>₹${term.paid.toLocaleString()}</td>
-                <td>₹${remaining.toLocaleString()}</td>
-                <td><span class="status-badge ${statusClass}">${statusText}</span></td>
-            `;
-            feeTableBody.appendChild(row);
-        });
-
-        const remainingTotal = total - paid;
-        overallCard.innerHTML = `
-            <span><strong>🏛️ Total Fees:</strong> ₹${total.toLocaleString()}</span>
-            <span><strong>💸 Total Paid:</strong> ₹${paid.toLocaleString()}</span>
-            <span><strong>📌 Remaining:</strong> ₹${remainingTotal.toLocaleString()}</span>
-        `;
-
-        const percent = total === 0 ? 0 : (paid / total) * 100;
-        progressFill.style.width = `${percent}%`;
-        progressPercentSpan.innerText = `${Math.round(percent)}% (₹${paid.toLocaleString()} paid)`;
-    }
-
-    // ---------- Save to Firestore ----------
-    async function saveToFirestore() {
-        try {
-            await updateDoc(doc(db, "students", studentId), { terms: TERMS });
-            toast("Changes saved to database.");
-        } catch (error) {
-            console.error("Save error:", error);
-            toast("Failed to save. Please try again.", true);
-        }
-    }
-
-    // ---------- Popup after payment (improved) ----------
-    function showPaymentPopup(termName, amount) {
-        // Create a temporary modal for the success message
-        const popupHtml = `
-            <div style="text-align:center; animation:scaleIn 0.2s ease;">
-                <div style="font-size:3rem; color:#1f7840;">✅</div>
-                <h3 style="margin:0.5rem 0;">Payment Updated</h3>
-                <p><strong>${termName}</strong><br>Amount: ₹${amount.toLocaleString()}</p>
-                ${studentData.phone ? `<button id="whatsappNotifyBtn" class="modal-btn primary" style="margin:0.5rem auto;">📱 Notify via WhatsApp</button>` : ''}
-                <button id="closePopupBtn" class="modal-btn" style="margin-top:0.5rem;">Close</button>
-            </div>
-        `;
-
-        openModal("Payment Confirmation", popupHtml).then(() => {
-            // modal closed, no further action
-        });
-
-        // Attach listeners after modal is open (setTimeout because modal content is injected)
-        setTimeout(() => {
-            const waBtn = document.getElementById("whatsappNotifyBtn");
-            if (waBtn) {
-                waBtn.onclick = () => {
-                    const msg = `Dear ${studentData.name},
+    const msg = `Dear ${studentData.name},
 
 Your fee payment has been successfully updated.
 
-Term: ${termName}
-Amount Paid: ₹${amount.toLocaleString()}
+Term: ${term}
+Amount Paid: ₹${amount}
 
 Kindly check the St. Annes app to confirm the details.
 
 – St. Annes ICSE School`;
-                    const url = `https://wa.me/${studentData.phone}?text=${encodeURIComponent(msg)}`;
-                    window.open(url, "_blank");
-                };
-            }
-            const closeBtn = document.getElementById("closePopupBtn");
-            if (closeBtn) {
-                closeBtn.onclick = () => {
-                    modalOverlay.classList.remove("active");
-                };
-            }
-        }, 50);
-    }
 
-    // ---------- Payment functions ----------
-    async function fullPayment(index) {
-        if (index < 0 || index >= TERMS.length) return;
-        const term = TERMS[index];
-        if (term.paid === term.total) {
-            toast("Term already fully paid.", true);
-            return;
-        }
-        term.paid = term.total;
-        await saveToFirestore();
-        render();
-        showPaymentPopup(term.name, term.total);
-    }
+    const url = `https://wa.me/${studentData.phone}?text=${encodeURIComponent(msg)}`;
 
-    async function partialPayment(index, amount) {
-        if (index < 0 || index >= TERMS.length) return;
-        const term = TERMS[index];
-        let newPaid = term.paid + amount;
-        if (newPaid > term.total) {
-            toast("Amount exceeds remaining balance.", true);
-            return;
-        }
-        if (newPaid < 0) newPaid = 0;
-        if (newPaid === term.paid) {
-            toast("No change in amount.", true);
-            return;
-        }
-        term.paid = newPaid;
-        await saveToFirestore();
-        render();
-        showPaymentPopup(term.name, amount);
-    }
+    window.open(url, "_blank");
+  };
+}
 
-    // ---------- Admin (using modals instead of prompts for better UX) ----------
-    async function adminLogin() {
-        const pass = await openModal("Admin Login", `<input type="password" id="adminPass" placeholder="Enter password">`);
-        if (!pass) return;
-        if (pass[0] !== "ADMIN123") {
-            toast("Invalid password", true);
-            return;
-        }
+// ---------- PAYMENT ----------
+async function fullPayment(i) {
+  TERMS[i].paid = TERMS[i].total;
 
-        const action = await openModal("Select Action", `
-            <select id="actionSelect">
-                <option value="full">Full Payment</option>
-                <option value="partial">Partial Payment</option>
-            </select>
-        `);
-        if (!action) return;
-        const actionType = action[0];
+  await saveData();
+  render();
 
-        const termOptions = TERMS.map((t, i) => `<option value="${i}">${t.name}</option>`).join("");
-        const termResult = await openModal("Select Term", `<select id="termSelect">${termOptions}</select>`);
-        if (!termResult) return;
-        const termIndex = parseInt(termResult[0]);
+  showPopup(TERMS[i].name, TERMS[i].total);
+}
 
-        if (actionType === "full") {
-            await fullPayment(termIndex);
-        } else {
-            const amountResult = await openModal("Partial Payment", `<input type="number" id="amountInput" placeholder="Enter amount (can be negative)">`);
-            if (!amountResult) return;
-            const amount = parseFloat(amountResult[0]);
-            if (isNaN(amount)) {
-                toast("Invalid amount", true);
-                return;
-            }
-            await partialPayment(termIndex, amount);
-        }
-    }
+async function partialPayment(i, amt) {
+  if (isNaN(amt)) {
+    alert("Invalid amount");
+    return;
+  }
 
-    // ---------- Pay Fees modal (shows UPI details) ----------
-    async function openPayFeesModal() {
-        const upiId = "jinmelkunnath@oksbi";
-        const qrImage = "https://i.ibb.co/8RSZRz0/IMG-20260329-160905.png";
-        const modalHtml = `
-            <div style="text-align:center">
-                <img src="${qrImage}" style="width:140px; height:140px; object-fit:contain; margin:0 auto 1rem; border-radius:1rem; box-shadow:0 2px 8px rgba(0,0,0,0.1);" onerror="this.src='https://via.placeholder.com/140?text=QR+Code'">
-                <div style="background:#f8fafd; padding:0.5rem; border-radius:2rem; display:flex; align-items:center; justify-content:space-between; margin:0.8rem 0;">
-                    <span style="font-family:monospace;">${upiId}</span>
-                    <span id="copyUpiBtn" style="cursor:pointer; background:#eef2f8; padding:0.3rem 0.8rem; border-radius:2rem;">📋 Copy</span>
-                </div>
-                <button id="upiPayBtn" class="modal-btn primary" style="width:85%; margin:0.5rem auto;">Pay via UPI</button>
-                <p style="margin-top:10px;">Send screenshot to <span id="whatsappLink" class="whatsapp-link" style="color:#25D366; cursor:pointer; text-decoration:underline;">Office WhatsApp</span></p>
-            </div>
-        `;
-        await openModal("💳 Pay Fees", modalHtml);
+  let t = TERMS[i];
 
-        // Attach event handlers after modal is open
-        setTimeout(() => {
-            const copyBtn = document.getElementById("copyUpiBtn");
-            if (copyBtn) {
-                copyBtn.onclick = () => {
-                    navigator.clipboard.writeText(upiId);
-                    toast("UPI ID copied");
-                };
-            }
-            const upiBtn = document.getElementById("upiPayBtn");
-            if (upiBtn) {
-                upiBtn.onclick = () => {
-                    window.location.href = `upi://pay?pa=${upiId}&pn=St%20Annes`;
-                    toast("Opening UPI app...", false);
-                };
-            }
-            const waLink = document.getElementById("whatsappLink");
-            if (waLink) {
-                waLink.onclick = () => {
-                    window.open("https://wa.me/917012808911", "_blank");
-                };
-            }
-        }, 50);
-    }
+  if (t.paid + amt > t.total) {
+    alert("Balance exceeded");
+    return;
+  }
 
-    function openHelpModal() {
-        openModal("❓ Help", `
-            <p>📞 For assistance, please contact the school office.</p>
-            <p>☎️ Phone: +91 12345 67890</p>
-            <p>✉️ Email: office@stannes.edu</p>
-            <p style="margin-top:0.8rem;">⏰ Office Hours: Mon-Fri, 9:00 AM - 4:00 PM</p>
-        `);
-    }
+  t.paid += amt;
 
-    function logout() {
-        window.location.href = "../index.html";
-    }
+  await saveData();
+  render();
 
-    // ---------- Initialization ----------
-    async function init() {
-        const loaded = await loadStudent();
-        if (loaded) {
-            // Hide loader and show app
-            setTimeout(() => {
-                loader.style.display = "none";
-                appContainer.style.display = "block";
-            }, 500);
-        } else {
-            loader.innerHTML = '<div class="spinner"></div><div class="loader-text">Failed to load student</div>';
-        }
+  showPopup(TERMS[i].name, amt);
+}
 
-        // Bind buttons
-        adminLoginBtn.onclick = adminLogin;
-        logoutBtn.onclick = logout;
-        payFeesBtn.onclick = openPayFeesModal;
-        helpBtn.onclick = openHelpModal;
-    }
+// ---------- ADMIN ----------
+async function adminLogin() {
+  const pass = prompt("Enter Admin Password");
 
-    init();
+  if (pass !== "ADMIN123") {
+    alert("Wrong password");
+    return;
+  }
+
+  const type = prompt("Type full / partial");
+  const index = parseInt(prompt("Enter term index (0,1,2)"));
+
+  if (type === "full") {
+    fullPayment(index);
+  } else {
+    const amt = parseFloat(prompt("Enter amount"));
+    partialPayment(index, amt);
+  }
+}
+
+// ---------- INIT ----------
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("adminLoginBtn").onclick = adminLogin;
+
+  document.getElementById("logoutBtn").onclick = () => {
+    window.location.href = "../index.html";
+  };
+
+  loadStudent();
+});
 </script>
 </body>
 </html>
