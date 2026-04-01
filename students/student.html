@@ -533,13 +533,42 @@ const params = new URLSearchParams(window.location.search);
 const studentId = params.get("id");
 
 if (!studentId) {
-  alert("Invalid URL (Missing ID)");
+  alert("Invalid URL (Missing student ID)");
   throw new Error("No ID");
 }
 
 // ---------- STATE ----------
 let TERMS = [];
 let studentData = {};
+
+// ---------- MODAL ----------
+function openModal(title, html) {
+  return new Promise((resolve) => {
+
+    const modal = document.getElementById("globalModal");
+    const titleEl = document.getElementById("modalTitle");
+    const body = document.getElementById("modalBody");
+
+    titleEl.innerText = title;
+    body.innerHTML = html;
+
+    modal.classList.add("active");
+
+    const confirm = document.getElementById("modalConfirmBtn");
+    const cancel = document.getElementById("modalCancelBtn");
+
+    confirm.onclick = () => {
+      const inputs = body.querySelectorAll("input, select");
+      resolve(Array.from(inputs).map(i => i.value));
+      modal.classList.remove("active");
+    };
+
+    cancel.onclick = () => {
+      resolve(null);
+      modal.classList.remove("active");
+    };
+  });
+}
 
 // ---------- LOAD STUDENT ----------
 async function loadStudent() {
@@ -554,23 +583,23 @@ async function loadStudent() {
     studentData = snap.data();
     TERMS = studentData.terms || [];
 
-    // SET DATA (SAFE)
+    // SAFE DOM
     const nameEl = document.getElementById("studentNameDisplay");
     const classEl = document.getElementById("classDisplay");
     const rollEl = document.getElementById("rollDisplay");
 
-    if (nameEl) nameEl.innerText = studentData.name;
-    if (classEl) classEl.innerText = "📖 Class: " + (studentData.class || "-");
-    if (rollEl) rollEl.innerText = "🎫 Roll No: " + (studentData.roll || "-");
+    if (nameEl) nameEl.innerText = studentData.name || "-";
+    if (classEl) classEl.innerText = "📖 Class: " + (studentData["class"] || "-");
+    if (rollEl) rollEl.innerText = "🎫 Roll No: " + (studentData["roll"] || "-");
 
     render();
 
-    // ✅ FIX: HIDE LOADER
+    // HIDE LOADER
     const loader = document.getElementById("loader");
-    const appContainer = document.getElementById("appContainer");
+    const app = document.getElementById("appContainer");
 
     if (loader) loader.style.display = "none";
-    if (appContainer) appContainer.style.display = "block";
+    if (app) app.style.display = "block";
 
   } catch (err) {
     console.error(err);
@@ -583,6 +612,7 @@ async function loadStudent() {
 
 // ---------- RENDER ----------
 function render() {
+
   const tbody = document.getElementById("feeTableBody");
   if (!tbody) return;
 
@@ -590,7 +620,8 @@ function render() {
 
   let total = 0, paid = 0;
 
-  TERMS.forEach(t => {
+  TERMS.forEach((t, i) => {
+
     const remaining = t.total - t.paid;
 
     total += t.total;
@@ -602,8 +633,10 @@ function render() {
         <td>₹${t.total}</td>
         <td>₹${t.paid}</td>
         <td>₹${remaining}</td>
-        <td class="${remaining === 0 ? "status-paid" : "status-pending"}">
-          ${remaining === 0 ? "Paid" : "Pending"}
+        <td>
+          <span class="status-badge ${remaining === 0 ? "status-paid" : "status-pending"}">
+            ${remaining === 0 ? "Paid" : "Pending"}
+          </span>
         </td>
       </tr>
     `;
@@ -612,11 +645,18 @@ function render() {
   const summary = document.getElementById("overallSummaryCard");
   if (summary) {
     summary.innerHTML = `
-      <span>Total: ₹${total}</span><br>
-      <span>Paid: ₹${paid}</span><br>
-      <span>Remaining: ₹${total - paid}</span>
+      <span><strong>Total:</strong> ₹${total}</span>
+      <span><strong>Paid:</strong> ₹${paid}</span>
+      <span><strong>Remaining:</strong> ₹${total - paid}</span>
     `;
   }
+
+  const percent = total ? (paid / total) * 100 : 0;
+  const bar = document.getElementById("progressFill");
+  const percentText = document.getElementById("progressPercent");
+
+  if (bar) bar.style.width = percent + "%";
+  if (percentText) percentText.innerText = Math.round(percent) + "%";
 }
 
 // ---------- SAVE ----------
@@ -631,61 +671,32 @@ function showPopup(term, amount) {
 
   const div = document.createElement("div");
 
-  div.style.position = "fixed";
-  div.style.top = "0";
-  div.style.left = "0";
-  div.style.width = "100%";
-  div.style.height = "100%";
-  div.style.background = "rgba(0,0,0,0.4)";
-  div.style.display = "flex";
-  div.style.alignItems = "center";
-  div.style.justifyContent = "center";
-  div.style.zIndex = "9999";
+  div.style = `
+    position:fixed;top:0;left:0;width:100%;height:100%;
+    background:rgba(0,0,0,0.4);
+    display:flex;align-items:center;justify-content:center;
+    z-index:9999;
+  `;
 
   div.innerHTML = `
     <div style="
-      background:white;
-      padding:25px;
-      border-radius:16px;
-      width:90%;
-      max-width:340px;
-      text-align:center;
-      position:relative;
+      background:white;padding:25px;border-radius:16px;
+      width:90%;max-width:340px;text-align:center;position:relative;
     ">
-
-      <div id="closeBtn" style="
-        position:absolute;
-        top:10px;
-        right:15px;
-        font-size:20px;
-        cursor:pointer;
-      ">✖</div>
+      <div id="closeBtn" style="position:absolute;top:10px;right:15px;cursor:pointer;font-size:18px;">✖</div>
 
       <h3>Payment Updated</h3>
 
-      <div style="
-        font-size:40px;
-        color:green;
-        animation:pop 0.3s ease;
-      ">✔</div>
+      <div style="font-size:40px;color:green;">✔</div>
 
-      <p style="margin-top:10px;font-weight:600;">${term}</p>
+      <p style="font-weight:600;">${term}</p>
       <p>Amount: ₹${amount}</p>
 
       <button id="waBtn" style="
-        margin-top:15px;
-        background:#1e4a76;
-        color:white;
-        padding:12px;
-        width:100%;
-        border:none;
-        border-radius:25px;
-        font-weight:600;
-        cursor:pointer;
-      ">
-        📱 Notify via WhatsApp
-      </button>
-
+        margin-top:15px;background:#1e4a76;color:white;
+        padding:12px;width:100%;border:none;border-radius:25px;
+        font-weight:600;cursor:pointer;
+      ">📱 Notify via WhatsApp</button>
     </div>
   `;
 
@@ -696,7 +707,7 @@ function showPopup(term, amount) {
   document.getElementById("waBtn").onclick = () => {
 
     if (!studentData.phone) {
-      alert("Phone number missing");
+      alert("Phone missing");
       return;
     }
 
@@ -707,12 +718,11 @@ Your fee payment has been successfully updated.
 Term: ${term}
 Amount Paid: ₹${amount}
 
-Kindly check the St. Annes app to confirm the details.
+Kindly check the St. Annes app to confirm.
 
 – St. Annes ICSE School`;
 
     const url = `https://wa.me/${studentData.phone}?text=${encodeURIComponent(msg)}`;
-
     window.open(url, "_blank");
   };
 }
@@ -732,7 +742,7 @@ async function partialPayment(i, amt) {
     return;
   }
 
-  let t = TERMS[i];
+  const t = TERMS[i];
 
   if (t.paid + amt > t.total) {
     alert("Balance exceeded");
@@ -749,21 +759,43 @@ async function partialPayment(i, amt) {
 // ---------- ADMIN ----------
 async function adminLogin() {
 
-  const pass = prompt("Enter Admin Password");
+  const pass = await openModal("Admin Login", `
+    <input type="password" placeholder="Enter password">
+  `);
 
-  if (pass !== "ADMIN123") {
+  if (!pass || pass[0] !== "ADMIN123") {
     alert("Wrong password");
     return;
   }
 
-  const type = prompt("Enter full / partial");
-  const index = parseInt(prompt("Enter term index (0,1,2)"));
+  const action = await openModal("Select Action", `
+    <select>
+      <option value="full">Full Payment</option>
+      <option value="partial">Partial Payment</option>
+    </select>
+  `);
 
-  if (type === "full") {
-    fullPayment(index);
+  if (!action) return;
+
+  const term = await openModal("Select Term", `
+    <select>
+      ${TERMS.map((t,i)=>`<option value="${i}">${t.name}</option>`).join("")}
+    </select>
+  `);
+
+  if (!term) return;
+
+  const i = parseInt(term[0]);
+
+  if (action[0] === "full") {
+    fullPayment(i);
   } else {
-    const amt = parseFloat(prompt("Enter amount"));
-    partialPayment(index, amt);
+    const amt = await openModal("Enter Amount", `
+      <input type="number" placeholder="Enter amount">
+    `);
+
+    if (!amt) return;
+    partialPayment(i, parseFloat(amt[0]));
   }
 }
 
