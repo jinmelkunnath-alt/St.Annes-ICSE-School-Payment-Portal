@@ -1,1 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>St. Anne's ICSE School | Admin Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
+        }
 
+        body {
+            background: #f5f9ff;
+            min-height: 100vh;
+        }
+
+        /* Sticky Header */
+        .admin-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: white;
+            backdrop-filter: blur(0);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02), 0 1px 2px rgba(0, 0, 0, 0.03);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-placeholder {
+            width: 52px;
+            height: 52px;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+            background: #fff;
+        }
+
+        .logo-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .title-group h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(120deg, #1E3C72, #2A5298);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.3px;
+        }
+
+        .title-group p {
+            font-size: 0.75rem;
+            color: #5b6e8c;
+            font-weight: 500;
+        }
+
+        /* Main container */
+        .app-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+
+        /* Class Grid */
+        .classes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 170px));
+            gap: 1.8rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .class-card {
+            background: white;
+            aspect-ratio: 1 / 1;
+            border-radius: 28px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 20px 30px -12px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0,0,0,0.02);
+            transition: all 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            cursor: pointer;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+
+        .class-card svg {
+            width: 42px;
+            height: 42px;
+            stroke: #2a5298;
+            stroke-width: 1.5;
+            fill: none;
+            margin-bottom: 0.7rem;
+        }
+
+        .class-card span {
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: #1f2f4e;
+        }
+
+        .class-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 30px 40px -12px rgba(0, 0, 0, 0.2);
+            border-color: #cbdff2;
+        }
+
+        /* Fullscreen Loading Overlay */
+        .fullscreen-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0.2s, opacity 0.2s ease;
+        }
+
+        .fullscreen-loader.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .loader-content {
+            text-align: center;
+            background: white;
+            padding: 2rem 2.5rem;
+            border-radius: 2rem;
+            box-shadow: 0 30px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .loader-message {
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: #1e3c72;
+            margin-bottom: 1rem;
+        }
+
+        .dot-floating {
+            font-size: 1.5rem;
+            letter-spacing: 4px;
+        }
+
+        .spinner {
+            margin-top: 1.2rem;
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid #e2e8f0;
+            border-top-color: #2a5298;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Fullscreen Student View */
+        .fullscreen-student-view {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #f5f9ff;
+            z-index: 200;
+            overflow-y: auto;
+            padding-top: 90px;
+            padding-bottom: 2rem;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0.2s, opacity 0.2s ease;
+        }
+
+        .fullscreen-student-view.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .student-view-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .student-view-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+            gap: 1rem;
+        }
+
+        .class-badge {
+            background: #eef2ff;
+            padding: 0.5rem 1.2rem;
+            border-radius: 40px;
+            font-weight: 700;
+            color: #1e3c72;
+            font-size: 1.1rem;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: white;
+            border-radius: 60px;
+            padding: 0.4rem 1rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            border: 1px solid #e2e8f0;
+        }
+
+        .search-box svg {
+            width: 18px;
+            height: 18px;
+            stroke: #8ba0bc;
+            stroke-width: 1.8;
+            fill: none;
+            margin-right: 0.5rem;
+        }
+
+        .search-box input {
+            border: none;
+            padding: 0.6rem 0.5rem;
+            font-size: 0.9rem;
+            width: 200px;
+            outline: none;
+            background: transparent;
+        }
+
+        /* Student Cards */
+        .students-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .student-card {
+            background: white;
+            border-radius: 24px;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.02), 0 1px 2px rgba(0,0,0,0.03);
+            transition: all 0.2s ease;
+            border: 1px solid #edf2f7;
+        }
+
+        .student-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -12px rgba(0, 0, 0, 0.1);
+            border-color: #dce5ef;
+        }
+
+        .student-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #0f2b3d;
+        }
+
+        .eye-icon {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 30px;
+            transition: all 0.2s;
+        }
+
+        .eye-icon svg {
+            width: 22px;
+            height: 22px;
+            stroke: #2a5298;
+            stroke-width: 1.8;
+            fill: none;
+            transition: stroke 0.2s;
+        }
+
+        .eye-icon:hover {
+            background: #eef2ff;
+            transform: scale(1.05);
+        }
+
+        .eye-icon:hover svg {
+            stroke: #0f2b4f;
+        }
+
+        .no-students {
+            text-align: center;
+            padding: 2.5rem;
+            background: white;
+            border-radius: 2rem;
+            color: #6c86a3;
+        }
+
+        @media (max-width: 680px) {
+            .admin-header {
+                padding: 1rem;
+            }
+            .student-card {
+                padding: 0.9rem 1.2rem;
+            }
+            .search-box input {
+                width: 160px;
+            }
+            .student-view-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .class-badge {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header class="admin-header">
+    <div class="logo-area">
+        <div class="logo-placeholder">
+            <img src="https://i.ibb.co/zhWfTbDL/IMG-20251112-WA0215-3.jpg" alt="St. Anne's ICSE School Logo">
+        </div>
+        <div class="title-group">
+            <h1>St. Anne's ICSE School</h1>
+            <p>Admin Panel · Quick Access</p>
+        </div>
+    </div>
+</header>
+
+<div class="app-container">
+    <!-- Class Grid Container -->
+    <div id="classView">
+        <div class="classes-grid" id="classesGrid"></div>
+    </div>
+</div>
+
+<!-- Fullscreen Loader -->
+<div id="fullscreenLoader" class="fullscreen-loader">
+    <div class="loader-content">
+        <div class="loader-message" id="loaderMessage">Connecting with server<span class="dot-floating">...</span></div>
+        <div class="spinner"></div>
+    </div>
+</div>
+
+<!-- Fullscreen Student View -->
+<div id="fullscreenStudentView" class="fullscreen-student-view">
+    <div class="student-view-container">
+        <div class="student-view-header">
+            <div class="class-badge" id="currentClassBadge"></div>
+            <div class="search-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="studentSearchInput" placeholder="Search by name..." autocomplete="off">
+            </div>
+        </div>
+        <div id="studentsListContainer" class="students-list"></div>
+    </div>
+</div>
+
+<script>
+    // --------------------------------------------------------------
+    // STATIC STUDENT DATA (hardcoded)
+    // --------------------------------------------------------------
+    const studentData = {
+        "LKG": [
+            { name: "Aarav Mehta", id: "aarav_lkg" },
+            { name: "Ishita Nair", id: "ishita_lkg" }
+        ],
+        "UKG": [
+            { name: "Vihaan Sharma", id: "vihaan_ukg" },
+            { name: "Ananya Krishnan", id: "ananya_ukg" }
+        ],
+        "STD 1": [
+            { name: "Reyansh Nair", id: "reyansh_std1" },
+            { name: "Sai Pranav", id: "sai_std1" }
+        ],
+        "STD 2": [
+            { name: "Diya Menon", id: "diya_std2" },
+            { name: "Arjun Raj", id: "arjun_std2" }
+        ],
+        "STD 3": [
+            { name: "Navya Iyer", id: "navya_std3" },
+            { name: "Ayaan Khan", id: "ayaan_std3" }
+        ],
+        "STD 4": [
+            { name: "Myra D'Souza", id: "myra_std4" },
+            { name: "Rohan Joseph", id: "rohan_std4" }
+        ],
+        "STD 5": [
+            { name: "Sana Fernandes", id: "sana_std5" },
+            { name: "Pranav Nair", id: "pranav_std5" }
+        ],
+        "STD 6": [
+            { name: "Aditya Shetty", id: "aditya_std6" },
+            { name: "Tanvi Desai", id: "tanvi_std6" }
+        ],
+        "STD 7": [
+            { name: "Mariya Melbin", id: "mariya" },
+            { name: "Arjun Kumar", id: "arjun_std7" },
+            { name: "Neha George", id: "neha_std7" }
+        ],
+        "STD 8": [
+            { name: "Chris Vinod", id: "chris_std8" },
+            { name: "Riya Thomas", id: "riya_std8" }
+        ],
+        "STD 9": [
+            { name: "Kavya S", id: "kavya_std9" },
+            { name: "Mohammed Fasal", id: "mohd_std9" }
+        ],
+        "STD 10": [
+            { name: "Sanjay Mishra", id: "sanjay_std10" },
+            { name: "Meera Nambiar", id: "meera_std10" }
+        ]
+    };
+
+    const classList = ["LKG", "UKG", "STD 1", "STD 2", "STD 3", "STD 4", "STD 5", "STD 6", "STD 7", "STD 8", "STD 9", "STD 10"];
+
+    // DOM elements
+    const classesGrid = document.getElementById('classesGrid');
+    const classViewDiv = document.getElementById('classView');
+    const fullscreenLoader = document.getElementById('fullscreenLoader');
+    const fullscreenStudentView = document.getElementById('fullscreenStudentView');
+    const loaderMessageEl = document.getElementById('loaderMessage');
+    const currentClassBadge = document.getElementById('currentClassBadge');
+    const studentSearchInput = document.getElementById('studentSearchInput');
+    const studentsListContainer = document.getElementById('studentsListContainer');
+
+    let currentClassName = null;
+    let currentStudents = [];
+    let loadingTimeouts = [];
+
+    // Base URL for student page
+    const BASE_URL = "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=";
+
+    // Render class grid (square cards)
+    function renderClassGrid() {
+        classesGrid.innerHTML = '';
+        classList.forEach(className => {
+            const card = document.createElement('div');
+            card.className = 'class-card';
+            // SVG icon (school/class icon)
+            card.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 3L3 9L12 15L21 9L12 3Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M5 12L3 13L12 19L21 13L19 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M5 16L3 17L12 23L21 17L19 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>${className}</span>
+            `;
+            card.addEventListener('click', () => onClassClick(className));
+            classesGrid.appendChild(card);
+        });
+    }
+
+    // Fullscreen loading simulation (4 seconds total)
+    function startLoading(callback) {
+        // Clear any pending timeouts
+        loadingTimeouts.forEach(clearTimeout);
+        loadingTimeouts = [];
+        fullscreenLoader.classList.add('active');
+        loaderMessageEl.innerHTML = "Connecting with server<span class='dot-floating'>...</span>";
+
+        const step1 = setTimeout(() => {
+            if (fullscreenLoader.classList.contains('active')) {
+                loaderMessageEl.innerHTML = "Loading students<span class='dot-floating'>...</span>";
+            }
+        }, 2000);
+
+        const step2 = setTimeout(() => {
+            if (fullscreenLoader.classList.contains('active')) {
+                fullscreenLoader.classList.remove('active');
+                if (callback) callback();
+            }
+        }, 4000);
+
+        loadingTimeouts.push(step1, step2);
+    }
+
+    // Render student list (full width, with eye icon)
+    function renderStudentList(students, className) {
+        currentClassBadge.innerHTML = `<i class="fas fa-users" style="margin-right: 6px;"></i> ${className} · ${students.length} student(s)`;
+        const filterAndRender = () => {
+            const searchTerm = studentSearchInput.value.toLowerCase();
+            const filtered = students.filter(s => s.name.toLowerCase().includes(searchTerm));
+            studentsListContainer.innerHTML = '';
+            if (filtered.length === 0) {
+                studentsListContainer.innerHTML = '<div class="no-students">✨ No students found</div>';
+                return;
+            }
+            filtered.forEach(student => {
+                const card = document.createElement('div');
+                card.className = 'student-card';
+                card.innerHTML = `
+                    <div class="student-name">${escapeHtml(student.name)}</div>
+                    <div class="eye-icon" data-id="${student.id}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </div>
+                `;
+                const eye = card.querySelector('.eye-icon');
+                eye.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const studentId = eye.getAttribute('data-id');
+                    window.location.href = BASE_URL + encodeURIComponent(studentId);
+                });
+                studentsListContainer.appendChild(card);
+            });
+        };
+        filterAndRender();
+        studentSearchInput.oninput = () => filterAndRender();
+    }
+
+    function escapeHtml(str) {
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    // Class click handler
+    function onClassClick(className) {
+        if (!studentData[className]) return;
+        currentClassName = className;
+        currentStudents = studentData[className];
+
+        // Hide class grid, show loading
+        classViewDiv.style.display = 'none';
+        fullscreenStudentView.classList.remove('active');
+
+        startLoading(() => {
+            // After loading, display student list full screen
+            renderStudentList(currentStudents, currentClassName);
+            fullscreenStudentView.classList.add('active');
+            // Push state for browser back navigation
+            history.pushState({ page: "students", class: className }, "", `?class=${encodeURIComponent(className)}`);
+        });
+    }
+
+    // Handle browser back button: restore class grid view
+    function handlePopState(event) {
+        // If student view is active, go back to class grid
+        if (fullscreenStudentView.classList.contains('active')) {
+            fullscreenStudentView.classList.remove('active');
+            classViewDiv.style.display = 'block';
+            studentSearchInput.value = '';
+            // Clear any ongoing loading
+            if (fullscreenLoader.classList.contains('active')) {
+                fullscreenLoader.classList.remove('active');
+                loadingTimeouts.forEach(clearTimeout);
+            }
+            // Remove the query parameter from URL if present
+            if (window.location.search) {
+                history.pushState(null, "", window.location.pathname);
+            }
+        } else {
+            // If already on class grid, ensure it's visible (just in case)
+            if (classViewDiv.style.display === 'none') {
+                classViewDiv.style.display = 'block';
+                fullscreenStudentView.classList.remove('active');
+            }
+        }
+    }
+
+    // Initial render
+    renderClassGrid();
+
+    // Listen for browser back/forward
+    window.addEventListener('popstate', handlePopState);
+
+    // Ensure initial state: class grid visible, student view hidden, no loader
+    classViewDiv.style.display = 'block';
+    fullscreenStudentView.classList.remove('active');
+    fullscreenLoader.classList.remove('active');
+
+    // Optional: if there's a leftover ?class in URL on load, remove it cleanly
+    if (window.location.search) {
+        history.replaceState(null, "", window.location.pathname);
+    }
+</script>
+</body>
+                  </html>
