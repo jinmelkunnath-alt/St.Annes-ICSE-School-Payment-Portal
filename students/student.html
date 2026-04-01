@@ -616,6 +616,39 @@
             background: #1da851;
             transform: translateY(-1px);
         }
+
+        /* Admin modal input fields */
+        .admin-modal-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            margin: 0.8rem 0;
+            border: 1px solid #cbdde9;
+            border-radius: 1rem;
+            font-size: 0.9rem;
+            background: white;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+        .admin-modal-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59,130,246,0.2);
+        }
+        .admin-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            margin: 0.8rem 0;
+            border: 1px solid #cbdde9;
+            border-radius: 1rem;
+            font-size: 0.9rem;
+            background: white;
+            font-family: inherit;
+            cursor: pointer;
+        }
+        .admin-select:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
     </style>
 </head>
 <body>
@@ -641,7 +674,7 @@
             <h2 id="studentNameDisplay">Loading...</h2>
             <div class="student-meta">
                 <span id="studentClassSpan">📖 Class: --</span>
-                <span id="studentRollSpan">🎫 Roll No: --</span>
+                <!-- Roll number span removed -->
             </div>
         </div>
         <div class="progress-wrapper">
@@ -654,7 +687,7 @@
     <div class="table-wrapper">
         <table class="fee-table">
             <thead>
-                <tr><th>Term</th><th>Total Fee (₹)</th><th>Paid (₹)</th><th>Remaining (₹)</th><th>Status</th></tr>
+                <tr><th>Term</th><th>Total Fee (₹)</th><th>Paid (₹)</th><th>Remaining (₹)</th><th>Status</th>‹
             </thead>
             <tbody id="feeTableBody"></tbody>
          </table>
@@ -754,8 +787,7 @@ async function loadStudent() {
     if (getEl("studentClassSpan"))
       getEl("studentClassSpan").innerText = "📖 Class: " + (studentData.class || "-");
 
-    if (getEl("studentRollSpan"))
-      getEl("studentRollSpan").innerText = "🎫 Roll No: " + (studentData.roll || "-");
+    // Roll number line removed
 
     render();
     hideLoader();
@@ -784,16 +816,16 @@ function render() {
     paid += t.paid;
 
     tbody.innerHTML += `
-      <tr>
-        <td>${t.name}</td>
-        <td>₹${t.total}</td>
-        <td>₹${t.paid}</td>
-        <td>₹${remaining}</td>
-        <td>
+       <tr>
+         <td>${t.name}</td>
+         <td>₹${t.total}</td>
+         <td>₹${t.paid}</td>
+         <td>₹${remaining}</td>
+         <td>
           <span class="status-badge ${remaining === 0 ? "status-paid" : "status-pending"}">
             ${remaining === 0 ? "Paid" : "Pending"}
           </span>
-        </td>
+         </td>
        </tr>
     `;
   });
@@ -927,38 +959,116 @@ function openHelp() {
   getEl("chatBtn").onclick = () => window.open(WHATSAPP_URL);
 }
 
-// ---------- ADMIN ----------
-function adminLogin() {
-  const pass = prompt("Enter Admin Password");
+// ---------- CUSTOM ADMIN MODAL FLOW ----------
+function createModal(title, contentHtml, onConfirm, onCancel) {
+    const overlay = document.createElement("div");
+    overlay.className = "popup-overlay";
 
-  if (pass !== ADMIN_PASSWORD) {
-    alert("Wrong password");
-    return;
-  }
+    overlay.innerHTML = `
+        <div class="popup-card">
+            <div class="popup-close" id="modalClose">✖</div>
+            <h3>${title}</h3>
+            ${contentHtml}
+            <div style="margin-top: 1rem; display: flex; gap: 0.5rem; justify-content: flex-end;">
+                <button id="modalCancel" class="modal-btn">Cancel</button>
+                <button id="modalConfirm" class="modal-btn primary">Continue</button>
+            </div>
+        </div>
+    `;
 
-  const type = prompt("full / partial");
-  const index = parseInt(prompt("Term index (0,1,2)"));
+    document.body.appendChild(overlay);
 
-  if (type === "full") {
-    TERMS[index].paid = TERMS[index].total;
-    saveData().then(() => {
-      render();
-      showSuccess(TERMS[index].name, TERMS[index].total);
-    });
-  } else {
-    const amt = parseFloat(prompt("Amount"));
+    const closeBtn = overlay.querySelector("#modalClose");
+    const cancelBtn = overlay.querySelector("#modalCancel");
+    const confirmBtn = overlay.querySelector("#modalConfirm");
 
-    if (TERMS[index].paid + amt > TERMS[index].total) {
-      alert("Exceeded");
-      return;
-    }
+    const closeModal = () => overlay.remove();
 
-    TERMS[index].paid += amt;
-    saveData().then(() => {
-      render();
-      showSuccess(TERMS[index].name, amt);
-    });
-  }
+    closeBtn.onclick = () => {
+        closeModal();
+        if (onCancel) onCancel();
+    };
+    cancelBtn.onclick = () => {
+        closeModal();
+        if (onCancel) onCancel();
+    };
+    confirmBtn.onclick = () => {
+        const inputs = overlay.querySelectorAll("input, select");
+        const values = Array.from(inputs).map(i => i.value);
+        closeModal();
+        if (onConfirm) onConfirm(values);
+    };
+}
+
+// ---------- Admin Login (replaces prompt) ----------
+async function adminLogin() {
+    // Step 1: Password modal
+    createModal(
+        "Admin Login",
+        `<input type="password" id="adminPass" class="admin-modal-input" placeholder="Enter password">`,
+        (values) => {
+            const password = values[0];
+            if (password !== ADMIN_PASSWORD) {
+                alert("Wrong password");
+                return;
+            }
+            // Step 2: Action selection (Full / Partial)
+            createModal(
+                "Select Action",
+                `<select id="actionSelect" class="admin-select">
+                    <option value="full">Full Payment</option>
+                    <option value="partial">Partial Payment</option>
+                </select>`,
+                (actionValues) => {
+                    const action = actionValues[0];
+                    // Step 3: Term selection
+                    createModal(
+                        "Select Term",
+                        `<select id="termSelect" class="admin-select">
+                            ${TERMS.map((t, i) => `<option value="${i}">${t.name}</option>`).join("")}
+                        </select>`,
+                        async (termValues) => {
+                            const termIndex = parseInt(termValues[0]);
+                            if (action === "full") {
+                                // Full payment
+                                TERMS[termIndex].paid = TERMS[termIndex].total;
+                                await saveData();
+                                render();
+                                showSuccess(TERMS[termIndex].name, TERMS[termIndex].total);
+                            } else {
+                                // Partial: ask for amount
+                                createModal(
+                                    "Enter Amount",
+                                    `<input type="number" id="amountInput" class="admin-modal-input" placeholder="Amount (can be negative)">`,
+                                    async (amountValues) => {
+                                        const amount = parseFloat(amountValues[0]);
+                                        if (isNaN(amount)) {
+                                            alert("Invalid amount");
+                                            return;
+                                        }
+                                        const term = TERMS[termIndex];
+                                        if (term.paid + amount > term.total) {
+                                            alert("Amount exceeds remaining balance");
+                                            return;
+                                        }
+                                        term.paid += amount;
+                                        if (term.paid < 0) term.paid = 0;
+                                        await saveData();
+                                        render();
+                                        showSuccess(term.name, amount);
+                                    },
+                                    () => {} // cancel
+                                );
+                            }
+                        },
+                        () => {} // cancel
+                    );
+                },
+                () => {} // cancel
+            );
+        },
+        () => {} // cancel
+    );
 }
 
 // ---------- INIT ----------
