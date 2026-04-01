@@ -533,8 +533,8 @@ const params = new URLSearchParams(window.location.search);
 const studentId = params.get("id");
 
 if (!studentId) {
-  alert("Invalid URL. Student ID missing.");
-  throw new Error("No student ID");
+  alert("Invalid URL (Missing ID)");
+  throw new Error("No ID");
 }
 
 // ---------- STATE ----------
@@ -554,7 +554,7 @@ async function loadStudent() {
     studentData = snap.data();
     TERMS = studentData.terms || [];
 
-    // SAFE DOM SET
+    // SET DATA (SAFE)
     const nameEl = document.getElementById("studentNameDisplay");
     const classEl = document.getElementById("classDisplay");
     const rollEl = document.getElementById("rollDisplay");
@@ -565,9 +565,19 @@ async function loadStudent() {
 
     render();
 
+    // ✅ FIX: HIDE LOADER
+    const loader = document.getElementById("loader");
+    const appContainer = document.getElementById("appContainer");
+
+    if (loader) loader.style.display = "none";
+    if (appContainer) appContainer.style.display = "block";
+
   } catch (err) {
     console.error(err);
     alert("Error loading student data");
+
+    const loader = document.getElementById("loader");
+    if (loader) loader.style.display = "none";
   }
 }
 
@@ -641,7 +651,6 @@ function showPopup(term, amount) {
       max-width:340px;
       text-align:center;
       position:relative;
-      animation:scaleIn 0.3s;
     ">
 
       <div id="closeBtn" style="
@@ -652,13 +661,15 @@ function showPopup(term, amount) {
         cursor:pointer;
       ">✖</div>
 
-      <h3 style="margin-bottom:15px;">Payment Updated</h3>
+      <h3>Payment Updated</h3>
 
-      <div class="tick-container">
-        <div class="tick"></div>
-      </div>
+      <div style="
+        font-size:40px;
+        color:green;
+        animation:pop 0.3s ease;
+      ">✔</div>
 
-      <p style="margin-top:15px;font-weight:600;">${term}</p>
+      <p style="margin-top:10px;font-weight:600;">${term}</p>
       <p>Amount: ₹${amount}</p>
 
       <button id="waBtn" style="
@@ -715,6 +726,7 @@ async function fullPayment(i) {
 }
 
 async function partialPayment(i, amt) {
+
   if (isNaN(amt)) {
     alert("Invalid amount");
     return;
@@ -731,12 +743,12 @@ async function partialPayment(i, amt) {
 
   await saveData();
   render();
-
   showPopup(TERMS[i].name, amt);
 }
 
 // ---------- ADMIN ----------
 async function adminLogin() {
+
   const pass = prompt("Enter Admin Password");
 
   if (pass !== "ADMIN123") {
@@ -744,7 +756,7 @@ async function adminLogin() {
     return;
   }
 
-  const type = prompt("Type full / partial");
+  const type = prompt("Enter full / partial");
   const index = parseInt(prompt("Enter term index (0,1,2)"));
 
   if (type === "full") {
