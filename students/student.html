@@ -414,115 +414,208 @@
                 align-items: flex-start;
             }
         }
-.tick-container {
-  display: flex;
-  justify-content: center;
-  margin: 15px 0;
-}
 
-.tick-svg {
-  width: 70px;
-  height: 70px;
-}
+        /* ---------- TICK ANIMATION ---------- */
+        .tick-container {
+            display: flex;
+            justify-content: center;
+            margin: 15px 0;
+        }
+        .tick-svg {
+            width: 70px;
+            height: 70px;
+        }
+        .tick-circle {
+            stroke: #4CAF50;
+            stroke-width: 3;
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            animation: circleAnim 0.6s ease-out forwards;
+        }
+        .tick-check {
+            stroke: #4CAF50;
+            stroke-width: 4;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: checkAnim 0.4s ease-out 0.6s forwards;
+        }
+        @keyframes circleAnim {
+            to { stroke-dashoffset: 0; }
+        }
+        @keyframes checkAnim {
+            to { stroke-dashoffset: 0; }
+        }
 
-.tick-circle {
-  stroke: #4CAF50;
-  stroke-width: 3;
-  stroke-dasharray: 166;
-  stroke-dashoffset: 166;
-  animation: circleAnim 0.6s ease-out forwards;
-}
-
-.tick-check {
-  stroke: #4CAF50;
-  stroke-width: 4;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-dasharray: 48;
-  stroke-dashoffset: 48;
-  animation: checkAnim 0.4s ease-out 0.6s forwards;
-}
-
-@keyframes circleAnim {
-  to { stroke-dashoffset: 0; }
-}
-
-@keyframes checkAnim {
-  to { stroke-dashoffset: 0; }
-}
-/* ---------- PREMIUM MODAL ANIMATION ---------- */
-
-.popup-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(15, 23, 42, 0.45);
-  backdrop-filter: blur(6px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-
-  opacity: 0;
-  animation: fadeIn 0.25s ease forwards;
-}
-
-.popup-card {
-  width: 92%;
-  max-width: 360px;
-  background: #ffffff;
-  border-radius: 18px;
-  padding: 20px;
-  text-align: center;
-  position: relative;
-
-  transform: scale(0.92);
-  opacity: 0;
-  animation: scaleIn 0.25s ease forwards;
-}
-
-.popup-close {
-  position: absolute;
-  top: 12px;
-  right: 14px;
-  font-size: 18px;
-  cursor: pointer;
-  color: #555;
-}
-
-/* Animations */
-@keyframes fadeIn {
-  to { opacity: 1; }
-}
-
-@keyframes scaleIn {
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-/* Smooth close animation */
-.popup-hide {
-  animation: fadeOut 0.2s ease forwards;
-}
-
-.popup-card-hide {
-  animation: scaleOut 0.2s ease forwards;
-}
-
-@keyframes fadeOut {
-  to { opacity: 0; }
-}
-
-@keyframes scaleOut {
-  to {
-    transform: scale(0.9);
-    opacity: 0;
-  }
-}
+        /* ---------- PREMIUM POPUP STYLES ---------- */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(6px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 0;
+            animation: fadeIn 0.25s ease forwards;
+        }
+        .popup-card {
+            width: 92%;
+            max-width: 320px;
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 1.2rem;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.2);
+            transform: scale(0.92);
+            opacity: 0;
+            animation: scaleIn 0.25s ease forwards;
+        }
+        .popup-close {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            font-size: 20px;
+            cursor: pointer;
+            color: #6c86a3;
+            transition: color 0.2s;
+        }
+        .popup-close:hover {
+            color: #bc4e2c;
+        }
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+        @keyframes scaleIn {
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        .popup-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.8rem;
+            color: #1f3b4c;
+            border-left: 3px solid #3b82f6;
+            padding-left: 0.75rem;
+            text-align: left;
+        }
+        .qr-image {
+            width: 100px;
+            height: auto;
+            border-radius: 12px;
+            margin: 0.5rem auto;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .upi-copy-area {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f8fafd;
+            border: 1px solid #e2e8f0;
+            border-radius: 2rem;
+            padding: 0.5rem 0.8rem;
+            margin: 0.8rem 0;
+        }
+        .upi-id {
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #1e4a76;
+            word-break: break-all;
+        }
+        .copy-btn {
+            background: #eef2f8;
+            border: none;
+            border-radius: 2rem;
+            padding: 0.3rem 0.8rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover {
+            background: #e2e9f2;
+            transform: scale(0.98);
+        }
+        .upi-pay-btn {
+            width: 100%;
+            background: #1e4a76;
+            color: white;
+            border: none;
+            border-radius: 2rem;
+            padding: 0.7rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin: 0.5rem 0;
+            transition: all 0.2s;
+        }
+        .upi-pay-btn:hover {
+            background: #0f3a5c;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(30,74,118,0.2);
+        }
+        .whatsapp-note {
+            font-size: 0.75rem;
+            margin-top: 0.8rem;
+            color: #5a6e8a;
+        }
+        .whatsapp-link {
+            color: #25D366;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: underline;
+            transition: opacity 0.2s;
+        }
+        .whatsapp-link:hover {
+            opacity: 0.8;
+        }
+        .primary-btn {
+            background: #1e4a76;
+            color: white;
+            border: none;
+            border-radius: 2rem;
+            padding: 0.7rem 1rem;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+        }
+        .primary-btn:hover {
+            background: #0f3a5c;
+            transform: translateY(-1px);
+        }
+        .help-content {
+            text-align: left;
+            margin: 1rem 0;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+        .help-content p {
+            margin: 0.5rem 0;
+        }
+        .whatsapp-chat-btn {
+            background: #25D366;
+            color: white;
+            border: none;
+            border-radius: 2rem;
+            padding: 0.7rem;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.2s;
+        }
+        .whatsapp-chat-btn:hover {
+            background: #1da851;
+            transform: translateY(-1px);
+        }
     </style>
 </head>
 <body>
@@ -616,22 +709,38 @@ const QR_URL = "https://i.ibb.co/8RSZRz0/IMG-20260329-160905.png";
 // ---------- GET ID ----------
 const studentId = new URLSearchParams(window.location.search).get("id");
 
+// ---------- STATE ----------
 let TERMS = [];
 let studentData = {};
 
+// ---------- SAFE ELEMENT GET ----------
+function getEl(id) {
+  return document.getElementById(id);
+}
+
 // ---------- LOADER ----------
 function hideLoader() {
-  document.getElementById("loader").style.display = "none";
-  document.getElementById("appContainer").style.display = "block";
+  const loader = getEl("loader");
+  const app = getEl("appContainer");
+
+  if (loader) loader.style.display = "none";
+  if (app) app.style.display = "block";
 }
 
 // ---------- LOAD ----------
 async function loadStudent() {
   try {
-    const snap = await getDoc(doc(db, "students", studentId));
+    if (!studentId) {
+      alert("Missing student ID in URL");
+      hideLoader();
+      return;
+    }
+
+    const ref = doc(db, "students", studentId);
+    const snap = await getDoc(ref);
 
     if (!snap.exists()) {
-      alert("Student not found");
+      alert("Student not found in Firebase");
       hideLoader();
       return;
     }
@@ -639,29 +748,37 @@ async function loadStudent() {
     studentData = snap.data();
     TERMS = studentData.terms || [];
 
-    document.getElementById("studentNameDisplay").innerText = studentData.name || "-";
-    document.getElementById("studentClassSpan").innerText = "📖 Class: " + (studentData.class || "-");
-    document.getElementById("studentRollSpan").innerText = "🎫 Roll No: " + (studentData.roll || "-");
+    if (getEl("studentNameDisplay"))
+      getEl("studentNameDisplay").innerText = studentData.name || "-";
+
+    if (getEl("studentClassSpan"))
+      getEl("studentClassSpan").innerText = "📖 Class: " + (studentData.class || "-");
+
+    if (getEl("studentRollSpan"))
+      getEl("studentRollSpan").innerText = "🎫 Roll No: " + (studentData.roll || "-");
 
     render();
     hideLoader();
 
-  } catch (e) {
-    console.error(e);
-    alert("Error loading student");
+  } catch (err) {
+    console.error("LOAD ERROR:", err);
+    alert("Error loading student data");
     hideLoader();
   }
 }
 
 // ---------- RENDER ----------
 function render() {
-  const tbody = document.getElementById("feeTableBody");
+  const tbody = getEl("feeTableBody");
+  if (!tbody) return;
+
   tbody.innerHTML = "";
 
-  let total = 0, paid = 0;
+  let total = 0;
+  let paid = 0;
 
-  TERMS.forEach(t => {
-    const rem = t.total - t.paid;
+  TERMS.forEach((t) => {
+    const remaining = t.total - t.paid;
 
     total += t.total;
     paid += t.paid;
@@ -671,75 +788,77 @@ function render() {
         <td>${t.name}</td>
         <td>₹${t.total}</td>
         <td>₹${t.paid}</td>
-        <td>₹${rem}</td>
-        <td class="${rem===0?'status-paid':'status-pending'}">
-          ${rem===0?'Paid':'Pending'}
+        <td>₹${remaining}</td>
+        <td>
+          <span class="status-badge ${remaining === 0 ? "status-paid" : "status-pending"}">
+            ${remaining === 0 ? "Paid" : "Pending"}
+          </span>
         </td>
-      </tr>
+       </tr>
     `;
   });
 
-  document.getElementById("overallSummaryCard").innerHTML = `
-    Total: ₹${total}<br>
-    Paid: ₹${paid}<br>
-    Remaining: ₹${total-paid}
-  `;
+  const remaining = total - paid;
 
-  const percent = total ? (paid / total) * 100 : 0;
-  document.getElementById("progressFill").style.width = percent + "%";
-  document.getElementById("progressPercent").innerText = Math.round(percent) + "%";
+  if (getEl("overallSummaryCard")) {
+    getEl("overallSummaryCard").innerHTML = `
+      Total: ₹${total}<br>
+      Paid: ₹${paid}<br>
+      Remaining: ₹${remaining}
+    `;
+  }
+
+  if (getEl("progressFill")) {
+    const percent = total ? (paid / total) * 100 : 0;
+    getEl("progressFill").style.width = percent + "%";
+  }
+
+  if (getEl("progressPercent")) {
+    const percent = total ? (paid / total) * 100 : 0;
+    getEl("progressPercent").innerText = Math.round(percent) + "%";
+  }
 }
 
 // ---------- SAVE ----------
 async function saveData() {
-  await updateDoc(doc(db, "students", studentId), { terms: TERMS });
+  await updateDoc(doc(db, "students", studentId), {
+    terms: TERMS
+  });
 }
 
-// ---------- SUCCESS POPUP ----------
+// ---------- COPY ----------
+function copyUPI(btn) {
+  navigator.clipboard.writeText(UPI_ID);
+  btn.innerHTML = "✔";
+  setTimeout(() => btn.innerHTML = "📋", 1200);
+}
+
+// ---------- SUCCESS POPUP (kept as is, but uses same popup-card styling) ----------
 function showSuccess(term, amount) {
   const overlay = document.createElement("div");
   overlay.className = "popup-overlay";
 
   overlay.innerHTML = `
     <div class="popup-card">
-
-      <div class="popup-close" id="closeX">✖</div>
-
+      <div class="popup-close" id="closeSuccess">✖</div>
       <h3>Payment Updated</h3>
-
       <div class="tick-container">
-        <svg viewBox="0 0 52 52" class="tick-svg">
+        <svg class="tick-svg" viewBox="0 0 52 52">
           <circle class="tick-circle" cx="26" cy="26" r="25" fill="none"/>
-          <path class="tick-check" fill="none" d="M14 27l7 7 16-16"/>
+          <path class="tick-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
         </svg>
       </div>
-
       <p style="font-weight:600">${term}</p>
       <p>Amount: ₹${amount}</p>
-
-      <button id="notifyBtn" style="
-        background:#1e4a76;color:white;
-        padding:12px;width:100%;
-        border:none;border-radius:25px;
-        margin-top:12px;
-      ">
-        Notify via WhatsApp
-      </button>
-
+      <button id="notifyBtn" class="primary-btn">Notify via WhatsApp</button>
     </div>
   `;
 
   document.body.appendChild(overlay);
 
-  function closePopup() {
-    overlay.classList.add("popup-hide");
-    overlay.querySelector(".popup-card").classList.add("popup-card-hide");
-    setTimeout(() => overlay.remove(), 200);
-  }
+  getEl("closeSuccess").onclick = () => overlay.remove();
 
-  document.getElementById("closeX").onclick = closePopup;
-
-  document.getElementById("notifyBtn").onclick = () => {
+  getEl("notifyBtn").onclick = () => {
     const msg = `Dear ${studentData.name},
 
 Your fee payment has been successfully updated.
@@ -747,114 +866,69 @@ Your fee payment has been successfully updated.
 Term: ${term}
 Amount Paid: ₹${amount}
 
-Kindly check the St. Annes app to confirm.`;
+Please check the St. Annes app to confirm.`;
 
     window.open(`https://wa.me/${studentData.phone}?text=${encodeURIComponent(msg)}`);
   };
 }
 
-// ---------- COPY ----------
-function copyUPI(btn) {
-  navigator.clipboard.writeText(UPI_ID);
-  btn.innerHTML = "✔";
-  setTimeout(() => btn.innerHTML = "📋", 1000);
-}
-
-// ---------- PAY POPUP ----------
+// ---------- IMPROVED PAY POPUP ----------
 function openPay() {
   const overlay = document.createElement("div");
   overlay.className = "popup-overlay";
 
   overlay.innerHTML = `
     <div class="popup-card">
-
       <div class="popup-close" id="closePay">✖</div>
-
-      <h3 style="color:#1e4a76;">Pay Fees</h3>
-
-      <img src="${QR_URL}" style="width:170px;border-radius:12px;margin:15px 0">
-
-      <div style="background:#f4f7fb;padding:10px;border-radius:12px;display:flex;justify-content:space-between;align-items:center">
-        <span style="font-weight:600">${UPI_ID}</span>
-
-        <button id="copyBtn" style="
-          width:36px;height:36px;border:none;border-radius:50%;
-          background:#1e4a76;color:white;font-size:16px;
-        ">📋</button>
+      <h3>Pay Fees</h3>
+      <img src="${QR_URL}" alt="UPI QR Code" class="qr-image">
+      <div class="upi-copy-area">
+        <span class="upi-id">${UPI_ID}</span>
+        <button id="copyBtn" class="copy-btn">📋 Copy</button>
       </div>
-
-      <button id="upiBtn" style="
-        width:100%;padding:12px;margin-top:12px;
-        background:#1e4a76;color:white;border:none;
-        border-radius:25px;font-weight:600;
-      ">
-        Pay via UPI
-      </button>
-
-      <p style="margin-top:12px;font-size:13px;">
-        Send the screenshot to 
-        <span id="waLink" style="color:#25D366;font-weight:600;cursor:pointer">
-          Office WhatsApp
-        </span>
+      <button id="upiBtn" class="upi-pay-btn">Pay via UPI</button>
+      <p class="whatsapp-note">
+        Send screenshot to 
+        <span id="waLink" class="whatsapp-link">Office WhatsApp</span>
       </p>
-
     </div>
   `;
 
   document.body.appendChild(overlay);
 
-  function closePopup() {
-    overlay.classList.add("popup-hide");
-    overlay.querySelector(".popup-card").classList.add("popup-card-hide");
-    setTimeout(() => overlay.remove(), 200);
-  }
-
-  document.getElementById("closePay").onclick = closePopup;
-  document.getElementById("copyBtn").onclick = function(){ copyUPI(this); };
-  document.getElementById("upiBtn").onclick = () => window.location.href = `upi://pay?pa=${UPI_ID}`;
-  document.getElementById("waLink").onclick = () => window.open(WHATSAPP_URL);
+  getEl("closePay").onclick = () => overlay.remove();
+  getEl("copyBtn").onclick = function () { copyUPI(this); };
+  getEl("upiBtn").onclick = () => window.location.href = `upi://pay?pa=${UPI_ID}`;
+  getEl("waLink").onclick = () => window.open(WHATSAPP_URL);
 }
 
-// ---------- HELP ----------
+// ---------- IMPROVED HELP POPUP ----------
 function openHelp() {
   const overlay = document.createElement("div");
   overlay.className = "popup-overlay";
 
   overlay.innerHTML = `
     <div class="popup-card">
-
       <div class="popup-close" id="closeHelp">✖</div>
-
-      <h3>Need Help?</h3>
-
-      <p>Contact School Office</p>
-      <p style="font-weight:600;">+91 7012808911</p>
-
-      <button id="chatBtn" style="
-        margin-top:15px;width:100%;
-        padding:12px;background:#25D366;
-        color:white;border:none;border-radius:25px;
-      ">
-        Chat on WhatsApp
-      </button>
-
+      <h3>Help & Support</h3>
+      <div class="help-content">
+        <p>📞 For assistance, please contact the school office:</p>
+        <p><strong>Phone:</strong> +91 12345 67890</p>
+        <p><strong>Email:</strong> office@stannes.edu</p>
+        <p><strong>Office Hours:</strong> Mon-Fri, 9:00 AM – 4:00 PM</p>
+      </div>
+      <button id="chatBtn" class="whatsapp-chat-btn">💬 Chat on WhatsApp</button>
     </div>
   `;
 
   document.body.appendChild(overlay);
 
-  function closePopup() {
-    overlay.classList.add("popup-hide");
-    overlay.querySelector(".popup-card").classList.add("popup-card-hide");
-    setTimeout(() => overlay.remove(), 200);
-  }
-
-  document.getElementById("closeHelp").onclick = closePopup;
-  document.getElementById("chatBtn").onclick = () => window.open(WHATSAPP_URL);
+  getEl("closeHelp").onclick = () => overlay.remove();
+  getEl("chatBtn").onclick = () => window.open(WHATSAPP_URL);
 }
 
 // ---------- ADMIN ----------
-async function adminLogin() {
+function adminLogin() {
   const pass = prompt("Enter Admin Password");
 
   if (pass !== ADMIN_PASSWORD) {
@@ -863,32 +937,43 @@ async function adminLogin() {
   }
 
   const type = prompt("full / partial");
-  const i = parseInt(prompt("Term index (0,1,2)"));
+  const index = parseInt(prompt("Term index (0,1,2)"));
 
   if (type === "full") {
-    TERMS[i].paid = TERMS[i].total;
-    await saveData();
-    render();
-    showSuccess(TERMS[i].name, TERMS[i].total);
+    TERMS[index].paid = TERMS[index].total;
+    saveData().then(() => {
+      render();
+      showSuccess(TERMS[index].name, TERMS[index].total);
+    });
   } else {
     const amt = parseFloat(prompt("Amount"));
-    if (TERMS[i].paid + amt > TERMS[i].total) {
+
+    if (TERMS[index].paid + amt > TERMS[index].total) {
       alert("Exceeded");
       return;
     }
-    TERMS[i].paid += amt;
-    await saveData();
-    render();
-    showSuccess(TERMS[i].name, amt);
+
+    TERMS[index].paid += amt;
+    saveData().then(() => {
+      render();
+      showSuccess(TERMS[index].name, amt);
+    });
   }
 }
 
 // ---------- INIT ----------
 window.onload = () => {
-  document.getElementById("adminLoginBtn").onclick = adminLogin;
-  document.getElementById("logoutBtn").onclick = () => location.href = "../index.html";
-  document.getElementById("payFeesBtn").onclick = openPay;
-  document.getElementById("helpBtn").onclick = openHelp;
+  if (getEl("adminLoginBtn"))
+    getEl("adminLoginBtn").onclick = adminLogin;
+
+  if (getEl("logoutBtn"))
+    getEl("logoutBtn").onclick = () => location.href = "../index.html";
+
+  if (getEl("payFeesBtn"))
+    getEl("payFeesBtn").onclick = openPay;
+
+  if (getEl("helpBtn"))
+    getEl("helpBtn").onclick = openHelp;
 
   loadStudent();
 };
