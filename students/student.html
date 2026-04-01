@@ -512,14 +512,17 @@
 </div>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 
 // ---------- FIREBASE ----------
 const firebaseConfig = {
   apiKey: "AIzaSyArC1RsGTkS0cr5glTfgUdTktjcfj_Ad88",
   authDomain: "fee-payment-portal.firebaseapp.com",
-  projectId: "fee-payment-portal"
+  projectId: "fee-payment-portal",
+  storageBucket: "fee-payment-portal.firebasestorage.app",
+  messagingSenderId: "1036013822615",
+  appId: "1:1036013822615:web:6c4159f84bae9882963fd2"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -551,14 +554,14 @@ async function loadStudent() {
     studentData = snap.data();
     TERMS = studentData.terms || [];
 
-    document.getElementById("studentNameDisplay").innerText = studentData.name;
+    // SAFE DOM SET
+    const nameEl = document.getElementById("studentNameDisplay");
+    const classEl = document.getElementById("classDisplay");
+    const rollEl = document.getElementById("rollDisplay");
 
-    // CLASS & ROLL
-    document.getElementById("classDisplay").innerText =
-      "📖 Class: " + (studentData.class || "-");
-
-    document.getElementById("rollDisplay").innerText =
-      "🎫 Roll No: " + (studentData.roll || "-");
+    if (nameEl) nameEl.innerText = studentData.name;
+    if (classEl) classEl.innerText = "📖 Class: " + (studentData.class || "-");
+    if (rollEl) rollEl.innerText = "🎫 Roll No: " + (studentData.roll || "-");
 
     render();
 
@@ -571,6 +574,8 @@ async function loadStudent() {
 // ---------- RENDER ----------
 function render() {
   const tbody = document.getElementById("feeTableBody");
+  if (!tbody) return;
+
   tbody.innerHTML = "";
 
   let total = 0, paid = 0;
@@ -594,11 +599,14 @@ function render() {
     `;
   });
 
-  document.getElementById("overallSummaryCard").innerHTML = `
-    <span>Total: ₹${total}</span><br>
-    <span>Paid: ₹${paid}</span><br>
-    <span>Remaining: ₹${total - paid}</span>
-  `;
+  const summary = document.getElementById("overallSummaryCard");
+  if (summary) {
+    summary.innerHTML = `
+      <span>Total: ₹${total}</span><br>
+      <span>Paid: ₹${paid}</span><br>
+      <span>Remaining: ₹${total - paid}</span>
+    `;
+  }
 }
 
 // ---------- SAVE ----------
@@ -608,7 +616,7 @@ async function saveData() {
   });
 }
 
-// ---------- POPUP (UPDATED DESIGN) ----------
+// ---------- POPUP ----------
 function showPopup(term, amount) {
 
   const div = document.createElement("div");
@@ -701,10 +709,8 @@ Kindly check the St. Annes app to confirm the details.
 // ---------- PAYMENT ----------
 async function fullPayment(i) {
   TERMS[i].paid = TERMS[i].total;
-
   await saveData();
   render();
-
   showPopup(TERMS[i].name, TERMS[i].total);
 }
 
@@ -752,11 +758,16 @@ async function adminLogin() {
 // ---------- INIT ----------
 document.addEventListener("DOMContentLoaded", () => {
 
-  document.getElementById("adminLoginBtn").onclick = adminLogin;
+  const adminBtn = document.getElementById("adminLoginBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
 
-  document.getElementById("logoutBtn").onclick = () => {
-    window.location.href = "../index.html";
-  };
+  if (adminBtn) adminBtn.onclick = adminLogin;
+
+  if (logoutBtn) {
+    logoutBtn.onclick = () => {
+      window.location.href = "../index.html";
+    };
+  }
 
   loadStudent();
 });
