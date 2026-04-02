@@ -749,6 +749,7 @@
                 <label>Class *</label>
                 <select id="studentClass" required>
                     <option value="">Select Class</option>
+                    <option>Playschool</option>
                     <option>LKG</option><option>UKG</option>
                     <option>STD 1</option><option>STD 2</option><option>STD 3</option><option>STD 4</option><option>STD 5</option>
                     <option>STD 6</option><option>STD 7</option><option>STD 8</option><option>STD 9</option><option>STD 10</option>
@@ -843,6 +844,10 @@
 
     // ---------- COMPREHENSIVE DEFAULT STUDENT DATA (EVERY CLASS HAS STUDENTS) ----------
     const defaultStudentLists = {
+        "Playschool": [
+            { name: "Anvi Sharma", id: "anvi_playschool" },
+            { name: "Kian Nair", id: "kian_playschool" }
+        ],
         "LKG": [
             { name: "Aarav Sharma", id: "aarav_lkg" },
             { name: "Ishita Verma", id: "ishita_lkg" },
@@ -907,7 +912,7 @@
     };
 
     function ensureAllClassesHaveStudents() {
-        const allClassNames = ["LKG","UKG","STD 1","STD 2","STD 3","STD 4","STD 5","STD 6","STD 7","STD 8","STD 9","STD 10"];
+        const allClassNames = ["Playschool", "LKG","UKG","STD 1","STD 2","STD 3","STD 4","STD 5","STD 6","STD 7","STD 8","STD 9","STD 10"];
         for (const className of allClassNames) {
             if (!studentData[className] || studentData[className].length === 0) {
                 const defaultList = defaultStudentLists[className];
@@ -955,7 +960,7 @@
     }
 
     function renderClassGrid() {
-        const classList = ["LKG","UKG","STD 1","STD 2","STD 3","STD 4","STD 5","STD 6","STD 7","STD 8","STD 9","STD 10"];
+        const classList = ["Playschool", "LKG","UKG","STD 1","STD 2","STD 3","STD 4","STD 5","STD 6","STD 7","STD 8","STD 9","STD 10"];
         classesGrid.innerHTML = '';
         classList.forEach((className, index) => {
             const card = document.createElement('div');
