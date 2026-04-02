@@ -551,7 +551,7 @@
         }
 
         function renderStudentList(students, className) {
-            classBadge.innerHTML = `${className} · ${students.length} student(s)`;
+            classBadge.innerHTML = `${className} · ${students.length} Students`;
             const filterRender = () => {
                 const term = searchInput.value.toLowerCase();
                 const filtered = students.filter(s => s.name.toLowerCase().includes(term));
