@@ -13,78 +13,73 @@
         }
 
         body {
+            background: #f5f9ff;
             min-height: 100vh;
-            background: #eef2f5;
+            position: relative;
             overflow-x: hidden;
         }
 
-        /* ---------- LIQUID GLASS + DEPTH BACKGROUND ---------- */
-        .depth-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -3;
-            background: radial-gradient(circle at 20% 30%, rgba(180, 210, 250, 0.25), rgba(230, 240, 255, 0.1));
-        }
-        .glass-layer {
+        /* ---------- BACKGROUND MESH + PARTICLES (subtle) ---------- */
+        .bg-mesh {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             z-index: -2;
-            backdrop-filter: blur(2px);
-            pointer-events: none;
+            background: radial-gradient(circle at 20% 30%, rgba(30, 60, 114, 0.03) 0%, rgba(42, 82, 152, 0.02) 100%);
         }
-        .animated-mesh {
+        .bg-mesh::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            background: radial-gradient(circle, rgba(42, 82, 152, 0.04) 0%, transparent 70%);
+            animation: meshMove 20s infinite alternate;
+        }
+        @keyframes meshMove {
+            0% { transform: translate(0%, 0%) rotate(0deg); }
+            100% { transform: translate(5%, 5%) rotate(2deg); }
+        }
+        .particles {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             z-index: -1;
-            background: radial-gradient(circle at 40% 50%, rgba(70, 130, 200, 0.08), transparent 70%);
-            animation: depthFlow 22s infinite alternate ease-in-out;
             pointer-events: none;
         }
-        @keyframes depthFlow {
-            0% { transform: translate(-2%, -2%) scale(1); opacity: 0.4; }
-            100% { transform: translate(2%, 2%) scale(1.3); opacity: 0.8; }
-        }
-
-        /* floating orbs with depth */
-        .orb {
-            position: fixed;
+        .particle {
+            position: absolute;
+            background: rgba(42, 82, 152, 0.08);
             border-radius: 50%;
-            background: rgba(100, 150, 230, 0.1);
-            filter: blur(40px);
-            pointer-events: none;
-            will-change: transform;
-            animation: floatDeep 16s infinite alternate ease-in-out;
+            animation: float 12s infinite ease-in-out;
         }
-        @keyframes floatDeep {
-            0% { transform: translate(0, 0) scale(1); opacity: 0.3; }
-            100% { transform: translate(40px, -30px) scale(1.2); opacity: 0.6; }
+        @keyframes float {
+            0% { transform: translateY(0px) translateX(0px); opacity: 0; }
+            20% { opacity: 0.5; }
+            80% { opacity: 0.5; }
+            100% { transform: translateY(-100px) translateX(30px); opacity: 0; }
         }
 
-        /* Sticky Header – pure glass + depth */
+        /* Sticky Header (glass effect) */
         .admin-header {
             position: sticky;
             top: 0;
             z-index: 100;
-            background: rgba(255, 255, 255, 0.55);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02), 0 1px 0 rgba(255, 255, 255, 0.6);
-            padding: 0.8rem 2rem;
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.02), 0 1px 0 rgba(0, 0, 0, 0.02);
+            padding: 1rem 2rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
             flex-wrap: wrap;
             gap: 1rem;
-            border-bottom: 0.5px solid rgba(255, 255, 255, 0.7);
+            border-bottom: 1px solid rgba(42, 82, 152, 0.15);
         }
 
         .logo-area {
@@ -94,13 +89,12 @@
         }
 
         .logo-placeholder {
-            width: 48px;
-            height: 48px;
-            border-radius: 20px;
+            width: 52px;
+            height: 52px;
+            border-radius: 18px;
             overflow: hidden;
-            background: rgba(255,255,255,0.4);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
-            backdrop-filter: blur(4px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+            background: #fff;
         }
 
         .logo-placeholder img {
@@ -111,18 +105,23 @@
         }
 
         .title-group h1 {
-            font-size: 1.4rem;
+            font-size: 1.5rem;
             font-weight: 700;
             background: linear-gradient(120deg, #1E3C72, #2A5298);
             background-clip: text;
             -webkit-background-clip: text;
             color: transparent;
-            letter-spacing: -0.2px;
+            letter-spacing: -0.3px;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+            cursor: default;
         }
 
         .title-group p {
-            font-size: 0.7rem;
-            color: #4a5b7a;
+            font-size: 0.75rem;
+            color: #5b6e8c;
             font-weight: 500;
         }
 
@@ -132,9 +131,10 @@
             margin: 2rem auto;
             padding: 0 1.5rem;
             position: relative;
+            z-index: 1;
         }
 
-        /* Class Grid – glass cards with depth */
+        /* Class Grid */
         .classes-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(150px, 170px));
@@ -144,21 +144,32 @@
         }
 
         .class-card {
-            background: rgba(255, 255, 255, 0.5);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border-radius: 32px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
             aspect-ratio: 1 / 1;
+            border-radius: 28px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.02), 0 1px 0 rgba(255,255,255,0.8);
-            transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            box-shadow: 0 20px 30px -12px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0,0,0,0.02);
+            transition: all 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
             cursor: pointer;
             text-align: center;
-            border: 0.5px solid rgba(255, 255, 255, 0.7);
-            will-change: transform;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            opacity: 0;
+            animation: cardAppear 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards;
+        }
+
+        @keyframes cardAppear {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .class-card svg {
@@ -168,12 +179,11 @@
             stroke-width: 1.5;
             fill: none;
             margin-bottom: 0.7rem;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05));
         }
 
         .class-card span {
             font-weight: 700;
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             background: linear-gradient(135deg, #1E3C72, #2A5298);
             background-clip: text;
             -webkit-background-clip: text;
@@ -181,28 +191,32 @@
         }
 
         .class-card:hover {
-            transform: translateY(-6px) scale(1.02);
-            background: rgba(255, 255, 255, 0.7);
-            box-shadow: 0 20px 30px -12px rgba(0, 0, 0, 0.15);
-            border-color: rgba(255, 255, 255, 0.9);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 30px 40px -12px rgba(0, 0, 0, 0.2);
+            border-color: rgba(42, 82, 152, 0.3);
+            background: rgba(255, 255, 255, 0.95);
         }
 
-        /* Fullscreen Loader – glass skeleton */
+        .class-card:active {
+            transform: scale(0.98);
+        }
+
+        /* Fullscreen Loading Overlay (only used for class click) */
         .fullscreen-loader {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(245, 248, 252, 0.7);
-            backdrop-filter: blur(24px);
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(8px);
             z-index: 1000;
             display: flex;
             align-items: center;
             justify-content: center;
             visibility: hidden;
             opacity: 0;
-            transition: visibility 0.3s, opacity 0.3s ease;
+            transition: visibility 0.2s, opacity 0.2s ease;
         }
         .fullscreen-loader.active {
             visibility: visible;
@@ -210,68 +224,71 @@
         }
         .loader-content {
             text-align: center;
-            background: rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(20px);
-            padding: 2rem 2rem;
-            border-radius: 48px;
-            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px);
+            padding: 2rem 2.5rem;
+            border-radius: 2rem;
+            box-shadow: 0 30px 40px rgba(0, 0, 0, 0.1);
             width: 90%;
-            max-width: 360px;
-            border: 0.5px solid rgba(255,255,255,0.8);
+            max-width: 400px;
         }
         .loader-message {
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             font-weight: 500;
             color: #1e3c72;
             margin-bottom: 1rem;
         }
         .skeleton-list {
-            margin-top: 1.2rem;
+            margin-top: 1.5rem;
         }
         .skeleton-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(255,255,255,0.4);
-            border-radius: 60px;
-            padding: 0.7rem 1rem;
-            margin-bottom: 0.7rem;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 1.2rem;
+            padding: 0.8rem 1rem;
+            margin-bottom: 0.8rem;
         }
         .skeleton-name {
-            width: 65%;
-            height: 18px;
-            background: linear-gradient(90deg, rgba(200,210,230,0.6) 25%, rgba(230,240,255,0.8) 50%, rgba(200,210,230,0.6) 75%);
+            width: 60%;
+            height: 20px;
+            background: linear-gradient(90deg, #e2e8f0 25%, #f0f4fa 50%, #e2e8f0 75%);
             background-size: 200% 100%;
-            animation: shimmer 1.2s infinite linear;
-            border-radius: 20px;
+            animation: shimmer 1.5s infinite;
+            border-radius: 1rem;
         }
         .skeleton-icon {
             width: 24px;
             height: 24px;
-            background: rgba(200,210,230,0.5);
-            border-radius: 30px;
+            background: #e2e8f0;
+            border-radius: 50%;
         }
         @keyframes shimmer {
             0% { background-position: 200% 0; }
             100% { background-position: -200% 0; }
         }
+        .dot-floating {
+            font-size: 1.3rem;
+            letter-spacing: 4px;
+        }
 
-        /* Fullscreen Student View – liquid glass */
+        /* Fullscreen Student View */
         .fullscreen-student-view {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(240, 246, 255, 0.65);
-            backdrop-filter: blur(28px);
+            background: rgba(245, 249, 255, 0.95);
+            backdrop-filter: blur(4px);
             z-index: 200;
             overflow-y: auto;
-            padding-top: 100px;
+            padding-top: 90px;
             padding-bottom: 2rem;
             visibility: hidden;
             opacity: 0;
-            transition: visibility 0.3s, opacity 0.3s ease;
+            transition: visibility 0.2s, opacity 0.2s ease;
         }
         .fullscreen-student-view.active {
             visibility: visible;
@@ -291,33 +308,38 @@
             gap: 1rem;
         }
         .class-badge {
-            background: rgba(255, 255, 255, 0.5);
-            backdrop-filter: blur(12px);
+            background: rgba(238, 242, 255, 0.8);
+            backdrop-filter: blur(4px);
             padding: 0.5rem 1.2rem;
-            border-radius: 60px;
-            font-weight: 600;
+            border-radius: 40px;
+            font-weight: 700;
             color: #1e3c72;
-            font-size: 1rem;
-            border: 0.5px solid rgba(255,255,255,0.7);
+            font-size: 1.1rem;
+            border: 1px solid rgba(42, 82, 152, 0.2);
         }
         .search-box {
             display: flex;
             align-items: center;
-            background: rgba(255, 255, 255, 0.5);
-            backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(4px);
             border-radius: 60px;
-            padding: 0.3rem 1rem;
-            border: 0.5px solid rgba(255,255,255,0.7);
+            padding: 0.4rem 1rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            border: 1px solid rgba(203, 221, 233, 0.6);
             transition: all 0.2s;
         }
         .search-box:focus-within {
-            background: rgba(255, 255, 255, 0.8);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border-color: #2a5298;
+            box-shadow: 0 0 0 3px rgba(42, 82, 152, 0.1);
+            background: white;
         }
         .search-box svg {
             width: 18px;
             height: 18px;
-            stroke: #5b6e8c;
+            stroke: #8ba0bc;
+            stroke-width: 1.8;
+            fill: none;
+            margin-right: 0.5rem;
         }
         .search-box input {
             border: none;
@@ -327,33 +349,33 @@
             outline: none;
             background: transparent;
         }
-        /* Student Cards – ultra glass */
         .students-list {
             display: flex;
             flex-direction: column;
             gap: 1rem;
         }
         .student-card {
-            background: rgba(255, 255, 255, 0.5);
-            backdrop-filter: blur(16px);
-            border-radius: 28px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(6px);
+            border-radius: 24px;
             padding: 1rem 1.5rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            transition: all 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-            border: 0.5px solid rgba(255, 255, 255, 0.7);
-            will-change: transform;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.02), 0 1px 2px rgba(0,0,0,0.03);
+            transition: all 0.25s ease;
+            border: 1px solid rgba(255, 255, 255, 0.6);
         }
         .student-card:hover {
             transform: translateY(-3px);
-            background: rgba(255, 255, 255, 0.75);
-            box-shadow: 0 12px 25px -12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 12px 20px -12px rgba(0, 0, 0, 0.15);
+            border-color: rgba(42, 82, 152, 0.3);
+            background: rgba(255, 255, 255, 0.95);
         }
         .student-name {
             font-weight: 700;
-            font-size: 1.05rem;
-            color: #1a2f48;
+            font-size: 1.1rem;
+            color: #0f2b3d;
         }
         .eye-icon {
             cursor: pointer;
@@ -362,7 +384,7 @@
             justify-content: center;
             width: 40px;
             height: 40px;
-            border-radius: 40px;
+            border-radius: 30px;
             transition: all 0.2s;
         }
         .eye-icon svg {
@@ -373,48 +395,180 @@
             fill: none;
         }
         .eye-icon:hover {
-            background: rgba(42, 82, 152, 0.15);
+            background: rgba(42, 82, 152, 0.1);
             transform: scale(1.05);
         }
         .no-students {
             text-align: center;
-            padding: 2rem;
-            background: rgba(255,255,255,0.4);
-            backdrop-filter: blur(12px);
+            padding: 2.5rem;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(4px);
             border-radius: 2rem;
-            color: #5b6e8c;
+            color: #6c86a3;
         }
 
-        /* Footer */
-        .footer-note {
-            text-align: center;
-            padding: 2rem 1rem 1.5rem;
-            font-size: 0.8rem;
+        /* Modals (Add Student) */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0.2s, opacity 0.2s;
         }
-        .contact-dev {
-            color: #000;
-            text-decoration: none;
+        .modal-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        .modal-card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(20px);
+            border-radius: 36px;
+            width: 90%;
+            max-width: 520px;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 1.6rem;
+            box-shadow: 0 30px 40px -12px rgba(0, 0, 0, 0.2);
+            border: 0.5px solid rgba(255,255,255,0.6);
+            transform: scale(0.96);
+            transition: transform 0.2s ease;
+        }
+        .modal-overlay.active .modal-card {
+            transform: scale(1);
+        }
+        .modal-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1.2rem;
+            color: #1e3c72;
+            border-left: 4px solid #2a5298;
+            padding-left: 1rem;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #2c4c6e;
+            margin-bottom: 0.3rem;
+            text-transform: uppercase;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            border: 1px solid #cbdde9;
+            border-radius: 1.5rem;
+            font-size: 0.9rem;
+            background: white;
+            transition: all 0.2s;
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.8rem;
+            margin-top: 1.5rem;
+        }
+        .modal-btn {
+            border: none;
+            background: #eef2f8;
+            padding: 0.6rem 1.2rem;
+            border-radius: 2rem;
             font-weight: 500;
-            transition: opacity 0.2s;
+            cursor: pointer;
+            transition: all 0.2s;
         }
-        .contact-dev:hover {
-            opacity: 0.7;
-            text-decoration: underline;
+        .modal-btn.primary {
+            background: #1e4a76;
+            color: white;
         }
+        .modal-btn.primary:disabled {
+            background: #8aaec9;
+            cursor: not-allowed;
+        }
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1.2rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6c86a3;
+        }
+        .success-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.2s;
+        }
+        .success-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        .success-card {
+            background: white;
+            border-radius: 32px;
+            padding: 2rem;
+            text-align: center;
+            max-width: 320px;
+            width: 90%;
+            box-shadow: 0 30px 40px rgba(0,0,0,0.1);
+        }
+        .tick-svg {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 1rem;
+        }
+        .tick-circle {
+            stroke: #4CAF50;
+            stroke-width: 3;
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            animation: circleAnim 0.6s ease-out forwards;
+        }
+        .tick-check {
+            stroke: #4CAF50;
+            stroke-width: 4;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: checkAnim 0.4s ease-out 0.6s forwards;
+        }
+        @keyframes circleAnim { to { stroke-dashoffset: 0; } }
+        @keyframes checkAnim { to { stroke-dashoffset: 0; } }
 
         @media (max-width: 680px) {
-            .admin-header { padding: 0.8rem 1rem; }
-            .class-card { border-radius: 28px; }
-            .student-card { padding: 0.8rem 1.2rem; }
-            .search-box input { width: 140px; }
+            .admin-header { padding: 1rem; }
+            .student-card { padding: 0.9rem 1.2rem; }
+            .search-box input { width: 160px; }
+            .student-view-header { flex-direction: column; align-items: stretch; }
+            .class-badge { text-align: center; }
         }
     </style>
 </head>
 <body>
-<div class="depth-bg"></div>
-<div class="glass-layer"></div>
-<div class="animated-mesh"></div>
-<div id="orbsContainer"></div>
+
+<div class="bg-mesh"></div>
+<div class="particles" id="particles"></div>
 
 <header class="admin-header">
     <div class="logo-area">
@@ -422,7 +576,7 @@
             <img src="https://i.ibb.co/zhWfTbDL/IMG-20251112-WA0215-3.jpg" alt="St. Anne's ICSE School Logo">
         </div>
         <div class="title-group">
-            <h1>St. Anne's ICSE School</h1>
+            <h1 id="schoolName">St. Anne's ICSE School</h1>
             <p>Admin Panel · Quick Access</p>
         </div>
     </div>
@@ -434,9 +588,10 @@
     </div>
 </div>
 
+<!-- Fullscreen Loader (only used for class click) -->
 <div id="fullscreenLoader" class="fullscreen-loader">
     <div class="loader-content">
-        <div class="loader-message" id="loaderMessage">Connecting with server<span class="dot-floating">...</span></div>
+        <div class="loader-message" id="loaderMessage">Loading<span class="dot-floating">...</span></div>
         <div class="skeleton-list">
             <div class="skeleton-item"><div class="skeleton-name"></div><div class="skeleton-icon"></div></div>
             <div class="skeleton-item"><div class="skeleton-name"></div><div class="skeleton-icon"></div></div>
@@ -445,180 +600,453 @@
     </div>
 </div>
 
+<!-- Fullscreen Student View -->
 <div id="fullscreenStudentView" class="fullscreen-student-view">
     <div class="student-view-container">
         <div class="student-view-header">
             <div class="class-badge" id="currentClassBadge"></div>
             <div class="search-box">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
-                <input type="text" id="studentSearchInput" placeholder="Search by name...">
+                <input type="text" id="studentSearchInput" placeholder="Search by name..." autocomplete="off">
             </div>
         </div>
         <div id="studentsListContainer" class="students-list"></div>
     </div>
 </div>
 
-<div class="footer-note">
-    <a href="https://wa.me/918594009501?text=Hello%2C%20I%20need%20assistance%20with%20the%20Admin%20Panel" 
-       target="_blank" 
-       class="contact-dev">Contact Developer</a>
+<!-- Password Modal (Add Student) -->
+<div id="passwordModal" class="modal-overlay">
+    <div class="modal-card">
+        <div class="modal-close" id="closePwdModal">✕</div>
+        <h3>Admin Verification</h3>
+        <div class="form-group">
+            <input type="password" id="addPassword" placeholder="Enter admin password">
+            <div id="pwdError" style="color:#bc4e2c; font-size:0.75rem; margin-top:0.3rem; display:none;">Wrong password</div>
+        </div>
+        <div class="modal-actions">
+            <button class="modal-btn" id="cancelPwdBtn">Cancel</button>
+            <button class="modal-btn primary" id="confirmPwdBtn">Continue</button>
+        </div>
+    </div>
 </div>
 
-<script>
-    (function(){
-        // ---------- STATIC DATA ----------
-        const studentData = {
-            "LKG": [{ name: "Aarav Mehta", id: "aarav_lkg" }, { name: "Ishita Nair", id: "ishita_lkg" }],
-            "UKG": [{ name: "Vihaan Sharma", id: "vihaan_ukg" }, { name: "Ananya Krishnan", id: "ananya_ukg" }],
-            "STD 1": [{ name: "Reyansh Nair", id: "reyansh_std1" }, { name: "Sai Pranav", id: "sai_std1" }],
-            "STD 2": [{ name: "Diya Menon", id: "diya_std2" }, { name: "Arjun Raj", id: "arjun_std2" }],
-            "STD 3": [{ name: "Navya Iyer", id: "navya_std3" }, { name: "Ayaan Khan", id: "ayaan_std3" }],
-            "STD 4": [{ name: "Myra D'Souza", id: "myra_std4" }, { name: "Rohan Joseph", id: "rohan_std4" }],
-            "STD 5": [{ name: "Sana Fernandes", id: "sana_std5" }, { name: "Pranav Nair", id: "pranav_std5" }],
-            "STD 6": [{ name: "Aditya Shetty", id: "aditya_std6" }, { name: "Tanvi Desai", id: "tanvi_std6" }],
-            "STD 7": [{ name: "Mariya Melbin", id: "mariya" }, { name: "Arjun Kumar", id: "arjun_std7" }, { name: "Neha George", id: "neha_std7" }],
-            "STD 8": [{ name: "Chris Vinod", id: "chris_std8" }, { name: "Riya Thomas", id: "riya_std8" }],
-            "STD 9": [{ name: "Kavya S", id: "kavya_std9" }, { name: "Mohammed Fasal", id: "mohd_std9" }],
-            "STD 10": [{ name: "Sanjay Mishra", id: "sanjay_std10" }, { name: "Meera Nambiar", id: "meera_std10" }]
-        };
-        const classList = ["LKG","UKG","STD 1","STD 2","STD 3","STD 4","STD 5","STD 6","STD 7","STD 8","STD 9","STD 10"];
-        const BASE_URL = "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=";
+<!-- Add Student Form Modal -->
+<div id="addStudentModal" class="modal-overlay">
+    <div class="modal-card">
+        <div class="modal-close" id="closeAddModal">✕</div>
+        <h3>Add New Student</h3>
+        <form id="addStudentForm">
+            <div class="form-group">
+                <label>Student ID *</label>
+                <input type="text" id="studentId" placeholder="e.g., mariya" required>
+            </div>
+            <div class="form-group">
+                <label>Full Name *</label>
+                <input type="text" id="studentName" placeholder="e.g., Mariya Melbin" required>
+            </div>
+            <div class="form-group">
+                <label>Class *</label>
+                <select id="studentClass" required>
+                    <option value="">Select Class</option>
+                    <option>LKG</option><option>UKG</option>
+                    <option>STD 1</option><option>STD 2</option><option>STD 3</option><option>STD 4</option><option>STD 5</option>
+                    <option>STD 6</option><option>STD 7</option><option>STD 8</option><option>STD 9</option><option>STD 10</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Phone Number *</label>
+                <input type="tel" id="studentPhone" placeholder="e.g., 91XXXXXXXXXX" required>
+            </div>
+            <div class="form-group">
+                <label>Term 1 Fee (₹) *</label>
+                <input type="number" id="term1Fee" placeholder="e.g., 16500" required>
+            </div>
+            <div class="form-group">
+                <label>Term 2 Fee (₹) *</label>
+                <input type="number" id="term2Fee" placeholder="e.g., 16500" required>
+            </div>
+            <div class="form-group">
+                <label>Term 3 Fee (₹) *</label>
+                <input type="number" id="term3Fee" placeholder="e.g., 16500" required>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="modal-btn" id="cancelAddBtn">Cancel</button>
+                <button type="submit" class="modal-btn primary" id="submitStudentBtn">Create Student</button>
+            </div>
+        </form>
+    </div>
+</div>
 
-        // DOM elements
-        const classesGrid = document.getElementById('classesGrid');
-        const classViewDiv = document.getElementById('classView');
-        const loaderOverlay = document.getElementById('fullscreenLoader');
-        const studentView = document.getElementById('fullscreenStudentView');
-        const loaderMsg = document.getElementById('loaderMessage');
-        const classBadge = document.getElementById('currentClassBadge');
-        const searchInput = document.getElementById('studentSearchInput');
-        const studentsContainer = document.getElementById('studentsListContainer');
+<!-- Success Popup -->
+<div id="successPopup" class="success-overlay">
+    <div class="success-card">
+        <div class="tick-container">
+            <svg class="tick-svg" viewBox="0 0 52 52">
+                <circle class="tick-circle" cx="26" cy="26" r="25" fill="none"/>
+                <path class="tick-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+            </svg>
+        </div>
+        <h3 style="color:#1f7840;">Student Added</h3>
+        <p style="margin-top:0.5rem;">Student successfully created</p>
+        <button class="modal-btn primary" id="closeSuccessBtn" style="margin-top:1rem;">OK</button>
+    </div>
+</div>
 
-        let currentStudents = [];
-        let loadingTimeouts = [];
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 
-        // create depth orbs
-        function createOrbs() {
-            const container = document.getElementById('orbsContainer');
-            for(let i=0;i<12;i++){
-                const orb = document.createElement('div');
-                orb.className = 'orb';
-                const size = Math.random() * 180 + 80;
-                orb.style.width = size + 'px';
-                orb.style.height = size + 'px';
-                orb.style.left = Math.random() * 100 + '%';
-                orb.style.top = Math.random() * 100 + '%';
-                orb.style.animationDelay = Math.random() * 12 + 's';
-                orb.style.animationDuration = 20 + Math.random() * 15 + 's';
-                container.appendChild(orb);
-            }
-        }
-        createOrbs();
+    const firebaseConfig = {
+        apiKey: "AIzaSyArC1RsGTkS0cr5glTfgUdTktjcfj_Ad88",
+        authDomain: "fee-payment-portal.firebaseapp.com",
+        projectId: "fee-payment-portal",
+        storageBucket: "fee-payment-portal.firebasestorage.app",
+        messagingSenderId: "1036013822615",
+        appId: "1:1036013822615:web:6c4159f84bae9882963fd2"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-        function renderClassGrid() {
-            classesGrid.innerHTML = '';
-            classList.forEach(className => {
-                const card = document.createElement('div');
-                card.className = 'class-card';
-                card.innerHTML = `
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 3L3 9L12 15L21 9L12 3Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M5 12L3 13L12 19L21 13L19 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M5 16L3 17L12 23L21 17L19 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    <span>${className}</span>
-                `;
-                card.addEventListener('click', () => onClassClick(className));
-                classesGrid.appendChild(card);
-            });
-        }
+    const ADD_STUDENT_PASSWORD = "ADD123";
+    const BASE_URL = "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=";
 
-        function startLoading(callback) {
-            loadingTimeouts.forEach(clearTimeout);
-            loaderOverlay.classList.add('active');
-            loaderMsg.innerHTML = "Connecting with server<span class='dot-floating'>...</span>";
-            const t1 = setTimeout(() => {
-                if(loaderOverlay.classList.contains('active')) loaderMsg.innerHTML = "Loading students<span class='dot-floating'>...</span>";
-            }, 2000);
-            const t2 = setTimeout(() => {
-                loaderOverlay.classList.remove('active');
-                if(callback) callback();
-            }, 4000);
-            loadingTimeouts = [t1, t2];
-        }
+    let studentData = {};
+    let allStudents = [];
+    let currentClass = null;
+    let currentStudents = [];
 
-        function renderStudentList(students, className) {
-            classBadge.innerHTML = `${className} · ${students.length} Students`;
-            const filterRender = () => {
-                const term = searchInput.value.toLowerCase();
-                const filtered = students.filter(s => s.name.toLowerCase().includes(term));
-                studentsContainer.innerHTML = '';
-                if(filtered.length === 0) {
-                    studentsContainer.innerHTML = '<div class="no-students">✨ No students found</div>';
-                    return;
+    const classesGrid = document.getElementById('classesGrid');
+    const classViewDiv = document.getElementById('classView');
+    const fullscreenLoader = document.getElementById('fullscreenLoader');
+    const fullscreenStudentView = document.getElementById('fullscreenStudentView');
+    const loaderMessageEl = document.getElementById('loaderMessage');
+    const currentClassBadge = document.getElementById('currentClassBadge');
+    const studentSearchInput = document.getElementById('studentSearchInput');
+    const studentsListContainer = document.getElementById('studentsListContainer');
+
+    // ---------- COMPREHENSIVE DEFAULT STUDENT DATA (EVERY CLASS HAS STUDENTS) ----------
+    const defaultStudentLists = {
+        "LKG": [
+            { name: "Aarav Sharma", id: "aarav_lkg" },
+            { name: "Ishita Verma", id: "ishita_lkg" },
+            { name: "Reyansh Nair", id: "reyansh_lkg" }
+        ],
+        "UKG": [
+            { name: "Vihaan Singh", id: "vihaan_ukg" },
+            { name: "Ananya Nair", id: "ananya_ukg" },
+            { name: "Diya Menon", id: "diya_ukg" }
+        ],
+        "STD 1": [
+            { name: "Reyansh Menon", id: "reyansh_std1" },
+            { name: "Sai Pranav", id: "sai_std1" },
+            { name: "Myra D'Souza", id: "myra_std1" }
+        ],
+        "STD 2": [
+            { name: "Diya Krishna", id: "diya_std2" },
+            { name: "Arjun Raj", id: "arjun_std2" },
+            { name: "Sana Fernandes", id: "sana_std2" }
+        ],
+        "STD 3": [
+            { name: "Navya Iyer", id: "navya_std3" },
+            { name: "Ayaan Khan", id: "ayaan_std3" },
+            { name: "Pranav Nair", id: "pranav_std3" }
+        ],
+        "STD 4": [
+            { name: "Myra D'Souza", id: "myra_std4" },
+            { name: "Rohan Joseph", id: "rohan_std4" },
+            { name: "Aditya Shetty", id: "aditya_std4" }
+        ],
+        "STD 5": [
+            { name: "Sana Fernandes", id: "sana_std5" },
+            { name: "Pranav Nair", id: "pranav_std5" },
+            { name: "Tanvi Desai", id: "tanvi_std5" }
+        ],
+        "STD 6": [
+            { name: "Aditya Shetty", id: "aditya_std6" },
+            { name: "Tanvi Desai", id: "tanvi_std6" },
+            { name: "Kavya S", id: "kavya_std6" }
+        ],
+        "STD 7": [
+            { name: "Mariya Melbin", id: "mariya" },      // Required student
+            { name: "Arjun Kumar", id: "arjun_std7" },
+            { name: "Neha George", id: "neha_std7" },
+            { name: "Chris Vinod", id: "chris_std7" }
+        ],
+        "STD 8": [
+            { name: "Chris Vinod", id: "chris_std8" },
+            { name: "Riya Thomas", id: "riya_std8" },
+            { name: "Sanjay Mishra", id: "sanjay_std8" }
+        ],
+        "STD 9": [
+            { name: "Kavya S", id: "kavya_std9" },
+            { name: "Mohammed Fasal", id: "mohd_std9" },
+            { name: "Meera Nambiar", id: "meera_std9" }
+        ],
+        "STD 10": [
+            { name: "Sanjay Mishra", id: "sanjay_std10" },
+            { name: "Meera Nambiar", id: "meera_std10" },
+            { name: "Riya Thomas", id: "riya_std10" }
+        ]
+    };
+
+    // Ensure every class (LKG to STD 10) has at least the default students
+    function ensureAllClassesHaveStudents() {
+        const allClassNames = ["LKG","UKG","STD 1","STD 2","STD 3","STD 4","STD 5","STD 6","STD 7","STD 8","STD 9","STD 10"];
+        for (const className of allClassNames) {
+            if (!studentData[className] || studentData[className].length === 0) {
+                // Use default list if available, otherwise create a placeholder
+                const defaultList = defaultStudentLists[className];
+                if (defaultList && defaultList.length > 0) {
+                    studentData[className] = [...defaultList];
+                } else {
+                    // Fallback: create a dummy student (should not happen)
+                    studentData[className] = [{ name: "Student", id: `temp_${className}` }];
                 }
-                filtered.forEach(student => {
-                    const card = document.createElement('div');
-                    card.className = 'student-card';
-                    card.innerHTML = `
-                        <div class="student-name">${escapeHtml(student.name)}</div>
-                        <div class="eye-icon" data-id="${student.id}">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                <circle cx="12" cy="12" r="3"></circle>
-                            </svg>
-                        </div>
-                    `;
-                    const eye = card.querySelector('.eye-icon');
-                    eye.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const id = eye.getAttribute('data-id');
-                        window.location.href = BASE_URL + encodeURIComponent(id);
-                    });
-                    studentsContainer.appendChild(card);
-                });
-            };
-            filterRender();
-            searchInput.oninput = () => filterRender();
-        }
-
-        function escapeHtml(str) {
-            return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
-        }
-
-        function onClassClick(className) {
-            if(!studentData[className]) return;
-            currentStudents = studentData[className];
-            classViewDiv.style.display = 'none';
-            studentView.classList.remove('active');
-            startLoading(() => {
-                renderStudentList(currentStudents, className);
-                studentView.classList.add('active');
-                history.pushState({ page: "students", class: className }, "", `?class=${encodeURIComponent(className)}`);
-            });
-        }
-
-        window.addEventListener('popstate', () => {
-            if(studentView.classList.contains('active')) {
-                studentView.classList.remove('active');
-                classViewDiv.style.display = 'block';
-                searchInput.value = '';
-                if(loaderOverlay.classList.contains('active')) loaderOverlay.classList.remove('active');
-                if(window.location.search) history.pushState(null, "", window.location.pathname);
-            } else {
-                classViewDiv.style.display = 'block';
-                studentView.classList.remove('active');
             }
-        });
+        }
+        // Also rebuild allStudents array from studentData for consistency
+        allStudents = [];
+        for (const [className, students] of Object.entries(studentData)) {
+            for (const student of students) {
+                allStudents.push({
+                    id: student.id,
+                    name: student.name,
+                    class: className,
+                    phone: "",
+                    terms: []
+                });
+            }
+        }
+    }
 
+    // Fetch students from Firebase, then merge with default data to ensure no empty class
+    async function fetchAllStudents() {
+        try {
+            const querySnapshot = await getDocs(collection(db, "students"));
+            if (querySnapshot.empty) {
+                // Use default data
+                studentData = JSON.parse(JSON.stringify(defaultStudentLists));
+            } else {
+                studentData = {};
+                querySnapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const className = data.class;
+                    if (!studentData[className]) studentData[className] = [];
+                    studentData[className].push({ name: data.name, id: docSnap.id });
+                });
+            }
+            // After loading from Firebase (or default), ensure every class has students
+            ensureAllClassesHaveStudents();
+        } catch (err) {
+            console.error("Error fetching students:", err);
+            // Fallback to default data on error
+            studentData = JSON.parse(JSON.stringify(defaultStudentLists));
+            ensureAllClassesHaveStudents();
+        }
+    }
+
+    function renderClassGrid() {
+        const classList = ["LKG","UKG","STD 1","STD 2","STD 3","STD 4","STD 5","STD 6","STD 7","STD 8","STD 9","STD 10"];
+        classesGrid.innerHTML = '';
+        classList.forEach((className, index) => {
+            const card = document.createElement('div');
+            card.className = 'class-card';
+            card.style.animationDelay = `${index * 0.05}s`;
+            card.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 3L3 9L12 15L21 9L12 3Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M5 12L3 13L12 19L21 13L19 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M5 16L3 17L12 23L21 17L19 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>${className}</span>
+            `;
+            card.addEventListener('click', () => onClassClick(className));
+            classesGrid.appendChild(card);
+        });
+    }
+
+    function onClassClick(className) {
+        currentClass = className;
+        // Ensure the class exists in studentData (should by now)
+        currentStudents = studentData[className] || [];
+        classViewDiv.style.display = 'none';
+        fullscreenStudentView.classList.remove('active');
+        fullscreenLoader.classList.add('active');
+        loaderMessageEl.innerHTML = "Loading<span class='dot-floating'>...</span>";
+        setTimeout(() => {
+            fullscreenLoader.classList.remove('active');
+            renderStudentList(currentStudents, className);
+            fullscreenStudentView.classList.add('active');
+            history.pushState({ page: "students", class: className }, "", `?class=${encodeURIComponent(className)}`);
+        }, 800);
+    }
+
+    function renderStudentList(students, className) {
+        currentClassBadge.innerHTML = `${className} · ${students.length} student(s)`;
+        const filterRender = () => {
+            const term = studentSearchInput.value.toLowerCase();
+            const filtered = students.filter(s => s.name.toLowerCase().includes(term));
+            studentsListContainer.innerHTML = '';
+            if (filtered.length === 0) {
+                studentsListContainer.innerHTML = '<div class="no-students">✨ No students found</div>';
+                return;
+            }
+            filtered.forEach(student => {
+                const card = document.createElement('div');
+                card.className = 'student-card';
+                card.innerHTML = `
+                    <div class="student-name">${escapeHtml(student.name)}</div>
+                    <div class="eye-icon" data-id="${student.id}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </div>
+                `;
+                const eye = card.querySelector('.eye-icon');
+                eye.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    window.location.href = BASE_URL + encodeURIComponent(student.id);
+                });
+                studentsListContainer.appendChild(card);
+            });
+        };
+        filterRender();
+        studentSearchInput.oninput = filterRender;
+    }
+
+    function escapeHtml(str) {
+        return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
+    }
+
+    window.addEventListener('popstate', () => {
+        if (fullscreenStudentView.classList.contains('active')) {
+            fullscreenStudentView.classList.remove('active');
+            classViewDiv.style.display = 'block';
+            studentSearchInput.value = '';
+            if (window.location.search) history.pushState(null, "", window.location.pathname);
+        } else {
+            classViewDiv.style.display = 'block';
+            fullscreenStudentView.classList.remove('active');
+        }
+    });
+
+    // Add Student hidden triggers (unchanged)
+    const passwordModal = document.getElementById('passwordModal');
+    const addStudentModal = document.getElementById('addStudentModal');
+    const successPopup = document.getElementById('successPopup');
+    const closePwdModal = document.getElementById('closePwdModal');
+    const cancelPwdBtn = document.getElementById('cancelPwdBtn');
+    const confirmPwdBtn = document.getElementById('confirmPwdBtn');
+    const pwdError = document.getElementById('pwdError');
+    const addPasswordInput = document.getElementById('addPassword');
+    const closeAddModal = document.getElementById('closeAddModal');
+    const cancelAddBtn = document.getElementById('cancelAddBtn');
+    const addStudentForm = document.getElementById('addStudentForm');
+    const studentIdInput = document.getElementById('studentId');
+    const closeSuccessBtn = document.getElementById('closeSuccessBtn');
+
+    function showModal(modal) { modal.classList.add('active'); }
+    function hideModal(modal) { modal.classList.remove('active'); }
+    function openAddStudentPassword() {
+        showModal(passwordModal);
+        addPasswordInput.value = '';
+        pwdError.style.display = 'none';
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'n') {
+            e.preventDefault();
+            openAddStudentPassword();
+        }
+    });
+
+    const schoolNameEl = document.getElementById('schoolName');
+    let pressTimer;
+    if (schoolNameEl) {
+        schoolNameEl.addEventListener('touchstart', () => {
+            pressTimer = setTimeout(() => openAddStudentPassword(), 3000);
+        });
+        schoolNameEl.addEventListener('touchend', () => clearTimeout(pressTimer));
+        schoolNameEl.addEventListener('touchcancel', () => clearTimeout(pressTimer));
+    }
+
+    closePwdModal.addEventListener('click', () => hideModal(passwordModal));
+    cancelPwdBtn.addEventListener('click', () => hideModal(passwordModal));
+    confirmPwdBtn.addEventListener('click', () => {
+        if (addPasswordInput.value === ADD_STUDENT_PASSWORD) {
+            hideModal(passwordModal);
+            addStudentForm.reset();
+            studentIdInput.value = '';
+            showModal(addStudentModal);
+        } else {
+            pwdError.style.display = 'block';
+        }
+    });
+
+    closeAddModal.addEventListener('click', () => hideModal(addStudentModal));
+    cancelAddBtn.addEventListener('click', () => hideModal(addStudentModal));
+
+    addStudentForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const studentId = studentIdInput.value.trim();
+        const name = document.getElementById('studentName').value.trim();
+        const className = document.getElementById('studentClass').value;
+        const phone = document.getElementById('studentPhone').value.trim();
+        const term1Fee = parseFloat(document.getElementById('term1Fee').value);
+        const term2Fee = parseFloat(document.getElementById('term2Fee').value);
+        const term3Fee = parseFloat(document.getElementById('term3Fee').value);
+
+        if (!studentId || !name || !className || !phone || isNaN(term1Fee) || isNaN(term2Fee) || isNaN(term3Fee)) {
+            alert('Please fill all fields correctly');
+            return;
+        }
+
+        try {
+            const docRef = doc(db, "students", studentId);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                alert("Student ID already exists");
+                return;
+            }
+        } catch (err) {
+            alert("Error checking ID. Please try again.");
+            return;
+        }
+
+        const data = {
+            name, class: className, phone,
+            terms: [
+                { name: "Term 1 (June - September)", total: term1Fee, paid: 0 },
+                { name: "Term 2 (October - December)", total: term2Fee, paid: 0 },
+                { name: "Term 3 (January - March)", total: term3Fee, paid: 0 }
+            ]
+        };
+        try {
+            await setDoc(doc(db, "students", studentId), data);
+            if (!studentData[className]) studentData[className] = [];
+            studentData[className].push({ name, id: studentId });
+            allStudents.push({ id: studentId, name, class: className, phone, terms: data.terms });
+            hideModal(addStudentModal);
+            showModal(successPopup);
+            setTimeout(() => hideModal(successPopup), 2500);
+        } catch (err) {
+            alert('Failed to add student');
+        }
+    });
+    closeSuccessBtn.addEventListener('click', () => hideModal(successPopup));
+
+    async function init() {
+        await fetchAllStudents();
         renderClassGrid();
         classViewDiv.style.display = 'block';
-        studentView.classList.remove('active');
-        if(window.location.search) history.replaceState(null, "", window.location.pathname);
-    })();
+        fullscreenStudentView.classList.remove('active');
+        if (window.location.search) history.replaceState(null, "", window.location.pathname);
+    }
+    init();
 </script>
 </body>
 </html>
