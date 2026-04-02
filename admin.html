@@ -556,6 +556,104 @@
         @keyframes circleAnim { to { stroke-dashoffset: 0; } }
         @keyframes checkAnim { to { stroke-dashoffset: 0; } }
 
+        /* ---------- Footer and Contact Developer ---------- */
+        .footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 1rem;
+            border-top: 1px solid rgba(0,0,0,0.05);
+        }
+        .contact-dev {
+            background: none;
+            border: none;
+            color: #2a5298;
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 0.85rem;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+        .contact-dev:hover {
+            opacity: 0.7;
+        }
+
+        /* Contact Modal (mini screen) */
+        .contact-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 4000;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0.2s, opacity 0.2s;
+        }
+        .contact-modal.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        .contact-card {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 32px;
+            width: 90%;
+            max-width: 320px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 30px 40px -12px rgba(0,0,0,0.2);
+            transform: scale(0.96);
+            transition: transform 0.2s;
+        }
+        .contact-modal.active .contact-card {
+            transform: scale(1);
+        }
+        .contact-card h3 {
+            margin-bottom: 1rem;
+            color: #1e3c72;
+        }
+        .contact-options {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .contact-option {
+            background: rgba(238,242,255,0.9);
+            border: none;
+            padding: 0.8rem 1.2rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .contact-option.call {
+            background: #1e4a76;
+            color: white;
+        }
+        .contact-option.whatsapp {
+            background: #25D366;
+            color: white;
+        }
+        .contact-option:hover {
+            transform: translateY(-2px);
+        }
+        .close-contact {
+            background: #eef2f8;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            cursor: pointer;
+        }
+
         @media (max-width: 680px) {
             .admin-header { padding: 1rem; }
             .student-card { padding: 0.9rem 1.2rem; }
@@ -695,6 +793,22 @@
     </div>
 </div>
 
+<!-- Contact Developer Modal (mini screen) -->
+<div id="contactModal" class="contact-modal">
+    <div class="contact-card">
+        <h3>Contact Developer</h3>
+        <div class="contact-options">
+            <button class="contact-option call" id="callBtn">📞 Call</button>
+            <button class="contact-option whatsapp" id="whatsappBtn">💬 WhatsApp</button>
+        </div>
+        <button class="close-contact" id="closeContactBtn">Close</button>
+    </div>
+</div>
+
+<footer class="footer">
+    <button id="contactDevBtn" class="contact-dev">Contact Developer</button>
+</footer>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
     import { getFirestore, collection, getDocs, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
@@ -792,22 +906,18 @@
         ]
     };
 
-    // Ensure every class (LKG to STD 10) has at least the default students
     function ensureAllClassesHaveStudents() {
         const allClassNames = ["LKG","UKG","STD 1","STD 2","STD 3","STD 4","STD 5","STD 6","STD 7","STD 8","STD 9","STD 10"];
         for (const className of allClassNames) {
             if (!studentData[className] || studentData[className].length === 0) {
-                // Use default list if available, otherwise create a placeholder
                 const defaultList = defaultStudentLists[className];
                 if (defaultList && defaultList.length > 0) {
                     studentData[className] = [...defaultList];
                 } else {
-                    // Fallback: create a dummy student (should not happen)
                     studentData[className] = [{ name: "Student", id: `temp_${className}` }];
                 }
             }
         }
-        // Also rebuild allStudents array from studentData for consistency
         allStudents = [];
         for (const [className, students] of Object.entries(studentData)) {
             for (const student of students) {
@@ -822,12 +932,10 @@
         }
     }
 
-    // Fetch students from Firebase, then merge with default data to ensure no empty class
     async function fetchAllStudents() {
         try {
             const querySnapshot = await getDocs(collection(db, "students"));
             if (querySnapshot.empty) {
-                // Use default data
                 studentData = JSON.parse(JSON.stringify(defaultStudentLists));
             } else {
                 studentData = {};
@@ -838,11 +946,9 @@
                     studentData[className].push({ name: data.name, id: docSnap.id });
                 });
             }
-            // After loading from Firebase (or default), ensure every class has students
             ensureAllClassesHaveStudents();
         } catch (err) {
-            console.error("Error fetching students:", err);
-            // Fallback to default data on error
+            console.error(err);
             studentData = JSON.parse(JSON.stringify(defaultStudentLists));
             ensureAllClassesHaveStudents();
         }
@@ -870,7 +976,6 @@
 
     function onClassClick(className) {
         currentClass = className;
-        // Ensure the class exists in studentData (should by now)
         currentStudents = studentData[className] || [];
         classViewDiv.style.display = 'none';
         fullscreenStudentView.classList.remove('active');
@@ -934,7 +1039,7 @@
         }
     });
 
-    // Add Student hidden triggers (unchanged)
+    // Add Student hidden triggers
     const passwordModal = document.getElementById('passwordModal');
     const addStudentModal = document.getElementById('addStudentModal');
     const successPopup = document.getElementById('successPopup');
@@ -1038,6 +1143,35 @@
         }
     });
     closeSuccessBtn.addEventListener('click', () => hideModal(successPopup));
+
+    // ---------- CONTACT DEVELOPER ----------
+    const contactModal = document.getElementById('contactModal');
+    const contactDevBtn = document.getElementById('contactDevBtn');
+    const closeContactBtn = document.getElementById('closeContactBtn');
+    const callBtn = document.getElementById('callBtn');
+    const whatsappBtn = document.getElementById('whatsappBtn');
+    const developerNumber = "8594009501";
+
+    function openContactModal() {
+        showModal(contactModal);
+    }
+    function closeContactModal() {
+        hideModal(contactModal);
+    }
+    contactDevBtn.addEventListener('click', openContactModal);
+    closeContactBtn.addEventListener('click', closeContactModal);
+    callBtn.addEventListener('click', () => {
+        window.location.href = `tel:${developerNumber}`;
+        closeContactModal();
+    });
+    whatsappBtn.addEventListener('click', () => {
+        window.open(`https://wa.me/${developerNumber}`, '_blank');
+        closeContactModal();
+    });
+    // Click outside to close
+    contactModal.addEventListener('click', (e) => {
+        if (e.target === contactModal) closeContactModal();
+    });
 
     async function init() {
         await fetchAllStudents();
