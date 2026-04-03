@@ -919,7 +919,9 @@ function generateReceiptCode(name, studentClass, termNumber, amount) {
   }
   initials = initials.toUpperCase();
   const classNum = studentClass.replace(/\D/g, "");
-  const amt = String(amount).substring(0, 2);
+  // Use absolute amount for code to avoid negative sign
+  const absAmount = Math.abs(amount);
+  const amt = String(absAmount).substring(0, 2);
   return `${initials}${classNum}${termNumber}${amt}`;
 }
 
@@ -1026,25 +1028,31 @@ async function showReceiptSuccess(termName, amountPaid, receiptCode) {
   };
 }
 
-// ---------- ADMIN PAYMENT FLOW (modified to create receipt) ----------
-async function handlePaymentUpdate(termIndex, amountPaid, isFullPayment = false) {
+// ---------- ADMIN PAYMENT FLOW (modified to allow negative amounts) ----------
+async function handlePaymentUpdate(termIndex, addedAmount, isFullPayment = false) {
   const term = TERMS[termIndex];
-  let addedAmount = amountPaid;
+  
   if (isFullPayment) {
     addedAmount = term.total - term.paid;
     term.paid = term.total;
   } else {
-    if (term.paid + amountPaid > term.total) {
-      alert("Amount exceeds remaining balance");
+    let newPaid = term.paid + addedAmount;
+    // Clamp between 0 and total
+    if (newPaid < 0) newPaid = 0;
+    if (newPaid > term.total) newPaid = term.total;
+    const actualAdded = newPaid - term.paid;
+    if (actualAdded === 0 && addedAmount !== 0) {
+      alert("Amount would not change the paid value (already at limit).");
       return false;
     }
-    term.paid += amountPaid;
+    term.paid = newPaid;
+    addedAmount = actualAdded;
   }
 
   await saveData();
   render();
 
-  // Generate receipt
+  // Generate receipt (addedAmount could be negative)
   const termNumber = term.name.match(/\d+/)?.[0] || "0";
   const receiptCode = generateReceiptCode(studentData.name, studentData.class, termNumber, addedAmount);
   const receiptObj = {
@@ -1060,7 +1068,7 @@ async function handlePaymentUpdate(termIndex, amountPaid, isFullPayment = false)
   return true;
 }
 
-// ---------- CUSTOM ADMIN MODAL FLOW (modified to use handlePaymentUpdate) ----------
+// ---------- CUSTOM ADMIN MODAL FLOW (modified to allow negative amounts) ----------
 function createModal(title, contentHtml, onConfirm, onCancel) {
     const overlay = document.createElement("div");
     overlay.className = "popup-overlay";
@@ -1131,10 +1139,10 @@ async function adminLogin() {
                             } else {
                                 createModal(
                                     "Enter Amount",
-                                    `<input type="number" id="amountInput" class="admin-modal-input" placeholder="Amount (positive)">`,
+                                    `<input type="number" id="amountInput" class="admin-modal-input" placeholder="Amount (positive or negative)">`,
                                     async (amountValues) => {
                                         const amount = parseFloat(amountValues[0]);
-                                        if (isNaN(amount) || amount <= 0) {
+                                        if (isNaN(amount)) {
                                             alert("Invalid amount");
                                             return;
                                         }
