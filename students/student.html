@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>St. Annes ICSE | Term Fee System</title>
+    <title>St. Annes ICSE | Term Fee System with Receipts</title>
     <style>
         * {
             margin: 0;
@@ -82,17 +82,6 @@
             font-family: inherit;
         }
 
-        .btn-primary {
-            background: #1e4a76;
-            color: white;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-        }
-        .btn-primary:hover {
-            background: #0f3a5c;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(30,74,118,0.2);
-        }
-
         .btn-secondary {
             background: #eef2f8;
             color: #2c4c6e;
@@ -100,6 +89,14 @@
         }
         .btn-secondary:hover {
             background: #e2e9f2;
+        }
+        .btn-primary {
+            background: #1e4a76;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #0f3a5c;
+            transform: translateY(-1px);
         }
 
         .student-card {
@@ -651,7 +648,55 @@
             outline: none;
             border-color: #3b82f6;
         }
+
+        /* Receipt template styles (hidden) */
+        #receiptTemplate {
+            position: absolute;
+            left: -9999px;
+            top: 0;
+        }
+        .receipt-card {
+            width: 350px;
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            font-family: 'Inter', sans-serif;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: left;
+            border: 1px solid #e2e8f0;
+        }
+        .receipt-card h2 {
+            color: #1e4a76;
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            text-align: center;
+            border-bottom: 2px solid #3b82f6;
+            display: inline-block;
+            width: 100%;
+        }
+        .receipt-card p {
+            margin: 8px 0;
+            font-size: 14px;
+        }
+        .receipt-card strong {
+            color: #0f2b3d;
+        }
+        .receipt-preview {
+            max-width: 100%;
+            border-radius: 12px;
+            margin: 10px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .receipt-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .receipt-actions button {
+            flex: 1;
+        }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
 <body>
 
@@ -666,6 +711,7 @@
             <h1>St. Annes ICSE School Kottody</h1>
         </div>
         <div class="header-actions">
+            <button id="verifyReceiptBtn" class="btn btn-secondary">🔍 Verify Receipt</button>
             <button id="logoutBtn" class="btn btn-secondary">🚪 Logout</button>
         </div>
     </div>
@@ -690,7 +736,7 @@
                 <tr><th>Term</th><th>Total Fee (₹)</th><th>Paid (₹)</th><th>Remaining (₹)</th><th>Status</th>‹
             </thead>
             <tbody id="feeTableBody"></tbody>
-           </table>
+        </table>
     </div>
 
     <div class="action-buttons">
@@ -705,20 +751,25 @@
     <footer>Official fee record • Authorized personnel only</footer>
 </div>
 
-<div id="globalModal" class="modal-overlay">
-    <div class="modal-card">
-        <h3 id="modalTitle">Authentication</h3>
-        <div id="modalBody"></div>
-        <div class="modal-actions">
-            <button class="modal-btn" id="modalCancelBtn">Cancel</button>
-            <button class="modal-btn primary" id="modalConfirmBtn">Confirm</button>
+<!-- Hidden Receipt Template -->
+<div id="receiptTemplate">
+    <div class="receipt-card">
+        <h2>St. Anne's ICSE School</h2>
+        <p><strong>Student:</strong> <span id="r_name"></span></p>
+        <p><strong>Class:</strong> <span id="r_class"></span></p>
+        <p><strong>Amount:</strong> ₹<span id="r_amount"></span></p>
+        <p><strong>Term:</strong> <span id="r_term"></span></p>
+        <p><strong>Date:</strong> <span id="r_date"></span></p>
+        <p><strong>Verification Code:</strong> <span id="r_code"></span></p>
+        <div style="font-size:8px; opacity:0.3; text-align:center; margin-top:15px;">
+            ST. ANNE'S VERIFIED SYSTEM
         </div>
     </div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, updateDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 
 // ---------- FIREBASE ----------
 const firebaseConfig = {
@@ -760,7 +811,7 @@ function hideLoader() {
   if (app) app.style.display = "block";
 }
 
-// ---------- LOAD ----------
+// ---------- LOAD STUDENT ----------
 async function loadStudent() {
   try {
     if (!studentId) {
@@ -779,6 +830,7 @@ async function loadStudent() {
     }
 
     studentData = snap.data();
+    if (!studentData.receipts) studentData.receipts = [];
     TERMS = studentData.terms || [];
 
     if (getEl("studentNameDisplay"))
@@ -832,9 +884,9 @@ function render() {
 
   if (getEl("overallSummaryCard")) {
     getEl("overallSummaryCard").innerHTML = `
-      Total: ₹${total}<br>
-      Paid: ₹${paid}<br>
-      Remaining: ₹${remaining}
+      <div><strong>Total:</strong> ₹${total}</div>
+      <div><strong>Paid:</strong> ₹${paid}</div>
+      <div><strong>Remaining:</strong> ₹${remaining}</div>
     `;
   }
 
@@ -849,107 +901,166 @@ function render() {
   }
 }
 
-// ---------- SAVE ----------
+// ---------- SAVE TERMS ----------
 async function saveData() {
   await updateDoc(doc(db, "students", studentId), {
     terms: TERMS
   });
 }
 
-// ---------- COPY ----------
-function copyUPI(btn) {
-  navigator.clipboard.writeText(UPI_ID);
-  btn.innerHTML = "✔";
-  setTimeout(() => btn.innerHTML = "📋", 1200);
+// ---------- RECEIPT FUNCTIONS ----------
+function generateReceiptCode(name, studentClass, termNumber, amount) {
+  const words = name.trim().split(" ");
+  let initials;
+  if (words.length === 1) {
+    initials = words[0][0] + "X";
+  } else {
+    initials = words[0][0] + words[1][0];
+  }
+  initials = initials.toUpperCase();
+  const classNum = studentClass.replace(/\D/g, "");
+  const amt = String(amount).substring(0, 2);
+  return `${initials}${classNum}${termNumber}${amt}`;
 }
 
-// ---------- SUCCESS POPUP (kept as is, but uses same popup-card styling) ----------
-function showSuccess(term, amount) {
+async function generateReceiptImage(data) {
+  document.getElementById("r_name").innerText = data.name;
+  document.getElementById("r_class").innerText = data.class;
+  document.getElementById("r_amount").innerText = data.amount;
+  document.getElementById("r_term").innerText = data.term;
+  document.getElementById("r_date").innerText = data.date;
+  document.getElementById("r_code").innerText = data.code;
+
+  const el = document.getElementById("receiptTemplate");
+  const canvas = await html2canvas(el, { scale: 2, backgroundColor: "#ffffff" });
+  return canvas.toDataURL("image/png");
+}
+
+function downloadReceipt(imageDataUrl, filename) {
+  const a = document.createElement("a");
+  a.href = imageDataUrl;
+  a.download = filename;
+  a.click();
+}
+
+function openWhatsApp(phoneNumber, message) {
+  const encodedMsg = encodeURIComponent(message);
+  window.open(`https://wa.me/${phoneNumber}?text=${encodedMsg}`, "_blank");
+}
+
+async function storeReceipt(receiptObj) {
+  if (!studentData.receipts) studentData.receipts = [];
+  studentData.receipts.push(receiptObj);
+  await updateDoc(doc(db, "students", studentId), {
+    receipts: studentData.receipts
+  });
+}
+
+async function verifyReceipt(code) {
+  const snapshot = await getDocs(collection(db, "students"));
+  for (const docSnap of snapshot.docs) {
+    const data = docSnap.data();
+    if (data.receipts && Array.isArray(data.receipts)) {
+      const found = data.receipts.find(r => r.code === code);
+      if (found) {
+        return {
+          studentId: docSnap.id,
+          studentName: data.name,
+          studentClass: data.class,
+          ...found
+        };
+      }
+    }
+  }
+  return null;
+}
+
+// ---------- ENHANCED SUCCESS POPUP (with receipt) ----------
+async function showReceiptSuccess(termName, amountPaid, receiptCode) {
+  const receiptData = {
+    name: studentData.name,
+    class: studentData.class,
+    amount: amountPaid,
+    term: termName,
+    date: new Date().toISOString().slice(0,10),
+    code: receiptCode
+  };
+
+  const imageDataUrl = await generateReceiptImage(receiptData);
+
   const overlay = document.createElement("div");
   overlay.className = "popup-overlay";
 
   overlay.innerHTML = `
-    <div class="popup-card">
+    <div class="popup-card" style="max-width: 360px;">
       <div class="popup-close" id="closeSuccess">✖</div>
-      <h3>Payment Updated</h3>
+      <h3>Payment Successful</h3>
       <div class="tick-container">
         <svg class="tick-svg" viewBox="0 0 52 52">
           <circle class="tick-circle" cx="26" cy="26" r="25" fill="none"/>
           <path class="tick-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
         </svg>
       </div>
-      <p style="font-weight:600">${term}</p>
-      <p>Amount: ₹${amount}</p>
-      <button id="notifyBtn" class="primary-btn">Notify via WhatsApp</button>
+      <p style="font-weight:500;">${termName} · ₹${amountPaid}</p>
+      <img src="${imageDataUrl}" alt="Receipt" class="receipt-preview" style="width:100%; border-radius:12px;">
+      <div class="receipt-actions">
+        <button id="downloadReceiptBtn" class="btn btn-primary" style="flex:1;">⬇ Download</button>
+        <button id="whatsappReceiptBtn" class="btn btn-secondary" style="flex:1;">💬 WhatsApp</button>
+      </div>
+      <p class="whatsapp-note" style="margin-top:12px;">Code: <strong>${receiptCode}</strong></p>
     </div>
   `;
 
   document.body.appendChild(overlay);
 
-  getEl("closeSuccess").onclick = () => overlay.remove();
+  const closeBtn = overlay.querySelector("#closeSuccess");
+  closeBtn.onclick = () => overlay.remove();
 
-  getEl("notifyBtn").onclick = () => {
-    const msg = `DEAR ${studentData.name.toUpperCase()}, YOUR FEE PAYMENT HAS BEEN UPDATED. PLEASE CHECK THE ST. ANNE'S APP TO CONFIRM.`;
-    window.open(`https://wa.me/${studentData.phone}?text=${encodeURIComponent(msg)}`);
+  const downloadBtn = overlay.querySelector("#downloadReceiptBtn");
+  downloadBtn.onclick = () => downloadReceipt(imageDataUrl, `${receiptCode}.png`);
+
+  const whatsappBtn = overlay.querySelector("#whatsappReceiptBtn");
+  whatsappBtn.onclick = () => {
+    const msg = `Dear Parent,\n\nYour fee payment of ₹${amountPaid} for ${termName} has been updated.\nReceipt Code: ${receiptCode}\n\nThank you,\nSt. Anne's ICSE School`;
+    openWhatsApp(studentData.phone, msg);
   };
 }
 
-// ---------- IMPROVED PAY POPUP ----------
-function openPay() {
-  const overlay = document.createElement("div");
-  overlay.className = "popup-overlay";
+// ---------- ADMIN PAYMENT FLOW (modified to create receipt) ----------
+async function handlePaymentUpdate(termIndex, amountPaid, isFullPayment = false) {
+  const term = TERMS[termIndex];
+  let addedAmount = amountPaid;
+  if (isFullPayment) {
+    addedAmount = term.total - term.paid;
+    term.paid = term.total;
+  } else {
+    if (term.paid + amountPaid > term.total) {
+      alert("Amount exceeds remaining balance");
+      return false;
+    }
+    term.paid += amountPaid;
+  }
 
-  overlay.innerHTML = `
-    <div class="popup-card">
-      <div class="popup-close" id="closePay">✖</div>
-      <h3>Pay Fees</h3>
-      <img src="${QR_URL}" alt="UPI QR Code" class="qr-image">
-      <div class="upi-copy-area">
-        <span class="upi-id">${UPI_ID}</span>
-        <button id="copyBtn" class="copy-btn">📋 Copy</button>
-      </div>
-      <button id="upiBtn" class="upi-pay-btn">Pay via UPI</button>
-      <p class="whatsapp-note">
-        Send screenshot to 
-        <span id="waLink" class="whatsapp-link">Office WhatsApp</span>
-      </p>
-    </div>
-  `;
+  await saveData();
+  render();
 
-  document.body.appendChild(overlay);
+  // Generate receipt
+  const termNumber = term.name.match(/\d+/)?.[0] || "0";
+  const receiptCode = generateReceiptCode(studentData.name, studentData.class, termNumber, addedAmount);
+  const receiptObj = {
+    code: receiptCode,
+    amount: addedAmount,
+    term: term.name,
+    date: new Date().toISOString().slice(0,10)
+  };
+  await storeReceipt(receiptObj);
 
-  getEl("closePay").onclick = () => overlay.remove();
-  getEl("copyBtn").onclick = function () { copyUPI(this); };
-  getEl("upiBtn").onclick = () => window.location.href = `upi://pay?pa=${UPI_ID}`;
-  getEl("waLink").onclick = () => window.open(WHATSAPP_URL);
+  // Show enhanced popup
+  await showReceiptSuccess(term.name, addedAmount, receiptCode);
+  return true;
 }
 
-// ---------- IMPROVED HELP POPUP ----------
-function openHelp() {
-  const overlay = document.createElement("div");
-  overlay.className = "popup-overlay";
-
-  overlay.innerHTML = `
-    <div class="popup-card">
-      <div class="popup-close" id="closeHelp">✖</div>
-      <h3>Help & Support</h3>
-      <div class="help-content">
-        <p>📞 For assistance, please contact the school office:</p>
-        <p><strong>Phone:</strong> +91 12345 67890</p>
-        <p><strong>Email:</strong> office@stannes.edu</p>
-        <p><strong>Office Hours:</strong> Mon-Fri, 9:00 AM – 4:00 PM</p>
-      </div>
-      <button id="chatBtn" class="whatsapp-chat-btn">💬 Chat on WhatsApp</button>
-    </div>
-  `;
-
-  document.body.appendChild(overlay);
-
-  getEl("closeHelp").onclick = () => overlay.remove();
-  getEl("chatBtn").onclick = () => window.open(WHATSAPP_URL);
-}
-
-// ---------- CUSTOM ADMIN MODAL FLOW ----------
+// ---------- CUSTOM ADMIN MODAL FLOW (modified to use handlePaymentUpdate) ----------
 function createModal(title, contentHtml, onConfirm, onCancel) {
     const overlay = document.createElement("div");
     overlay.className = "popup-overlay";
@@ -990,9 +1101,7 @@ function createModal(title, contentHtml, onConfirm, onCancel) {
     };
 }
 
-// ---------- Admin Login (replaces prompt) ----------
 async function adminLogin() {
-    // Step 1: Password modal
     createModal(
         "Admin Login",
         `<input type="password" id="adminPass" class="admin-modal-input" placeholder="Enter password">`,
@@ -1002,7 +1111,6 @@ async function adminLogin() {
                 alert("Wrong password");
                 return;
             }
-            // Step 2: Action selection (Full / Partial)
             createModal(
                 "Select Action",
                 `<select id="actionSelect" class="admin-select">
@@ -1011,7 +1119,6 @@ async function adminLogin() {
                 </select>`,
                 (actionValues) => {
                     const action = actionValues[0];
-                    // Step 3: Term selection
                     createModal(
                         "Select Term",
                         `<select id="termSelect" class="admin-select">
@@ -1020,79 +1127,161 @@ async function adminLogin() {
                         async (termValues) => {
                             const termIndex = parseInt(termValues[0]);
                             if (action === "full") {
-                                // Full payment
-                                TERMS[termIndex].paid = TERMS[termIndex].total;
-                                await saveData();
-                                render();
-                                showSuccess(TERMS[termIndex].name, TERMS[termIndex].total);
+                                await handlePaymentUpdate(termIndex, 0, true);
                             } else {
-                                // Partial: ask for amount
                                 createModal(
                                     "Enter Amount",
-                                    `<input type="number" id="amountInput" class="admin-modal-input" placeholder="Amount (can be negative)">`,
+                                    `<input type="number" id="amountInput" class="admin-modal-input" placeholder="Amount (positive)">`,
                                     async (amountValues) => {
                                         const amount = parseFloat(amountValues[0]);
-                                        if (isNaN(amount)) {
+                                        if (isNaN(amount) || amount <= 0) {
                                             alert("Invalid amount");
                                             return;
                                         }
-                                        const term = TERMS[termIndex];
-                                        if (term.paid + amount > term.total) {
-                                            alert("Amount exceeds remaining balance");
-                                            return;
-                                        }
-                                        term.paid += amount;
-                                        if (term.paid < 0) term.paid = 0;
-                                        await saveData();
-                                        render();
-                                        showSuccess(term.name, amount);
+                                        await handlePaymentUpdate(termIndex, amount, false);
                                     },
-                                    () => {} // cancel
+                                    () => {}
                                 );
                             }
                         },
-                        () => {} // cancel
+                        () => {}
                     );
                 },
-                () => {} // cancel
+                () => {}
             );
         },
-        () => {} // cancel
+        () => {}
     );
 }
 
-// ---------- HIDDEN ADMIN ACCESS (Desktop & Mobile) ----------
+// ---------- ADMIN VERIFICATION POPUP ----------
+async function openVerification() {
+    createModal(
+        "Verify Receipt Code",
+        `<input type="text" id="receiptCode" class="admin-modal-input" placeholder="Enter receipt code (e.g., MM7150)">`,
+        async (values) => {
+            const code = values[0].trim().toUpperCase();
+            if (!code) {
+                alert("Please enter a receipt code");
+                return;
+            }
+            const result = await verifyReceipt(code);
+            if (!result) {
+                alert("❌ Invalid receipt code. No matching transaction found.");
+                return;
+            }
+            // Show result in a popup
+            const resultPopup = document.createElement("div");
+            resultPopup.className = "popup-overlay";
+            resultPopup.innerHTML = `
+                <div class="popup-card">
+                    <div class="popup-close" id="closeResult">✖</div>
+                    <h3>✅ Receipt Verified</h3>
+                    <div style="text-align:left; margin-top:10px;">
+                        <p><strong>Student:</strong> ${result.studentName}</p>
+                        <p><strong>Class:</strong> ${result.studentClass}</p>
+                        <p><strong>Amount:</strong> ₹${result.amount}</p>
+                        <p><strong>Term:</strong> ${result.term}</p>
+                        <p><strong>Date:</strong> ${result.date}</p>
+                        <p><strong>Code:</strong> ${result.code}</p>
+                    </div>
+                    <button id="closeResultBtn" class="primary-btn" style="margin-top:15px;">Close</button>
+                </div>
+            `;
+            document.body.appendChild(resultPopup);
+            const closeResult = () => resultPopup.remove();
+            resultPopup.querySelector("#closeResult").onclick = closeResult;
+            resultPopup.querySelector("#closeResultBtn").onclick = closeResult;
+        },
+        () => {}
+    );
+}
+
+// ---------- HIDDEN ADMIN ACCESS ----------
 function openAdminAccess() {
-    // Call the existing admin login flow
     adminLogin();
 }
 
-// Desktop: Ctrl + Shift + A
 document.addEventListener("keydown", function(e) {
     if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "a") {
-        e.preventDefault(); // prevent browser shortcut (if any)
+        e.preventDefault();
         openAdminAccess();
     }
 });
 
-// Mobile: long press on student name
 const nameEl = document.getElementById("studentNameDisplay");
 let pressTimer;
-
 if (nameEl) {
     nameEl.addEventListener("touchstart", (e) => {
         pressTimer = setTimeout(() => {
             openAdminAccess();
         }, 1200);
     });
-
     nameEl.addEventListener("touchend", () => {
         clearTimeout(pressTimer);
     });
-
     nameEl.addEventListener("touchcancel", () => {
         clearTimeout(pressTimer);
     });
+}
+
+// ---------- ORIGINAL PAY & HELP FLOW (unchanged) ----------
+function openPay() {
+  const overlay = document.createElement("div");
+  overlay.className = "popup-overlay";
+
+  overlay.innerHTML = `
+    <div class="popup-card">
+      <div class="popup-close" id="closePay">✖</div>
+      <h3>Pay Fees</h3>
+      <img src="${QR_URL}" alt="UPI QR Code" class="qr-image">
+      <div class="upi-copy-area">
+        <span class="upi-id">${UPI_ID}</span>
+        <button id="copyBtn" class="copy-btn">📋 Copy</button>
+      </div>
+      <button id="upiBtn" class="upi-pay-btn">Pay via UPI</button>
+      <p class="whatsapp-note">
+        Send screenshot to 
+        <span id="waLink" class="whatsapp-link">Office WhatsApp</span>
+      </p>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  getEl("closePay").onclick = () => overlay.remove();
+  const copyBtn = overlay.querySelector("#copyBtn");
+  copyBtn.onclick = function () {
+    navigator.clipboard.writeText(UPI_ID);
+    copyBtn.innerHTML = "✔";
+    setTimeout(() => copyBtn.innerHTML = "📋", 1200);
+  };
+  overlay.querySelector("#upiBtn").onclick = () => window.location.href = `upi://pay?pa=${UPI_ID}`;
+  overlay.querySelector("#waLink").onclick = () => window.open(WHATSAPP_URL);
+}
+
+function openHelp() {
+  const overlay = document.createElement("div");
+  overlay.className = "popup-overlay";
+
+  overlay.innerHTML = `
+    <div class="popup-card">
+      <div class="popup-close" id="closeHelp">✖</div>
+      <h3>Help & Support</h3>
+      <div class="help-content">
+        <p>📞 For assistance, please contact the school office:</p>
+        <p><strong>Phone:</strong> +91 12345 67890</p>
+        <p><strong>Email:</strong> office@stannes.edu</p>
+        <p><strong>Office Hours:</strong> Mon-Fri, 9:00 AM – 4:00 PM</p>
+      </div>
+      <button id="chatBtn" class="whatsapp-chat-btn">💬 Chat on WhatsApp</button>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  overlay.querySelector("#closeHelp").onclick = () => overlay.remove();
+  overlay.querySelector("#chatBtn").onclick = () => window.open(WHATSAPP_URL);
 }
 
 // ---------- INIT ----------
@@ -1105,6 +1294,9 @@ window.onload = () => {
 
   if (getEl("helpBtn"))
     getEl("helpBtn").onclick = openHelp;
+
+  if (getEl("verifyReceiptBtn"))
+    getEl("verifyReceiptBtn").onclick = openVerification;
 
   loadStudent();
 };
