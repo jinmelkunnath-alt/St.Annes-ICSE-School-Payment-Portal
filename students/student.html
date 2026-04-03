@@ -711,7 +711,6 @@
             <h1>St. Annes ICSE School Kottody</h1>
         </div>
         <div class="header-actions">
-            <button id="verifyReceiptBtn" class="btn btn-secondary">🔍 Verify Receipt</button>
             <button id="logoutBtn" class="btn btn-secondary">🚪 Logout</button>
         </div>
     </div>
@@ -769,7 +768,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { getFirestore, doc, getDoc, updateDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 
 // ---------- FIREBASE ----------
 const firebaseConfig = {
@@ -909,20 +908,26 @@ async function saveData() {
 }
 
 // ---------- RECEIPT FUNCTIONS ----------
-function generateReceiptCode(name, studentClass, termNumber, amount) {
-  const words = name.trim().split(" ");
-  let initials;
-  if (words.length === 1) {
-    initials = words[0][0] + "X";
-  } else {
-    initials = words[0][0] + words[1][0];
-  }
-  initials = initials.toUpperCase();
+function generateReceiptCode(name, studentClass, termName, amount, existingReceipts) {
+  // 1. Initials: first letter of each word in name
+  const words = name.trim().split(/\s+/);
+  const initials = words.map(w => w[0]).join('').toUpperCase();
+
+  // 2. Class number: extract digits only (e.g., "7" or "VII" -> "7")
   const classNum = studentClass.replace(/\D/g, "");
-  // Use absolute amount for code to avoid negative sign
+  
+  // 3. Term number: extract digits from term name (e.g., "Term 2" -> "2")
+  const termNum = (termName.match(/\d+/) || ["0"])[0];
+  
+  // 4. First two digits of amount (absolute value)
   const absAmount = Math.abs(amount);
-  const amt = String(absAmount).substring(0, 2);
-  return `${initials}${classNum}${termNumber}${amt}`;
+  const amountPrefix = String(absAmount).substring(0, 2);
+  
+  // 5. Payment sequence: count how many times this term has been paid before (based on existing receipts)
+  const previousPayments = existingReceipts.filter(r => r.term === termName).length;
+  const sequence = previousPayments + 1;
+  
+  return `${initials}${classNum}${termNum}${amountPrefix}${sequence}`;
 }
 
 async function generateReceiptImage(data) {
@@ -956,25 +961,6 @@ async function storeReceipt(receiptObj) {
   await updateDoc(doc(db, "students", studentId), {
     receipts: studentData.receipts
   });
-}
-
-async function verifyReceipt(code) {
-  const snapshot = await getDocs(collection(db, "students"));
-  for (const docSnap of snapshot.docs) {
-    const data = docSnap.data();
-    if (data.receipts && Array.isArray(data.receipts)) {
-      const found = data.receipts.find(r => r.code === code);
-      if (found) {
-        return {
-          studentId: docSnap.id,
-          studentName: data.name,
-          studentClass: data.class,
-          ...found
-        };
-      }
-    }
-  }
-  return null;
 }
 
 // ---------- ENHANCED SUCCESS POPUP (with receipt) ----------
@@ -1028,7 +1014,7 @@ async function showReceiptSuccess(termName, amountPaid, receiptCode) {
   };
 }
 
-// ---------- ADMIN PAYMENT FLOW (modified to allow negative amounts) ----------
+// ---------- ADMIN PAYMENT FLOW (with new receipt code) ----------
 async function handlePaymentUpdate(termIndex, addedAmount, isFullPayment = false) {
   const term = TERMS[termIndex];
   
@@ -1052,9 +1038,15 @@ async function handlePaymentUpdate(termIndex, addedAmount, isFullPayment = false
   await saveData();
   render();
 
-  // Generate receipt (addedAmount could be negative)
-  const termNumber = term.name.match(/\d+/)?.[0] || "0";
-  const receiptCode = generateReceiptCode(studentData.name, studentData.class, termNumber, addedAmount);
+  // Generate receipt with sequence number
+  const receiptCode = generateReceiptCode(
+    studentData.name,
+    studentData.class,
+    term.name,
+    addedAmount,
+    studentData.receipts || []
+  );
+  
   const receiptObj = {
     code: receiptCode,
     amount: addedAmount,
@@ -1068,7 +1060,7 @@ async function handlePaymentUpdate(termIndex, addedAmount, isFullPayment = false
   return true;
 }
 
-// ---------- CUSTOM ADMIN MODAL FLOW (modified to allow negative amounts) ----------
+// ---------- CUSTOM ADMIN MODAL FLOW ----------
 function createModal(title, contentHtml, onConfirm, onCancel) {
     const overlay = document.createElement("div");
     overlay.className = "popup-overlay";
@@ -1162,49 +1154,6 @@ async function adminLogin() {
     );
 }
 
-// ---------- ADMIN VERIFICATION POPUP ----------
-async function openVerification() {
-    createModal(
-        "Verify Receipt Code",
-        `<input type="text" id="receiptCode" class="admin-modal-input" placeholder="Enter receipt code (e.g., MM7150)">`,
-        async (values) => {
-            const code = values[0].trim().toUpperCase();
-            if (!code) {
-                alert("Please enter a receipt code");
-                return;
-            }
-            const result = await verifyReceipt(code);
-            if (!result) {
-                alert("❌ Invalid receipt code. No matching transaction found.");
-                return;
-            }
-            // Show result in a popup
-            const resultPopup = document.createElement("div");
-            resultPopup.className = "popup-overlay";
-            resultPopup.innerHTML = `
-                <div class="popup-card">
-                    <div class="popup-close" id="closeResult">✖</div>
-                    <h3>✅ Receipt Verified</h3>
-                    <div style="text-align:left; margin-top:10px;">
-                        <p><strong>Student:</strong> ${result.studentName}</p>
-                        <p><strong>Class:</strong> ${result.studentClass}</p>
-                        <p><strong>Amount:</strong> ₹${result.amount}</p>
-                        <p><strong>Term:</strong> ${result.term}</p>
-                        <p><strong>Date:</strong> ${result.date}</p>
-                        <p><strong>Code:</strong> ${result.code}</p>
-                    </div>
-                    <button id="closeResultBtn" class="primary-btn" style="margin-top:15px;">Close</button>
-                </div>
-            `;
-            document.body.appendChild(resultPopup);
-            const closeResult = () => resultPopup.remove();
-            resultPopup.querySelector("#closeResult").onclick = closeResult;
-            resultPopup.querySelector("#closeResultBtn").onclick = closeResult;
-        },
-        () => {}
-    );
-}
-
 // ---------- HIDDEN ADMIN ACCESS ----------
 function openAdminAccess() {
     adminLogin();
@@ -1233,7 +1182,7 @@ if (nameEl) {
     });
 }
 
-// ---------- ORIGINAL PAY & HELP FLOW (unchanged) ----------
+// ---------- ORIGINAL PAY & HELP FLOW ----------
 function openPay() {
   const overlay = document.createElement("div");
   overlay.className = "popup-overlay";
@@ -1302,9 +1251,6 @@ window.onload = () => {
 
   if (getEl("helpBtn"))
     getEl("helpBtn").onclick = openHelp;
-
-  if (getEl("verifyReceiptBtn"))
-    getEl("verifyReceiptBtn").onclick = openVerification;
 
   loadStudent();
 };
