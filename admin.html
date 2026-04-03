@@ -125,6 +125,28 @@
             font-weight: 500;
         }
 
+        /* Header actions (buttons) */
+        .header-actions {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .verify-receipt-btn {
+            background: rgba(238, 242, 255, 0.9);
+            border: 1px solid rgba(42, 82, 152, 0.3);
+            color: #1e3c72;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+        }
+        .verify-receipt-btn:hover {
+            background: rgba(42, 82, 152, 0.15);
+            transform: translateY(-1px);
+        }
+
         /* Main container */
         .app-container {
             max-width: 1400px;
@@ -407,7 +429,7 @@
             color: #6c86a3;
         }
 
-        /* Modals (Add Student) */
+        /* Modals (Add Student & Verify Receipt) */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -570,7 +592,7 @@
             font-weight: 500;
             cursor: pointer;
             font-size: 0.85rem;
-            text-decoration: none;
+            text-decoration: underline;
             transition: opacity 0.2s;
         }
         .contact-dev:hover {
@@ -677,6 +699,9 @@
             <h1 id="schoolName">St. Anne's ICSE School</h1>
             <p>Admin Panel · Quick Access</p>
         </div>
+    </div>
+    <div class="header-actions">
+        <button id="verifyReceiptBtn" class="verify-receipt-btn">🔍 Verify Receipt</button>
     </div>
 </header>
 
@@ -794,6 +819,22 @@
     </div>
 </div>
 
+<!-- Verify Receipt Modal -->
+<div id="verifyModal" class="modal-overlay">
+    <div class="modal-card">
+        <div class="modal-close" id="closeVerifyModal">✕</div>
+        <h3>Verify Receipt</h3>
+        <div class="form-group">
+            <input type="text" id="receiptCodeInput" placeholder="Enter receipt code">
+        </div>
+        <div class="modal-actions">
+            <button class="modal-btn" id="cancelVerifyBtn">Cancel</button>
+            <button class="modal-btn primary" id="verifyBtn">Verify</button>
+        </div>
+        <div id="verifyResult" style="margin-top:1rem;"></div>
+    </div>
+</div>
+
 <!-- Contact Developer Modal (mini screen) -->
 <div id="contactModal" class="contact-modal">
     <div class="contact-card">
@@ -807,7 +848,7 @@
 </div>
 
 <footer class="footer">
-    <button id="contactDevBtn" class="contact-dev">Contact Developer</button>
+    <button id="contactDevBtn" class="contact-dev">📱 Contact Developer</button>
 </footer>
 
 <script type="module">
@@ -889,7 +930,7 @@
             { name: "Kavya S", id: "kavya_std6" }
         ],
         "STD 7": [
-            { name: "Mariya Melbin", id: "mariya" },      // Required student
+            { name: "Mariya Melbin", id: "mariya" },
             { name: "Arjun Kumar", id: "arjun_std7" },
             { name: "Neha George", id: "neha_std7" },
             { name: "Chris Vinod", id: "chris_std7" }
@@ -1044,7 +1085,7 @@
         }
     });
 
-    // Add Student hidden triggers
+    // ---------- ADD STUDENT HIDDEN TRIGGERS (unchanged) ----------
     const passwordModal = document.getElementById('passwordModal');
     const addStudentModal = document.getElementById('addStudentModal');
     const successPopup = document.getElementById('successPopup');
@@ -1149,7 +1190,7 @@
     });
     closeSuccessBtn.addEventListener('click', () => hideModal(successPopup));
 
-    // ---------- CONTACT DEVELOPER ----------
+    // ---------- CONTACT DEVELOPER (unchanged) ----------
     const contactModal = document.getElementById('contactModal');
     const contactDevBtn = document.getElementById('contactDevBtn');
     const closeContactBtn = document.getElementById('closeContactBtn');
@@ -1157,12 +1198,8 @@
     const whatsappBtn = document.getElementById('whatsappBtn');
     const developerNumber = "8594009501";
 
-    function openContactModal() {
-        showModal(contactModal);
-    }
-    function closeContactModal() {
-        hideModal(contactModal);
-    }
+    function openContactModal() { showModal(contactModal); }
+    function closeContactModal() { hideModal(contactModal); }
     contactDevBtn.addEventListener('click', openContactModal);
     closeContactBtn.addEventListener('click', closeContactModal);
     callBtn.addEventListener('click', () => {
@@ -1173,11 +1210,80 @@
         window.open(`https://wa.me/${developerNumber}`, '_blank');
         closeContactModal();
     });
-    // Click outside to close
     contactModal.addEventListener('click', (e) => {
         if (e.target === contactModal) closeContactModal();
     });
 
+    // ---------- VERIFY RECEIPT MODAL ----------
+    const verifyModal = document.getElementById('verifyModal');
+    const closeVerifyModal = document.getElementById('closeVerifyModal');
+    const cancelVerifyBtn = document.getElementById('cancelVerifyBtn');
+    const verifyBtn = document.getElementById('verifyBtn');
+    const receiptCodeInput = document.getElementById('receiptCodeInput');
+    const verifyResult = document.getElementById('verifyResult');
+
+    document.getElementById('verifyReceiptBtn').addEventListener('click', () => {
+        receiptCodeInput.value = '';
+        verifyResult.innerHTML = '';
+        showModal(verifyModal);
+    });
+
+    function closeVerify() {
+        hideModal(verifyModal);
+    }
+    closeVerifyModal.addEventListener('click', closeVerify);
+    cancelVerifyBtn.addEventListener('click', closeVerify);
+
+    verifyBtn.addEventListener('click', async () => {
+        const code = receiptCodeInput.value.trim().toUpperCase();
+        if (!code) {
+            verifyResult.innerHTML = '<p style="color:#bc4e2c;">Please enter a receipt code</p>';
+            return;
+        }
+        verifyResult.innerHTML = '<p>Searching...</p>';
+        try {
+            const snapshot = await getDocs(collection(db, "students"));
+            let foundData = null;
+            for (const docSnap of snapshot.docs) {
+                const data = docSnap.data();
+                if (data.receipts && Array.isArray(data.receipts)) {
+                    const match = data.receipts.find(r => r.code === code);
+                    if (match) {
+                        foundData = {
+                            studentName: data.name,
+                            className: data.class,
+                            ...match
+                        };
+                        break;
+                    }
+                }
+            }
+            if (foundData) {
+                verifyResult.innerHTML = `
+                    <div style="background:#e1f7ea; padding:1rem; border-radius:1rem; border-left:4px solid #4CAF50;">
+                        <strong>Verified ✅</strong><br><br>
+                        <b>Name:</b> ${escapeHtml(foundData.studentName)}<br>
+                        <b>Class:</b> ${escapeHtml(foundData.className)}<br>
+                        <b>Amount:</b> ₹${foundData.amount}<br>
+                        <b>Term:</b> ${escapeHtml(foundData.term)}<br>
+                        <b>Date:</b> ${foundData.date}<br>
+                        <b>Code:</b> ${escapeHtml(foundData.code)}
+                    </div>
+                `;
+            } else {
+                verifyResult.innerHTML = `
+                    <div style="background:#ffe6e5; padding:1rem; border-radius:1rem; border-left:4px solid #bc4e2c;">
+                        ❌ Invalid Receipt Code
+                    </div>
+                `;
+            }
+        } catch (err) {
+            console.error(err);
+            verifyResult.innerHTML = '<p style="color:#bc4e2c;">Error verifying receipt code</p>';
+        }
+    });
+
+    // ---------- INIT ----------
     async function init() {
         await fetchAllStudents();
         renderClassGrid();
