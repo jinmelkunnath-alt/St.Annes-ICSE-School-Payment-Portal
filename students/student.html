@@ -708,22 +708,27 @@
             font-weight: 600;
             font-size: 14px;
         }
-        /* Amount */
+        /* Amount section - FIXED for better visibility */
         .amount-section {
+            margin: 20px 0;
             text-align: center;
-            margin: 18px 0;
+            background: linear-gradient(135deg, #1e4a76, #3b82f6);
+            padding: 18px;
+            border-radius: 16px;
+            color: white;
+            box-shadow: 0 10px 25px rgba(30, 74, 118, 0.25);
         }
         .amount-section span {
             font-size: 12px;
-            color: #6c86a3;
+            opacity: 0.85;
+            letter-spacing: 0.5px;
         }
         .amount-section h1 {
-            font-size: 32px;
-            margin-top: 5px;
-            background: linear-gradient(135deg, #1e4a76, #3b82f6);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
+            font-size: 34px;
+            margin-top: 6px;
+            font-weight: 700;
+            color: white;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
         /* Details */
         .receipt-details {
@@ -820,7 +825,7 @@
     <footer>Official fee record • Authorized personnel only</footer>
 </div>
 
-<!-- Hidden Receipt Template (Ultra Premium) -->
+<!-- Hidden Receipt Template (Ultra Premium with Fixed Amount Section) -->
 <div id="receiptTemplate">
     <div class="receipt-card">
         <div class="receipt-watermark">ST. ANNE'S ICSE</div>
