@@ -1142,8 +1142,15 @@
     cancelAddBtn.addEventListener('click', () => hideModal(addStudentModal));
 
     addStudentForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const studentId = studentIdInput.value.trim();
+    e.preventDefault();
+
+    const studentId = studentIdInput.value.trim();
+
+    // 🔒 ID FORMAT VALIDATION
+    if (!/^[a-zA-Z]+\\d{3}$/.test(studentId)) {
+        alert("ID must be like: daron001, deon002 (letters + 3 digits)");
+        return;
+    }
         const name = document.getElementById('studentName').value.trim();
         const className = document.getElementById('studentClass').value;
         const phone = document.getElementById('studentPhone').value.trim();
