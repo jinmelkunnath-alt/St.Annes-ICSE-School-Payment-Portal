@@ -649,51 +649,121 @@
             border-color: #3b82f6;
         }
 
-        /* Receipt template styles (hidden) */
+        /* ---------- PREMIUM RECEIPT STYLES ---------- */
         #receiptTemplate {
             position: absolute;
             left: -9999px;
             top: 0;
         }
         .receipt-card {
-            width: 350px;
-            background: white;
-            padding: 20px;
-            border-radius: 20px;
+            width: 360px;
+            background: #ffffff;
+            padding: 24px;
+            border-radius: 24px;
             font-family: 'Inter', sans-serif;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            text-align: left;
-            border: 1px solid #e2e8f0;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.12);
+            position: relative;
+            overflow: hidden;
         }
-        .receipt-card h2 {
-            color: #1e4a76;
-            font-size: 1.4rem;
-            margin-bottom: 15px;
+        /* Watermark */
+        .receipt-watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 42px;
+            font-weight: 700;
+            color: rgba(30,74,118,0.05);
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        /* Header */
+        .receipt-header {
             text-align: center;
-            border-bottom: 2px solid #3b82f6;
-            display: inline-block;
-            width: 100%;
+            margin-bottom: 20px;
         }
-        .receipt-card p {
-            margin: 8px 0;
+        .receipt-header h2 {
+            color: #1e4a76;
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        .receipt-header p {
+            font-size: 12px;
+            color: #6c86a3;
+        }
+        /* Student section */
+        .student-section {
+            display: flex;
+            justify-content: space-between;
+            background: #f5f9ff;
+            padding: 12px 14px;
+            border-radius: 14px;
+            margin-bottom: 18px;
+        }
+        .student-section .label {
+            font-size: 11px;
+            color: #6c86a3;
+        }
+        .student-section .value {
+            font-weight: 600;
             font-size: 14px;
         }
-        .receipt-card strong {
-            color: #0f2b3d;
+        /* Amount */
+        .amount-section {
+            text-align: center;
+            margin: 18px 0;
         }
-        .receipt-preview {
-            max-width: 100%;
-            border-radius: 12px;
-            margin: 10px 0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        .amount-section span {
+            font-size: 12px;
+            color: #6c86a3;
         }
-        .receipt-actions {
+        .amount-section h1 {
+            font-size: 32px;
+            margin-top: 5px;
+            background: linear-gradient(135deg, #1e4a76, #3b82f6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        /* Details */
+        .receipt-details {
+            margin-top: 10px;
+        }
+        .receipt-details div {
             display: flex;
-            gap: 10px;
-            margin-top: 15px;
+            justify-content: space-between;
+            font-size: 13px;
+            padding: 6px 0;
+            border-bottom: 1px dashed #e2e8f0;
         }
-        .receipt-actions button {
-            flex: 1;
+        .receipt-details span {
+            color: #6c86a3;
+        }
+        /* Code */
+        .receipt-code {
+            margin-top: 15px;
+            text-align: center;
+        }
+        .receipt-code span {
+            font-size: 11px;
+            color: #6c86a3;
+        }
+        .receipt-code div {
+            margin-top: 5px;
+            font-family: monospace;
+            font-size: 16px;
+            letter-spacing: 2px;
+            padding: 8px;
+            border-radius: 10px;
+            background: #eef2f8;
+            font-weight: 600;
+        }
+        /* Footer */
+        .receipt-footer {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 11px;
+            color: #8da0b0;
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
@@ -750,18 +820,40 @@
     <footer>Official fee record • Authorized personnel only</footer>
 </div>
 
-<!-- Hidden Receipt Template -->
+<!-- Hidden Receipt Template (Ultra Premium) -->
 <div id="receiptTemplate">
     <div class="receipt-card">
-        <h2>St. Anne's ICSE School</h2>
-        <p><strong>Student:</strong> <span id="r_name"></span></p>
-        <p><strong>Class:</strong> <span id="r_class"></span></p>
-        <p><strong>Amount:</strong> ₹<span id="r_amount"></span></p>
-        <p><strong>Term:</strong> <span id="r_term"></span></p>
-        <p><strong>Date:</strong> <span id="r_date"></span></p>
-        <p><strong>Verification Code:</strong> <span id="r_code"></span></p>
-        <div style="font-size:8px; opacity:0.3; text-align:center; margin-top:15px;">
-            ST. ANNE'S VERIFIED SYSTEM
+        <div class="receipt-watermark">ST. ANNE'S ICSE</div>
+        <div class="receipt-header">
+            <h2>St. Anne's ICSE School</h2>
+            <p>Official Fee Receipt</p>
+        </div>
+        <div class="receipt-section student-section">
+            <div>
+                <span class="label">Student</span>
+                <div class="value" id="r_name"></div>
+            </div>
+            <div>
+                <span class="label">Class</span>
+                <div class="value" id="r_class"></div>
+            </div>
+        </div>
+        <div class="amount-section">
+            <span>Amount Paid</span>
+            <h1>₹<span id="r_amount"></span></h1>
+        </div>
+        <div class="receipt-details">
+            <div><span>Term</span><strong id="r_term"></strong></div>
+            <div><span>Date</span><strong id="r_date"></strong></div>
+        </div>
+        <div class="receipt-code">
+            <span>Verification Code</span>
+            <div id="r_code"></div>
+        </div>
+        <div class="receipt-footer">
+            Digitally Verified Receipt  
+            <br>
+            <small>St. Anne's Secure System</small>
         </div>
     </div>
 </div>
@@ -909,24 +1001,14 @@ async function saveData() {
 
 // ---------- RECEIPT FUNCTIONS ----------
 function generateReceiptCode(name, studentClass, termName, amount, existingReceipts) {
-  // 1. Initials: first letter of each word in name
   const words = name.trim().split(/\s+/);
   const initials = words.map(w => w[0]).join('').toUpperCase();
-
-  // 2. Class number: extract digits only (e.g., "7" or "VII" -> "7")
   const classNum = studentClass.replace(/\D/g, "");
-  
-  // 3. Term number: extract digits from term name (e.g., "Term 2" -> "2")
   const termNum = (termName.match(/\d+/) || ["0"])[0];
-  
-  // 4. First two digits of amount (absolute value)
   const absAmount = Math.abs(amount);
   const amountPrefix = String(absAmount).substring(0, 2);
-  
-  // 5. Payment sequence: count how many times this term has been paid before (based on existing receipts)
   const previousPayments = existingReceipts.filter(r => r.term === termName).length;
   const sequence = previousPayments + 1;
-  
   return `${initials}${classNum}${termNum}${amountPrefix}${sequence}`;
 }
 
@@ -1023,7 +1105,6 @@ async function handlePaymentUpdate(termIndex, addedAmount, isFullPayment = false
     term.paid = term.total;
   } else {
     let newPaid = term.paid + addedAmount;
-    // Clamp between 0 and total
     if (newPaid < 0) newPaid = 0;
     if (newPaid > term.total) newPaid = term.total;
     const actualAdded = newPaid - term.paid;
@@ -1038,7 +1119,6 @@ async function handlePaymentUpdate(termIndex, addedAmount, isFullPayment = false
   await saveData();
   render();
 
-  // Generate receipt with sequence number
   const receiptCode = generateReceiptCode(
     studentData.name,
     studentData.class,
@@ -1055,7 +1135,6 @@ async function handlePaymentUpdate(termIndex, addedAmount, isFullPayment = false
   };
   await storeReceipt(receiptObj);
 
-  // Show enhanced popup
   await showReceiptSuccess(term.name, addedAmount, receiptCode);
   return true;
 }
