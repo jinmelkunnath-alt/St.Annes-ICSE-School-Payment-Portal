@@ -1145,20 +1145,19 @@
     e.preventDefault();
 
     let studentId = studentIdInput.value.trim().toLowerCase();
+    if (!studentId) return;
 
-if (!studentId) return;
+    const name = document.getElementById('studentName').value.trim();
+    const className = document.getElementById('studentClass').value;
+    const phone = document.getElementById('studentPhone').value.trim();
+    const term1Fee = parseFloat(document.getElementById('term1Fee').value);
+    const term2Fee = parseFloat(document.getElementById('term2Fee').value);
+    const term3Fee = parseFloat(document.getElementById('term3Fee').value);
+
+    if (!name || !className || !phone || isNaN(term1Fee) || isNaN(term2Fee) || isNaN(term3Fee)) {
+        alert('Please fill all fields correctly');
+        return;
     }
-        const name = document.getElementById('studentName').value.trim();
-        const className = document.getElementById('studentClass').value;
-        const phone = document.getElementById('studentPhone').value.trim();
-        const term1Fee = parseFloat(document.getElementById('term1Fee').value);
-        const term2Fee = parseFloat(document.getElementById('term2Fee').value);
-        const term3Fee = parseFloat(document.getElementById('term3Fee').value);
-
-        if (!studentId || !name || !className || !phone || isNaN(term1Fee) || isNaN(term2Fee) || isNaN(term3Fee)) {
-            alert('Please fill all fields correctly');
-            return;
-        }
 
         try {
             const docRef = doc(db, "students", studentId);
