@@ -953,37 +953,34 @@
     };
 
     function ensureAllClassesHaveStudents() {
-        const allClassNames = ["Playschool", "LKG","UKG","STD 1","STD 2","STD 3","STD 4","STD 5","STD 6","STD 7","STD 8","STD 9","STD 10"];
-        for (const className of allClassNames) {
-            if (!studentData[className] || studentData[className].length === 0) {
-                const defaultList = defaultStudentLists[className];
-                if (defaultList && defaultList.length > 0) {
-                    studentData[className] = [...defaultList];
-                } else {
-                    studentData[className] = [{ name: "Student", id: `temp_${className}` }];
-                }
-            }
-        }
-        allStudents = [];
-        for (const [className, students] of Object.entries(studentData)) {
-            for (const student of students) {
-                allStudents.push({
-                    id: student.id,
-                    name: student.name,
-                    class: className,
-                    phone: "",
-                    terms: []
-                });
-            }
+    const allClassNames = ["Playschool", "LKG","UKG","STD 1","STD 2","STD 3","STD 4","STD 5","STD 6","STD 7","STD 8","STD 9","STD 10"];
+
+    for (const className of allClassNames) {
+        if (!studentData[className]) {
+            studentData[className] = []; // EMPTY if no Firebase data
         }
     }
+
+    allStudents = [];
+    for (const [className, students] of Object.entries(studentData)) {
+        for (const student of students) {
+            allStudents.push({
+                id: student.id,
+                name: student.name,
+                class: className,
+                phone: "",
+                terms: []
+            });
+        }
+    }
+}
 
     async function fetchAllStudents() {
         try {
             const querySnapshot = await getDocs(collection(db, "students"));
             if (querySnapshot.empty) {
-                studentData = JSON.parse(JSON.stringify(defaultStudentLists));
-            } else {
+    studentData = {}; // NO FAKE DATA
+} else {
                 studentData = {};
                 querySnapshot.forEach(docSnap => {
                     const data = docSnap.data();
@@ -995,7 +992,7 @@
             ensureAllClassesHaveStudents();
         } catch (err) {
             console.error(err);
-            studentData = JSON.parse(JSON.stringify(defaultStudentLists));
+            studentData = {};
             ensureAllClassesHaveStudents();
         }
     }
