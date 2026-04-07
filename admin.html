@@ -676,6 +676,38 @@
             cursor: pointer;
         }
 
+        /* Additional styles for dynamic fee sections */
+        .checkbox-group {
+            margin: 0.5rem 0;
+        }
+        .checkbox-group label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            color: #1e3c72;
+        }
+        .fee-row {
+            display: flex;
+            gap: 0.5rem;
+            align-items: flex-end;
+        }
+        .fee-row .form-group {
+            flex: 1;
+        }
+        .auto-btn {
+            background: #eef2f8;
+            border: 1px solid #cbdde9;
+            border-radius: 2rem;
+            padding: 0.5rem 0.8rem;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .auto-btn:hover {
+            background: #e2e9f2;
+        }
+
         @media (max-width: 680px) {
             .admin-header { padding: 1rem; }
             .student-card { padding: 0.9rem 1.2rem; }
@@ -740,23 +772,7 @@
     </div>
 </div>
 
-<!-- Password Modal (Add Student) -->
-<div id="passwordModal" class="modal-overlay">
-    <div class="modal-card">
-        <div class="modal-close" id="closePwdModal">✕</div>
-        <h3>Admin Verification</h3>
-        <div class="form-group">
-            <input type="password" id="addPassword" placeholder="Enter admin password">
-            <div id="pwdError" style="color:#bc4e2c; font-size:0.75rem; margin-top:0.3rem; display:none;">Wrong password</div>
-        </div>
-        <div class="modal-actions">
-            <button class="modal-btn" id="cancelPwdBtn">Cancel</button>
-            <button class="modal-btn primary" id="confirmPwdBtn">Continue</button>
-        </div>
-    </div>
-</div>
-
-<!-- Add Student Form Modal -->
+<!-- Add Student Form Modal (Enhanced) -->
 <div id="addStudentModal" class="modal-overlay">
     <div class="modal-card">
         <div class="modal-close" id="closeAddModal">✕</div>
@@ -764,11 +780,11 @@
         <form id="addStudentForm">
             <div class="form-group">
                 <label>Student ID *</label>
-                <input type="text" id="studentId" placeholder="   " required>
+                <input type="text" id="studentId" placeholder=" " required>
             </div>
             <div class="form-group">
                 <label>Full Name *</label>
-                <input type="text" id="studentName" placeholder="   " required>
+                <input type="text" id="studentName" placeholder=" " required>
             </div>
             <div class="form-group">
                 <label>Class *</label>
@@ -786,21 +802,152 @@
             </div>
             <div class="form-group">
                 <label>Term 1 Fee (₹) *</label>
-                <input type="number" id="term1Fee" placeholder="   " required>
+                <input type="number" id="term1Fee" placeholder=" " required>
             </div>
             <div class="form-group">
                 <label>Term 2 Fee (₹) *</label>
-                <input type="number" id="term2Fee" placeholder="   " required>
+                <input type="number" id="term2Fee" placeholder=" " required>
             </div>
             <div class="form-group">
                 <label>Term 3 Fee (₹) *</label>
-                <input type="number" id="term3Fee" placeholder="   " required>
+                <input type="number" id="term3Fee" placeholder=" " required>
+            </div>
+            <!-- Optional Bus Fee -->
+            <div class="checkbox-group">
+                <label>
+                    <input type="checkbox" id="enableBusFee"> Enable Bus Fee
+                </label>
+            </div>
+            <div id="busFeeFields" style="display: none;">
+                <div class="fee-row">
+                    <div class="form-group">
+                        <label>Monthly Bus Fee (₹)</label>
+                        <input type="number" id="monthlyBusFee" placeholder="e.g., 1500">
+                    </div>
+                    <button type="button" id="autoFillBusBtn" class="auto-btn">Auto Fill Bus Fee</button>
+                </div>
+            </div>
+            <!-- ECA Fee (always present) -->
+            <div class="fee-row">
+                <div class="form-group">
+                    <label>ECA Fee (₹) (Monthly)</label>
+                    <input type="number" id="ecaFee" value="1250">
+                </div>
+                <button type="button" id="autoFillEcaBtn" class="auto-btn">Auto Fill</button>
+            </div>
+            <!-- Annual Day Fee -->
+            <div class="fee-row">
+                <div class="form-group">
+                    <label>Annual Day Fee (₹) (One-time)</label>
+                    <input type="number" id="annualDayFee" value="750">
+                </div>
+                <button type="button" id="autoFillAnnualBtn" class="auto-btn">Auto Fill</button>
             </div>
             <div class="modal-actions">
                 <button type="button" class="modal-btn" id="cancelAddBtn">Cancel</button>
                 <button type="submit" class="modal-btn primary" id="submitStudentBtn">Create Student</button>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- Edit Student Modal (similar to Add but populated) -->
+<div id="editStudentModal" class="modal-overlay">
+    <div class="modal-card">
+        <div class="modal-close" id="closeEditModal">✕</div>
+        <h3>Edit Student</h3>
+        <form id="editStudentForm">
+            <div class="form-group">
+                <label>Student ID (not editable)</label>
+                <input type="text" id="editStudentId" disabled>
+            </div>
+            <div class="form-group">
+                <label>Full Name *</label>
+                <input type="text" id="editStudentName" required>
+            </div>
+            <div class="form-group">
+                <label>Class *</label>
+                <select id="editStudentClass" required>
+                    <option>Playschool</option><option>LKG</option><option>UKG</option>
+                    <option>STD 1</option><option>STD 2</option><option>STD 3</option><option>STD 4</option><option>STD 5</option>
+                    <option>STD 6</option><option>STD 7</option><option>STD 8</option><option>STD 9</option><option>STD 10</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Phone Number *</label>
+                <input type="tel" id="editStudentPhone" required>
+            </div>
+            <div class="form-group">
+                <label>Term 1 Total (₹)</label>
+                <input type="number" id="editTerm1Total">
+            </div>
+            <div class="form-group">
+                <label>Term 2 Total (₹)</label>
+                <input type="number" id="editTerm2Total">
+            </div>
+            <div class="form-group">
+                <label>Term 3 Total (₹)</label>
+                <input type="number" id="editTerm3Total">
+            </div>
+            <div id="editBusFeeSection" style="display: none;">
+                <div class="form-group">
+                    <label>Monthly Bus Fee (₹)</label>
+                    <input type="number" id="editMonthlyBusFee">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>ECA Monthly Fee (₹)</label>
+                <input type="number" id="editEcaFee">
+            </div>
+            <div class="form-group">
+                <label>Annual Day Total (₹)</label>
+                <input type="number" id="editAnnualDayTotal">
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="modal-btn" id="cancelEditBtn">Cancel</button>
+                <button type="submit" class="modal-btn primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Universal Edit Modal (Ctrl+Shift+U) -->
+<div id="universalModal" class="modal-overlay">
+    <div class="modal-card">
+        <div class="modal-close" id="closeUniversalModal">✕</div>
+        <h3>Universal Edit</h3>
+        <div id="universalContent">
+            <div class="form-group">
+                <label>Action</label>
+                <select id="universalAction">
+                    <option value="updateEca">Update ECA Fee</option>
+                    <option value="updateAnnual">Update Annual Day Fee</option>
+                    <option value="addNewFee">Add New Universal Fee</option>
+                    <option value="deleteFee">Delete Universal Fee</option>
+                </select>
+            </div>
+            <div id="universalDynamic"></div>
+            <div class="modal-actions">
+                <button class="modal-btn" id="cancelUniversalBtn">Cancel</button>
+                <button class="modal-btn primary" id="applyUniversalBtn">Apply</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Password Modal (Add Student) -->
+<div id="passwordModal" class="modal-overlay">
+    <div class="modal-card">
+        <div class="modal-close" id="closePwdModal">✕</div>
+        <h3>Admin Verification</h3>
+        <div class="form-group">
+            <input type="password" id="addPassword" placeholder="Enter admin password">
+            <div id="pwdError" style="color:#bc4e2c; font-size:0.75rem; margin-top:0.3rem; display:none;">Wrong password</div>
+        </div>
+        <div class="modal-actions">
+            <button class="modal-btn" id="cancelPwdBtn">Cancel</button>
+            <button class="modal-btn primary" id="confirmPwdBtn">Continue</button>
+        </div>
     </div>
 </div>
 
@@ -835,7 +982,7 @@
     </div>
 </div>
 
-<!-- Contact Developer Modal (mini screen) -->
+<!-- Contact Developer Modal -->
 <div id="contactModal" class="contact-modal">
     <div class="contact-card">
         <h3>Contact Developer</h3>
@@ -853,7 +1000,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyArC1RsGTkS0cr5glTfgUdTktjcfj_Ad88",
@@ -867,6 +1014,8 @@
     const db = getFirestore(app);
 
     const ADD_STUDENT_PASSWORD = "ADD123";
+    const EDIT_PASSWORD = "USEREDIT123";
+    const UNIVERSAL_PASSWORD = "UNIVERSAL123";
     const BASE_URL = "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=";
 
     let studentData = {};
@@ -874,6 +1023,7 @@
     let currentClass = null;
     let currentStudents = [];
 
+    // DOM elements
     const classesGrid = document.getElementById('classesGrid');
     const classViewDiv = document.getElementById('classView');
     const fullscreenLoader = document.getElementById('fullscreenLoader');
@@ -883,117 +1033,70 @@
     const studentSearchInput = document.getElementById('studentSearchInput');
     const studentsListContainer = document.getElementById('studentsListContainer');
 
-    // ---------- COMPREHENSIVE DEFAULT STUDENT DATA (EVERY CLASS HAS STUDENTS) ----------
-    const defaultStudentLists = {
-        "Playschool": [
-            { name: "Anvi Sharma", id: "anvi_playschool" },
-            { name: "Kian Nair", id: "kian_playschool" }
-        ],
-        "LKG": [
-            { name: "Aarav Sharma", id: "aarav_lkg" },
-            { name: "Ishita Verma", id: "ishita_lkg" },
-            { name: "Reyansh Nair", id: "reyansh_lkg" }
-        ],
-        "UKG": [
-            { name: "Vihaan Singh", id: "vihaan_ukg" },
-            { name: "Ananya Nair", id: "ananya_ukg" },
-            { name: "Diya Menon", id: "diya_ukg" }
-        ],
-        "STD 1": [
-            { name: "Reyansh Menon", id: "reyansh_std1" },
-            { name: "Sai Pranav", id: "sai_std1" },
-            { name: "Myra D'Souza", id: "myra_std1" }
-        ],
-        "STD 2": [
-            { name: "Diya Krishna", id: "diya_std2" },
-            { name: "Arjun Raj", id: "arjun_std2" },
-            { name: "Sana Fernandes", id: "sana_std2" }
-        ],
-        "STD 3": [
-            { name: "Navya Iyer", id: "navya_std3" },
-            { name: "Ayaan Khan", id: "ayaan_std3" },
-            { name: "Pranav Nair", id: "pranav_std3" }
-        ],
-        "STD 4": [
-            { name: "Myra D'Souza", id: "myra_std4" },
-            { name: "Rohan Joseph", id: "rohan_std4" },
-            { name: "Aditya Shetty", id: "aditya_std4" }
-        ],
-        "STD 5": [
-            { name: "Sana Fernandes", id: "sana_std5" },
-            { name: "Pranav Nair", id: "pranav_std5" },
-            { name: "Tanvi Desai", id: "tanvi_std5" }
-        ],
-        "STD 6": [
-            { name: "Aditya Shetty", id: "aditya_std6" },
-            { name: "Tanvi Desai", id: "tanvi_std6" },
-            { name: "Kavya S", id: "kavya_std6" }
-        ],
-        "STD 7": [
-  { name: "Mariya Melbin", id: "mariya001" },
-  { name: "Arjun Kumar", id: "arjun002" },
-  { name: "Neha George", id: "neha003" },
-  { name: "Chris Vinod", id: "chris004" }
-],
-        "STD 8": [
-            { name: "Chris Vinod", id: "chris_std8" },
-            { name: "Riya Thomas", id: "riya_std8" },
-            { name: "Sanjay Mishra", id: "sanjay_std8" }
-        ],
-        "STD 9": [
-            { name: "Kavya S", id: "kavya_std9" },
-            { name: "Mohammed Fasal", id: "mohd_std9" },
-            { name: "Meera Nambiar", id: "meera_std9" }
-        ],
-        "STD 10": [
-            { name: "Sanjay Mishra", id: "sanjay_std10" },
-            { name: "Meera Nambiar", id: "meera_std10" },
-            { name: "Riya Thomas", id: "riya_std10" }
-        ]
-    };
-
-    function ensureAllClassesHaveStudents() {
-    const allClassNames = ["Playschool", "LKG","UKG","STD 1","STD 2","STD 3","STD 4","STD 5","STD 6","STD 7","STD 8","STD 9","STD 10"];
-
-    for (const className of allClassNames) {
-        if (!studentData[className]) {
-            studentData[className] = []; // EMPTY if no Firebase data
-        }
+    // Helper functions
+    function showModal(modal) { modal.classList.add('active'); }
+    function hideModal(modal) { modal.classList.remove('active'); }
+    function toast(msg, isError = false) {
+        const t = document.createElement('div');
+        t.className = 'toast-message';
+        t.style.position = 'fixed';
+        t.style.bottom = '20px';
+        t.style.left = '50%';
+        t.style.transform = 'translateX(-50%)';
+        t.style.background = isError ? '#b33b2c' : '#1e4a76';
+        t.style.color = 'white';
+        t.style.padding = '0.6rem 1.4rem';
+        t.style.borderRadius = '3rem';
+        t.style.fontSize = '0.85rem';
+        t.style.zIndex = '1100';
+        t.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+        t.innerText = msg;
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 2500);
     }
 
-    allStudents = [];
-    for (const [className, students] of Object.entries(studentData)) {
-        for (const student of students) {
-            allStudents.push({
-                id: student.id,
-                name: student.name,
-                class: className,
-                phone: "",
-                terms: []
-            });
-        }
+    // ----- FIX: map database class values to frontend class names -----
+    function mapClassToStdFormat(className) {
+        if (className === "I") return "STD 1";
+        if (className === "II") return "STD 2";
+        if (className === "III") return "STD 3";
+        if (className === "IV") return "STD 4";
+        if (className === "V") return "STD 5";
+        if (className === "VI") return "STD 6";
+        if (className === "VII") return "STD 7";
+        if (className === "VIII") return "STD 8";
+        if (className === "IX") return "STD 9";
+        if (className === "X") return "STD 10";
+        return className; // keep as is (e.g., "LKG", "UKG", "Playschool")
     }
-}
 
     async function fetchAllStudents() {
         try {
             const querySnapshot = await getDocs(collection(db, "students"));
-            if (querySnapshot.empty) {
-    studentData = {}; // NO FAKE DATA
-} else {
-                studentData = {};
-                querySnapshot.forEach(docSnap => {
-                    const data = docSnap.data();
-                    const className = data.class;
-                    if (!studentData[className]) studentData[className] = [];
-                    studentData[className].push({ name: data.name, id: docSnap.id });
-                });
+            studentData = {};
+            querySnapshot.forEach(docSnap => {
+                const data = docSnap.data();
+                let className = data.class;
+                // Convert Roman numerals to STD format
+                className = mapClassToStdFormat(className);
+                if (!studentData[className]) studentData[className] = [];
+                studentData[className].push({ name: data.name, id: docSnap.id });
+            });
+            allStudents = [];
+            for (const [className, students] of Object.entries(studentData)) {
+                for (const student of students) {
+                    allStudents.push({
+                        id: student.id,
+                        name: student.name,
+                        class: className,
+                        phone: "",
+                        terms: []
+                    });
+                }
             }
-            ensureAllClassesHaveStudents();
         } catch (err) {
             console.error(err);
             studentData = {};
-            ensureAllClassesHaveStudents();
         }
     }
 
@@ -1018,6 +1121,8 @@
     }
 
     function onClassClick(className) {
+        console.log("Class clicked:", className);
+        console.log("Students in class:", studentData[className]);
         currentClass = className;
         currentStudents = studentData[className] || [];
         classViewDiv.style.display = 'none';
@@ -1082,115 +1187,485 @@
         }
     });
 
-    // ---------- ADD STUDENT HIDDEN TRIGGERS (unchanged) ----------
-    const passwordModal = document.getElementById('passwordModal');
+    // ---------- ADD STUDENT (Enhanced) ----------
     const addStudentModal = document.getElementById('addStudentModal');
-    const successPopup = document.getElementById('successPopup');
-    const closePwdModal = document.getElementById('closePwdModal');
-    const cancelPwdBtn = document.getElementById('cancelPwdBtn');
-    const confirmPwdBtn = document.getElementById('confirmPwdBtn');
-    const pwdError = document.getElementById('pwdError');
-    const addPasswordInput = document.getElementById('addPassword');
     const closeAddModal = document.getElementById('closeAddModal');
     const cancelAddBtn = document.getElementById('cancelAddBtn');
     const addStudentForm = document.getElementById('addStudentForm');
-    const studentIdInput = document.getElementById('studentId');
-    const closeSuccessBtn = document.getElementById('closeSuccessBtn');
+    const enableBusFeeCheck = document.getElementById('enableBusFee');
+    const busFeeFields = document.getElementById('busFeeFields');
+    const autoFillBusBtn = document.getElementById('autoFillBusBtn');
+    const autoFillEcaBtn = document.getElementById('autoFillEcaBtn');
+    const autoFillAnnualBtn = document.getElementById('autoFillAnnualBtn');
 
-    function showModal(modal) { modal.classList.add('active'); }
-    function hideModal(modal) { modal.classList.remove('active'); }
+    enableBusFeeCheck.addEventListener('change', () => {
+        busFeeFields.style.display = enableBusFeeCheck.checked ? 'block' : 'none';
+    });
+    autoFillBusBtn.addEventListener('click', () => {
+        const busInput = document.getElementById('monthlyBusFee');
+        if (busInput) busInput.value = '1500';
+    });
+    autoFillEcaBtn.addEventListener('click', () => {
+        const ecaInput = document.getElementById('ecaFee');
+        if (ecaInput) ecaInput.value = '1250';
+    });
+    autoFillAnnualBtn.addEventListener('click', () => {
+        const annualInput = document.getElementById('annualDayFee');
+        if (annualInput) annualInput.value = '750';
+    });
+
+    async function createStudent(studentId, name, className, phone, term1, term2, term3, busEnabled, monthlyBusFee, ecaMonthly, annualTotal) {
+        const terms = [
+            { name: "Term 1 (June - September)", total: term1, paid: 0 },
+            { name: "Term 2 (October - December)", total: term2, paid: 0 },
+            { name: "Term 3 (January - March)", total: term3, paid: 0 }
+        ];
+        const otherFees = {
+            eca: { monthlyAmount: ecaMonthly, paidMonths: [], partialPayments: [] },
+            annualDay: { total: annualTotal, paid: 0 }
+        };
+        const data = { name, class: className, phone, terms, otherFees };
+        if (busEnabled) {
+            data.busFee = { monthlyAmount: monthlyBusFee, paidMonths: [], partialPayments: [] };
+        }
+        await setDoc(doc(db, "students", studentId), data);
+    }
+
+    addStudentForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        let studentId = document.getElementById('studentId').value.trim().toLowerCase();
+        if (!studentId) return;
+        const name = document.getElementById('studentName').value.trim();
+        const className = document.getElementById('studentClass').value;
+        const phone = document.getElementById('studentPhone').value.trim();
+        const term1 = parseFloat(document.getElementById('term1Fee').value);
+        const term2 = parseFloat(document.getElementById('term2Fee').value);
+        const term3 = parseFloat(document.getElementById('term3Fee').value);
+        const busEnabled = enableBusFeeCheck.checked;
+        const monthlyBusFee = busEnabled ? parseFloat(document.getElementById('monthlyBusFee').value) : 0;
+        const ecaMonthly = parseFloat(document.getElementById('ecaFee').value);
+        const annualTotal = parseFloat(document.getElementById('annualDayFee').value);
+        if (!name || !className || !phone || isNaN(term1) || isNaN(term2) || isNaN(term3) || isNaN(ecaMonthly) || isNaN(annualTotal)) {
+            toast("Please fill all required fields", true);
+            return;
+        }
+        if (busEnabled && (isNaN(monthlyBusFee) || monthlyBusFee <= 0)) {
+            toast("Invalid bus fee", true);
+            return;
+        }
+        try {
+            const docRef = doc(db, "students", studentId);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                toast("Student ID already exists", true);
+                return;
+            }
+            await createStudent(studentId, name, className, phone, term1, term2, term3, busEnabled, monthlyBusFee, ecaMonthly, annualTotal);
+            if (!studentData[className]) studentData[className] = [];
+            studentData[className].push({ name, id: studentId });
+            allStudents.push({ id: studentId, name, class: className, phone, terms: [] });
+            hideModal(addStudentModal);
+            toast("Student added successfully");
+        } catch (err) {
+            console.error(err);
+            toast("Failed to add student", true);
+        }
+    });
+
+    // ---------- EDIT STUDENT SYSTEM (Ctrl+Shift+E) ----------
+    async function openEditStudent() {
+        const pass = await promptModal("Edit Access", "Enter password:", "password");
+        if (pass !== EDIT_PASSWORD) { toast("Wrong password", true); return; }
+        const studentId = await promptModal("Edit Student", "Enter Student ID:", "text");
+        if (!studentId) return;
+        const docRef = doc(db, "students", studentId);
+        const snap = await getDoc(docRef);
+        if (!snap.exists()) { toast("No ID found", true); return; }
+        const data = snap.data();
+        // Fill edit modal
+        document.getElementById('editStudentId').value = studentId;
+        document.getElementById('editStudentName').value = data.name || "";
+        document.getElementById('editStudentClass').value = data.class || "";
+        document.getElementById('editStudentPhone').value = data.phone || "";
+        const terms = data.terms || [];
+        document.getElementById('editTerm1Total').value = terms[0]?.total || 0;
+        document.getElementById('editTerm2Total').value = terms[1]?.total || 0;
+        document.getElementById('editTerm3Total').value = terms[2]?.total || 0;
+        const otherFees = data.otherFees || {};
+        document.getElementById('editEcaFee').value = otherFees.eca?.monthlyAmount || 1250;
+        document.getElementById('editAnnualDayTotal').value = otherFees.annualDay?.total || 750;
+        const busFee = data.busFee;
+        const busSection = document.getElementById('editBusFeeSection');
+        if (busFee) {
+            busSection.style.display = 'block';
+            document.getElementById('editMonthlyBusFee').value = busFee.monthlyAmount || 0;
+        } else {
+            busSection.style.display = 'none';
+        }
+        showModal(document.getElementById('editStudentModal'));
+        // Save handler
+        const editForm = document.getElementById('editStudentForm');
+        const saveHandler = async (e) => {
+            e.preventDefault();
+            const updatedName = document.getElementById('editStudentName').value.trim();
+            const updatedClass = document.getElementById('editStudentClass').value;
+            const updatedPhone = document.getElementById('editStudentPhone').value.trim();
+            const newTermTotals = [
+                parseFloat(document.getElementById('editTerm1Total').value),
+                parseFloat(document.getElementById('editTerm2Total').value),
+                parseFloat(document.getElementById('editTerm3Total').value)
+            ];
+            const updatedTerms = terms.map((t, idx) => ({ ...t, total: newTermTotals[idx] }));
+            const updatedOther = {
+                eca: { monthlyAmount: parseFloat(document.getElementById('editEcaFee').value), paidMonths: otherFees.eca?.paidMonths || [], partialPayments: otherFees.eca?.partialPayments || [] },
+                annualDay: { total: parseFloat(document.getElementById('editAnnualDayTotal').value), paid: otherFees.annualDay?.paid || 0 }
+            };
+            const updateData = { name: updatedName, class: updatedClass, phone: updatedPhone, terms: updatedTerms, otherFees: updatedOther };
+            if (busFee) {
+                const newBusMonthly = parseFloat(document.getElementById('editMonthlyBusFee').value);
+                updateData.busFee = { ...busFee, monthlyAmount: newBusMonthly };
+            }
+            await updateDoc(docRef, updateData);
+            // Refresh local data
+            const oldClass = data.class;
+            if (oldClass !== updatedClass) {
+                studentData[oldClass] = studentData[oldClass].filter(s => s.id !== studentId);
+                if (!studentData[updatedClass]) studentData[updatedClass] = [];
+                studentData[updatedClass].push({ name: updatedName, id: studentId });
+            } else {
+                const idx = studentData[oldClass].findIndex(s => s.id === studentId);
+                if (idx !== -1) studentData[oldClass][idx].name = updatedName;
+            }
+            hideModal(document.getElementById('editStudentModal'));
+            toast("Student updated");
+            if (currentClass === updatedClass || currentClass === oldClass) {
+                renderStudentList(studentData[currentClass] || [], currentClass);
+            }
+        };
+        editForm.removeEventListener('submit', saveHandler);
+        editForm.addEventListener('submit', saveHandler);
+    }
+
+    // ---------- UNIVERSAL EDIT (Ctrl+Shift+U) ----------
+    async function openUniversalEdit() {
+        const pass = await promptModal("Universal Access", "Enter universal password:", "password");
+        if (pass !== UNIVERSAL_PASSWORD) { toast("Wrong password", true); return; }
+        showModal(document.getElementById('universalModal'));
+        const actionSelect = document.getElementById('universalAction');
+        const dynamicDiv = document.getElementById('universalDynamic');
+        function updateDynamic() {
+            const action = actionSelect.value;
+            if (action === 'updateEca') {
+                dynamicDiv.innerHTML = `<div class="form-group"><label>New ECA Monthly Amount (₹)</label><input type="number" id="newEcaAmount" value="1250"></div>
+                <div class="form-group"><label>Apply to</label><select id="applyScope"><option value="all">All Students</option><option value="class">Specific Class</option></select></div>
+                <div id="classSelector" style="display:none;"><select id="targetClass"><option>Playschool</option><option>LKG</option><option>UKG</option><option>STD 1</option><option>STD 2</option><option>STD 3</option><option>STD 4</option><option>STD 5</option><option>STD 6</option><option>STD 7</option><option>STD 8</option><option>STD 9</option><option>STD 10</option></select></div>`;
+            } else if (action === 'updateAnnual') {
+                dynamicDiv.innerHTML = `<div class="form-group"><label>New Annual Day Total (₹)</label><input type="number" id="newAnnualAmount" value="750"></div>
+                <div class="form-group"><label>Apply to</label><select id="applyScope"><option value="all">All Students</option><option value="class">Specific Class</option></select></div>
+                <div id="classSelector" style="display:none;"><select id="targetClass"><option>Playschool</option><option>LKG</option><option>UKG</option><option>STD 1</option><option>STD 2</option><option>STD 3</option><option>STD 4</option><option>STD 5</option><option>STD 6</option><option>STD 7</option><option>STD 8</option><option>STD 9</option><option>STD 10</option></select></div>`;
+            } else if (action === 'addNewFee') {
+                dynamicDiv.innerHTML = `<div class="form-group"><label>Fee Name (camelCase)</label><input type="text" id="newFeeName" placeholder="e.g., sportsFee"></div>
+                <div class="form-group"><label>Amount (₹)</label><input type="number" id="newFeeAmount"></div>
+                <div class="form-group"><label>Type</label><select id="newFeeType"><option value="monthly">Monthly</option><option value="one-time">One-time</option></select></div>
+                <div class="form-group"><label>Apply to</label><select id="applyScope"><option value="all">All Students</option><option value="class">Specific Class</option></select></div>
+                <div id="classSelector" style="display:none;"><select id="targetClass"><option>Playschool</option><option>LKG</option><option>UKG</option><option>STD 1</option><option>STD 2</option><option>STD 3</option><option>STD 4</option><option>STD 5</option><option>STD 6</option><option>STD 7</option><option>STD 8</option><option>STD 9</option><option>STD 10</option></select></div>`;
+            } else if (action === 'deleteFee') {
+                // Get all dynamic fee keys from existing students (first student with otherFees)
+                const sampleDoc = await getDocs(collection(db, "students"));
+                let feeKeys = new Set();
+                sampleDoc.forEach(docSnap => {
+                    const fees = docSnap.data().otherFees;
+                    if (fees) {
+                        Object.keys(fees).forEach(k => { if (k !== 'eca' && k !== 'annualDay') feeKeys.add(k); });
+                    }
+                });
+                const options = Array.from(feeKeys).map(k => `<option value="${k}">${k}</option>`).join('');
+                dynamicDiv.innerHTML = `<div class="form-group"><label>Select Fee to Delete</label><select id="deleteFeeKey">${options}</select></div>
+                <div class="form-group"><label>Apply to</label><select id="applyScope"><option value="all">All Students</option><option value="class">Specific Class</option></select></div>
+                <div id="classSelector" style="display:none;"><select id="targetClass"><option>Playschool</option><option>LKG</option><option>UKG</option><option>STD 1</option><option>STD 2</option><option>STD 3</option><option>STD 4</option><option>STD 5</option><option>STD 6</option><option>STD 7</option><option>STD 8</option><option>STD 9</option><option>STD 10</option></select></div>`;
+            }
+            const scopeSelect = dynamicDiv.querySelector('#applyScope');
+            if (scopeSelect) {
+                scopeSelect.addEventListener('change', () => {
+                    const classDiv = dynamicDiv.querySelector('#classSelector');
+                    if (classDiv) classDiv.style.display = scopeSelect.value === 'class' ? 'block' : 'none';
+                });
+                scopeSelect.dispatchEvent(new Event('change'));
+            }
+        }
+        actionSelect.addEventListener('change', updateDynamic);
+        updateDynamic();
+        const applyBtn = document.getElementById('applyUniversalBtn');
+        const cancelUni = document.getElementById('cancelUniversalBtn');
+        const closeUni = document.getElementById('closeUniversalModal');
+        const closeHandler = () => hideModal(document.getElementById('universalModal'));
+        cancelUni.onclick = closeHandler;
+        closeUni.onclick = closeHandler;
+        applyBtn.onclick = async () => {
+            const action = actionSelect.value;
+            const scope = dynamicDiv.querySelector('#applyScope')?.value || 'all';
+            const targetClass = scope === 'class' ? dynamicDiv.querySelector('#targetClass')?.value : null;
+            let studentsToUpdate = [];
+            if (scope === 'all') {
+                const snapshot = await getDocs(collection(db, "students"));
+                snapshot.forEach(d => studentsToUpdate.push({ id: d.id, data: d.data() }));
+            } else {
+                const classStudents = studentData[targetClass] || [];
+                for (const s of classStudents) {
+                    const docRef = doc(db, "students", s.id);
+                    const snap = await getDoc(docRef);
+                    if (snap.exists()) studentsToUpdate.push({ id: s.id, data: snap.data() });
+                }
+            }
+            if (action === 'updateEca') {
+                const newAmount = parseFloat(dynamicDiv.querySelector('#newEcaAmount').value);
+                if (isNaN(newAmount)) { toast("Invalid amount", true); return; }
+                for (const student of studentsToUpdate) {
+                    const other = student.data.otherFees || {};
+                    if (!other.eca) other.eca = { monthlyAmount: 1250, paidMonths: [], partialPayments: [] };
+                    other.eca.monthlyAmount = newAmount;
+                    await updateDoc(doc(db, "students", student.id), { otherFees: other });
+                }
+                toast(`ECA fee updated for ${studentsToUpdate.length} students`);
+            } else if (action === 'updateAnnual') {
+                const newAmount = parseFloat(dynamicDiv.querySelector('#newAnnualAmount').value);
+                if (isNaN(newAmount)) { toast("Invalid amount", true); return; }
+                for (const student of studentsToUpdate) {
+                    const other = student.data.otherFees || {};
+                    if (!other.annualDay) other.annualDay = { total: 750, paid: 0 };
+                    other.annualDay.total = newAmount;
+                    await updateDoc(doc(db, "students", student.id), { otherFees: other });
+                }
+                toast(`Annual Day fee updated for ${studentsToUpdate.length} students`);
+            } else if (action === 'addNewFee') {
+                const feeName = dynamicDiv.querySelector('#newFeeName').value.trim();
+                const amount = parseFloat(dynamicDiv.querySelector('#newFeeAmount').value);
+                const feeType = dynamicDiv.querySelector('#newFeeType').value;
+                if (!feeName || isNaN(amount)) { toast("Invalid fee name or amount", true); return; }
+                const safeKey = feeName.replace(/\s/g, '');
+                for (const student of studentsToUpdate) {
+                    const other = student.data.otherFees || {};
+                    if (other[safeKey]) {
+                        const confirmOverwrite = confirm(`Fee "${safeKey}" already exists for ${student.data.name}. Overwrite amount only?`);
+                        if (!confirmOverwrite) continue;
+                        if (feeType === 'monthly') other[safeKey].monthlyAmount = amount;
+                        else other[safeKey].total = amount;
+                    } else {
+                        if (feeType === 'monthly') {
+                            other[safeKey] = { type: "monthly", monthlyAmount: amount, paidMonths: [], partialPayments: [] };
+                        } else {
+                            other[safeKey] = { type: "one-time", total: amount, paid: 0 };
+                        }
+                    }
+                    await updateDoc(doc(db, "students", student.id), { otherFees: other });
+                }
+                toast(`Fee "${safeKey}" added/updated for ${studentsToUpdate.length} students`);
+            } else if (action === 'deleteFee') {
+                const feeKey = dynamicDiv.querySelector('#deleteFeeKey').value;
+                if (!feeKey) { toast("No fee selected", true); return; }
+                const confirmDel = confirm(`Delete "${feeKey}" from selected students? This action cannot be undone.`);
+                if (!confirmDel) return;
+                for (const student of studentsToUpdate) {
+                    const other = student.data.otherFees || {};
+                    if (other[feeKey]) {
+                        delete other[feeKey];
+                        await updateDoc(doc(db, "students", student.id), { otherFees: other });
+                    }
+                }
+                toast(`Fee "${feeKey}" removed from ${studentsToUpdate.length} students`);
+            }
+            hideModal(document.getElementById('universalModal'));
+        };
+    }
+
+    // Simple prompt modal (since we can't use window.prompt)
+    function promptModal(title, placeholder, type = 'text') {
+        return new Promise((resolve) => {
+            const overlay = document.createElement('div');
+            overlay.className = 'popup-overlay';
+            overlay.innerHTML = `
+                <div class="popup-card">
+                    <div class="popup-close" id="promptClose">✖</div>
+                    <h3>${title}</h3>
+                    <div class="form-group">
+                        <input type="${type}" id="promptInput" placeholder="${placeholder}">
+                    </div>
+                    <div class="modal-actions">
+                        <button class="modal-btn" id="promptCancel">Cancel</button>
+                        <button class="modal-btn primary" id="promptOk">OK</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            const close = () => overlay.remove();
+            overlay.querySelector('#promptClose').onclick = close;
+            overlay.querySelector('#promptCancel').onclick = close;
+            overlay.querySelector('#promptOk').onclick = () => {
+                const val = overlay.querySelector('#promptInput').value;
+                close();
+                resolve(val);
+            };
+        });
+    }
+
+    // ---------- HIDDEN GESTURE CONTROLS (Mobile) ----------
+    function isSafeToTrigger() {
+        const modals = [addStudentModal, document.getElementById('editStudentModal'), document.getElementById('universalModal'), verifyModal, passwordModal, contactModal];
+        for (const m of modals) {
+            if (m && m.classList.contains('active')) return false;
+        }
+        const activeEl = document.activeElement;
+        if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.tagName === 'SELECT')) return false;
+        return true;
+    }
+
+    let tapCount = 0;
+    let lastTapTime = 0;
+    let tapHoldTimer = null;
+    const schoolNameElement = document.getElementById('schoolName');
+
+    function resetTapGesture() {
+        tapCount = 0;
+        if (tapHoldTimer) clearTimeout(tapHoldTimer);
+        tapHoldTimer = null;
+    }
+
+    schoolNameElement.addEventListener('touchstart', (e) => {
+        if (!isSafeToTrigger()) return;
+        const now = Date.now();
+        if (now - lastTapTime < 400) {
+            tapCount++;
+        } else {
+            tapCount = 1;
+        }
+        lastTapTime = now;
+        if (tapCount === 3) {
+            tapHoldTimer = setTimeout(() => {
+                if (isSafeToTrigger()) {
+                    toast("Admin Mode Activated", false);
+                    openEditStudent();
+                }
+                resetTapGesture();
+            }, 1500);
+        }
+    });
+    schoolNameElement.addEventListener('touchend', () => {
+        if (tapHoldTimer) {
+            clearTimeout(tapHoldTimer);
+            tapHoldTimer = null;
+            tapCount = 0;
+        }
+    });
+    schoolNameElement.addEventListener('touchcancel', resetTapGesture);
+
+    let swipeUpDetected = false;
+    let swipeTimeout = null;
+    let startY = 0;
+    let holdAfterSwipeTimer = null;
+
+    function resetSwipeGesture() {
+        swipeUpDetected = false;
+        if (swipeTimeout) clearTimeout(swipeTimeout);
+        if (holdAfterSwipeTimer) clearTimeout(holdAfterSwipeTimer);
+        swipeTimeout = null;
+        holdAfterSwipeTimer = null;
+    }
+
+    document.addEventListener('touchstart', (e) => {
+        if (!isSafeToTrigger()) return;
+        startY = e.touches[0].clientY;
+    });
+    document.addEventListener('touchend', (e) => {
+        if (!isSafeToTrigger()) return;
+        const endY = e.changedTouches[0].clientY;
+        const diff = startY - endY;
+        if (diff > 80) {
+            swipeUpDetected = true;
+            if (swipeTimeout) clearTimeout(swipeTimeout);
+            swipeTimeout = setTimeout(() => {
+                swipeUpDetected = false;
+            }, 1000);
+        }
+    });
+    document.addEventListener('touchstart', (e) => {
+        if (swipeUpDetected && isSafeToTrigger()) {
+            if (holdAfterSwipeTimer) clearTimeout(holdAfterSwipeTimer);
+            holdAfterSwipeTimer = setTimeout(() => {
+                if (isSafeToTrigger()) {
+                    toast("Admin Mode Activated", false);
+                    openUniversalEdit();
+                }
+                resetSwipeGesture();
+            }, 1500);
+        }
+    });
+    document.addEventListener('touchend', (e) => {
+        if (holdAfterSwipeTimer) {
+            clearTimeout(holdAfterSwipeTimer);
+            holdAfterSwipeTimer = null;
+            resetSwipeGesture();
+        }
+    });
+    document.addEventListener('touchcancel', resetSwipeGesture);
+
+    // Existing hidden triggers (Ctrl+Shift+E, Ctrl+Shift+U, Ctrl+Shift+N, long press)
+    const passwordModal = document.getElementById('passwordModal');
+    const addPasswordInput = document.getElementById('addPassword');
+    const pwdError = document.getElementById('pwdError');
+    const confirmPwdBtn = document.getElementById('confirmPwdBtn');
+    const cancelPwdBtn = document.getElementById('cancelPwdBtn');
+    const closePwdModal = document.getElementById('closePwdModal');
+
     function openAddStudentPassword() {
         showModal(passwordModal);
         addPasswordInput.value = '';
         pwdError.style.display = 'none';
     }
-
     document.addEventListener('keydown', function(e) {
         if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'n') {
             e.preventDefault();
             openAddStudentPassword();
         }
+        if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'e') {
+            e.preventDefault();
+            openEditStudent();
+        }
+        if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'u') {
+            e.preventDefault();
+            openUniversalEdit();
+        }
     });
-
-    const schoolNameEl = document.getElementById('schoolName');
-    let pressTimer;
-    if (schoolNameEl) {
-        schoolNameEl.addEventListener('touchstart', () => {
-            pressTimer = setTimeout(() => openAddStudentPassword(), 3000);
-        });
-        schoolNameEl.addEventListener('touchend', () => clearTimeout(pressTimer));
-        schoolNameEl.addEventListener('touchcancel', () => clearTimeout(pressTimer));
-    }
+    let longPressTimer = null;
+    schoolNameElement.addEventListener('touchstart', (e) => {
+        if (!isSafeToTrigger()) return;
+        longPressTimer = setTimeout(() => {
+            if (isSafeToTrigger()) {
+                toast("Admin Mode Activated", false);
+                openAddStudentPassword();
+            }
+        }, 5000);
+    });
+    schoolNameElement.addEventListener('touchend', () => {
+        if (longPressTimer) clearTimeout(longPressTimer);
+    });
+    schoolNameElement.addEventListener('touchcancel', () => {
+        if (longPressTimer) clearTimeout(longPressTimer);
+    });
 
     closePwdModal.addEventListener('click', () => hideModal(passwordModal));
     cancelPwdBtn.addEventListener('click', () => hideModal(passwordModal));
     confirmPwdBtn.addEventListener('click', () => {
         if (addPasswordInput.value === ADD_STUDENT_PASSWORD) {
             hideModal(passwordModal);
-            addStudentForm.reset();
-            studentIdInput.value = '';
+            document.getElementById('addStudentForm').reset();
+            document.getElementById('studentId').value = '';
             showModal(addStudentModal);
         } else {
             pwdError.style.display = 'block';
         }
     });
 
-    closeAddModal.addEventListener('click', () => hideModal(addStudentModal));
-    cancelAddBtn.addEventListener('click', () => hideModal(addStudentModal));
-
-    addStudentForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    let studentId = studentIdInput.value.trim().toLowerCase();
-    if (!studentId) return;
-
-    const name = document.getElementById('studentName').value.trim();
-    const className = document.getElementById('studentClass').value;
-    const phone = document.getElementById('studentPhone').value.trim();
-    const term1Fee = parseFloat(document.getElementById('term1Fee').value);
-    const term2Fee = parseFloat(document.getElementById('term2Fee').value);
-    const term3Fee = parseFloat(document.getElementById('term3Fee').value);
-
-    if (!name || !className || !phone || isNaN(term1Fee) || isNaN(term2Fee) || isNaN(term3Fee)) {
-        alert('Please fill all fields correctly');
-        return;
-    }
-
-        try {
-            const docRef = doc(db, "students", studentId);
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-                alert("Student ID already exists");
-                return;
-            }
-        } catch (err) {
-            alert("Error checking ID. Please try again.");
-            return;
-        }
-
-        const data = {
-            name, class: className, phone,
-            terms: [
-                { name: "Term 1 (June - September)", total: term1Fee, paid: 0 },
-                { name: "Term 2 (October - December)", total: term2Fee, paid: 0 },
-                { name: "Term 3 (January - March)", total: term3Fee, paid: 0 }
-            ]
-        };
-        try {
-            await setDoc(doc(db, "students", studentId), data);
-            if (!studentData[className]) studentData[className] = [];
-            studentData[className].push({ name, id: studentId });
-            allStudents.push({ id: studentId, name, class: className, phone, terms: data.terms });
-            hideModal(addStudentModal);
-            showModal(successPopup);
-            setTimeout(() => hideModal(successPopup), 2500);
-        } catch (err) {
-            alert('Failed to add student');
-        }
-    });
-    closeSuccessBtn.addEventListener('click', () => hideModal(successPopup));
-
-    // ---------- CONTACT DEVELOPER (unchanged) ----------
+    // ---------- Contact Developer (fixed) ----------
     const contactModal = document.getElementById('contactModal');
     const contactDevBtn = document.getElementById('contactDevBtn');
     const closeContactBtn = document.getElementById('closeContactBtn');
@@ -1214,68 +1689,46 @@
         if (e.target === contactModal) closeContactModal();
     });
 
-    // ---------- VERIFY RECEIPT MODAL ----------
+    // ---------- Verify Receipt Modal (fixed loop) ----------
     const verifyModal = document.getElementById('verifyModal');
     const closeVerifyModal = document.getElementById('closeVerifyModal');
     const cancelVerifyBtn = document.getElementById('cancelVerifyBtn');
     const verifyBtn = document.getElementById('verifyBtn');
     const receiptCodeInput = document.getElementById('receiptCodeInput');
     const verifyResult = document.getElementById('verifyResult');
-
     document.getElementById('verifyReceiptBtn').addEventListener('click', () => {
         receiptCodeInput.value = '';
         verifyResult.innerHTML = '';
         showModal(verifyModal);
     });
-
-    function closeVerify() {
-        hideModal(verifyModal);
-    }
+    function closeVerify() { hideModal(verifyModal); }
     closeVerifyModal.addEventListener('click', closeVerify);
     cancelVerifyBtn.addEventListener('click', closeVerify);
-
     verifyBtn.addEventListener('click', async () => {
         const code = receiptCodeInput.value.trim().toUpperCase();
-        if (!code) {
-            verifyResult.innerHTML = '<p style="color:#bc4e2c;">Please enter a receipt code</p>';
-            return;
-        }
+        if (!code) { verifyResult.innerHTML = '<p style="color:#bc4e2c;">Please enter a receipt code</p>'; return; }
         verifyResult.innerHTML = '<p>Searching...</p>';
         try {
             const snapshot = await getDocs(collection(db, "students"));
             let foundData = null;
-            for (const docSnap of snapshot.docs) {
+            for (let i = 0; i < snapshot.docs.length; i++) {
+                const docSnap = snapshot.docs[i];
                 const data = docSnap.data();
-                if (data.receipts && Array.isArray(data.receipts)) {
-                    const match = data.receipts.find(r => r.code === code);
-                    if (match) {
-                        foundData = {
-                            studentName: data.name,
-                            className: data.class,
-                            ...match
-                        };
-                        break;
-                    }
+                if (!data.receipts || !Array.isArray(data.receipts)) continue;
+                const match = data.receipts.find(r => r.code === code);
+                if (match) {
+                    foundData = { studentName: data.name, className: data.class, ...match };
+                    break;
                 }
             }
             if (foundData) {
-                verifyResult.innerHTML = `
-                    <div style="background:#e1f7ea; padding:1rem; border-radius:1rem; border-left:4px solid #4CAF50;">
-                        <strong>Verified ✅</strong><br><br>
-                        <b>Name:</b> ${escapeHtml(foundData.studentName)}<br>
-                        <b>Class:</b> ${escapeHtml(foundData.className)}<br>
-                        <b>Amount:</b> ₹${foundData.amount}<br>
-                        <b>Term:</b> ${escapeHtml(foundData.term)}<br>
-                        <b>Date:</b> ${foundData.date}<br>
-                        <b>Code:</b> ${escapeHtml(foundData.code)}
-                    </div>
-                `;
+                verifyResult.innerHTML = `<div style="background:#e1f7ea; padding:1rem; border-radius:1rem; border-left:4px solid #4CAF50;">
+                    <strong>Verified ✅</strong><br><br><b>Name:</b> ${escapeHtml(foundData.studentName)}<br>
+                    <b>Class:</b> ${escapeHtml(foundData.className)}<br><b>Amount:</b> ₹${foundData.amount}<br>
+                    <b>Term:</b> ${escapeHtml(foundData.term)}<br><b>Date:</b> ${foundData.date}<br><b>Code:</b> ${escapeHtml(foundData.code)}
+                </div>`;
             } else {
-                verifyResult.innerHTML = `
-                    <div style="background:#ffe6e5; padding:1rem; border-radius:1rem; border-left:4px solid #bc4e2c;">
-                        ❌ Invalid Receipt Code
-                    </div>
-                `;
+                verifyResult.innerHTML = `<div style="background:#ffe6e5; padding:1rem; border-radius:1rem; border-left:4px solid #bc4e2c;">❌ Invalid Receipt Code</div>`;
             }
         } catch (err) {
             console.error(err);
@@ -1283,15 +1736,25 @@
         }
     });
 
-    // ---------- INIT ----------
+    // ---------- INIT (wrap in load event) ----------
+    window.addEventListener('load', () => {
+        init();
+    });
     async function init() {
         await fetchAllStudents();
         renderClassGrid();
         classViewDiv.style.display = 'block';
         fullscreenStudentView.classList.remove('active');
         if (window.location.search) history.replaceState(null, "", window.location.pathname);
+        const modals = [addStudentModal, document.getElementById('editStudentModal'), document.getElementById('universalModal'), verifyModal, passwordModal];
+        modals.forEach(modal => {
+            modal.addEventListener('click', (e) => { if (e.target === modal) hideModal(modal); });
+        });
+        document.getElementById('closeAddModal').onclick = () => hideModal(addStudentModal);
+        document.getElementById('cancelAddBtn').onclick = () => hideModal(addStudentModal);
+        document.getElementById('closeEditModal').onclick = () => hideModal(document.getElementById('editStudentModal'));
+        document.getElementById('cancelEditBtn').onclick = () => hideModal(document.getElementById('editStudentModal'));
     }
-    init();
 </script>
 </body>
 </html>
