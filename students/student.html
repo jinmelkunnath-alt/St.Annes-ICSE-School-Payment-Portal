@@ -168,6 +168,25 @@
             font-weight: 600;
         }
 
+        .fee-switch {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .fee-switch button {
+            background: #eef2f8;
+            border: none;
+            padding: 0.5rem 1.2rem;
+            border-radius: 2rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .fee-switch button.active {
+            background: #1e4a76;
+            color: white;
+        }
+
         .table-wrapper {
             overflow-x: auto;
             margin: 1.8rem 0 1.5rem;
@@ -414,6 +433,9 @@
             .total-card {
                 flex-direction: column;
                 align-items: flex-start;
+            }
+            .fee-switch {
+                justify-content: center;
             }
         }
 
@@ -803,17 +825,27 @@
                 <span id="studentClassSpan">📖 Class: --</span>
             </div>
         </div>
-        <div class="progress-wrapper">
+        <div class="progress-wrapper" id="termProgress">
             <div class="progress-label">OVERALL PAYMENT</div>
             <div class="progress-bar-bg"><div class="progress-fill" id="progressFill"></div></div>
             <div class="progress-percent" id="progressPercent">0%</div>
         </div>
+        <div class="progress-wrapper" id="otherProgress" style="display: none;">
+            <div class="progress-label">OTHER FEES PAYMENT</div>
+            <div class="progress-bar-bg"><div class="progress-fill" id="otherProgressFill"></div></div>
+            <div class="progress-percent" id="otherProgressPercent">0%</div>
+        </div>
+    </div>
+
+    <div class="fee-switch">
+        <button id="showTerm" class="active">Term Fees</button>
+        <button id="showOther">Other Fees</button>
     </div>
 
     <div class="table-wrapper">
         <table class="fee-table">
             <thead>
-                <tr><th>Term</th><th>Total Fee (₹)</th><th>Paid (₹)</th><th>Remaining (₹)</th><th>Status</th>‹
+                <tr><th>Fee Item</th><th>Total Fee (₹)</th><th>Paid (₹)</th><th>Remaining (₹)</th><th>Status</th></tr>
             </thead>
             <tbody id="feeTableBody"></tbody>
         </table>
@@ -898,6 +930,7 @@ const studentId = new URLSearchParams(window.location.search).get("id");
 // ---------- STATE ----------
 let TERMS = [];
 let studentData = {};
+let currentView = "term"; // "term" or "other"
 
 // ---------- SAFE ELEMENT GET ----------
 function getEl(id) {
@@ -957,13 +990,30 @@ async function loadStudent() {
   }
 }
 
-// ---------- RENDER (only updates UI from local state) ----------
+// ---------- RENDER (depending on currentView) ----------
 function render() {
   const tbody = getEl("feeTableBody");
   if (!tbody) return;
 
   tbody.innerHTML = "";
 
+  if (currentView === "term") {
+    renderTermFees(tbody);
+    updateOverallSummary();
+    updateProgressBar();
+    // Show/hide progress bars
+    getEl("termProgress").style.display = "flex";
+    getEl("otherProgress").style.display = "none";
+  } else {
+    renderOtherFees(tbody);
+    updateOtherFeesSummary();
+    updateOtherProgressBar();
+    getEl("termProgress").style.display = "none";
+    getEl("otherProgress").style.display = "flex";
+  }
+}
+
+function renderTermFees(tbody) {
   let total = 0;
   let paid = 0;
 
@@ -973,40 +1023,191 @@ function render() {
     total += t.total;
     paid += t.paid;
 
-    tbody.innerHTML += `
-        <tr>
-          <td>${t.name}</td>
-          <td>₹${t.total}</td>
-          <td>₹${t.paid}</td>
-          <td>₹${remaining}</td>
-          <td>
-          <span class="status-badge ${remaining === 0 ? "status-paid" : "status-pending"}">
-            ${remaining === 0 ? "Paid" : "Pending"}
-          </span>
-          </td>
-        </table>
+    const status = remaining === 0 ? "Paid" : "Pending";
+    const statusClass = remaining === 0 ? "status-paid" : "status-pending";
+
+    const row = document.createElement("tr");
+    row.innerHTML = `
+        <td>${t.name}</td>
+        <td>₹${t.total.toLocaleString()}</td>
+        <td>₹${t.paid.toLocaleString()}</td>
+        <td>₹${remaining.toLocaleString()}</td>
+        <td><span class="status-badge ${statusClass}">${status}</span></td>
     `;
+    tbody.appendChild(row);
   });
+}
 
+function renderOtherFees(tbody) {
+  // Bus Fee
+  if (studentData.busFee && studentData.busFee.enabled && studentData.busFee.monthly) {
+    const months = Object.keys(studentData.busFee.monthly);
+    months.forEach(month => {
+      const item = studentData.busFee.monthly[month];
+      const remaining = (item.total || 0) - (item.paid || 0);
+      const status = remaining === 0 ? "Paid" : "Pending";
+      const statusClass = remaining === 0 ? "status-paid" : "status-pending";
+      const row = document.createElement("tr");
+      row.innerHTML = `
+          <td>Bus Fee - ${month.charAt(0).toUpperCase() + month.slice(1)}</td>
+          <td>₹${(item.total || 0).toLocaleString()}</td>
+          <td>₹${(item.paid || 0).toLocaleString()}</td>
+          <td>₹${remaining.toLocaleString()}</td>
+          <td><span class="status-badge ${statusClass}">${status}</span></td>
+      `;
+      tbody.appendChild(row);
+    });
+  }
+
+  // ECA Fee
+  if (studentData.ecaFee && studentData.ecaFee.monthly) {
+    const months = Object.keys(studentData.ecaFee.monthly);
+    months.forEach(month => {
+      const item = studentData.ecaFee.monthly[month];
+      const remaining = (item.total || 0) - (item.paid || 0);
+      const status = remaining === 0 ? "Paid" : "Pending";
+      const statusClass = remaining === 0 ? "status-paid" : "status-pending";
+      const row = document.createElement("tr");
+      row.innerHTML = `
+          <td>ECA Fee - ${month.charAt(0).toUpperCase() + month.slice(1)}</td>
+          <td>₹${(item.total || 0).toLocaleString()}</td>
+          <td>₹${(item.paid || 0).toLocaleString()}</td>
+          <td>₹${remaining.toLocaleString()}</td>
+          <td><span class="status-badge ${statusClass}">${status}</span></td>
+      `;
+      tbody.appendChild(row);
+    });
+  }
+
+  // Annual Fee
+  if (studentData.annualFee) {
+    const remaining = (studentData.annualFee.total || 0) - (studentData.annualFee.paid || 0);
+    const status = remaining === 0 ? "Paid" : "Pending";
+    const statusClass = remaining === 0 ? "status-paid" : "status-pending";
+    const row = document.createElement("tr");
+    row.innerHTML = `
+        <td>Annual Day Fee</td>
+        <td>₹${(studentData.annualFee.total || 0).toLocaleString()}</td>
+        <td>₹${(studentData.annualFee.paid || 0).toLocaleString()}</td>
+        <td>₹${remaining.toLocaleString()}</td>
+        <td><span class="status-badge ${statusClass}">${status}</span></td>
+    `;
+    tbody.appendChild(row);
+  }
+
+  // Other Fees
+  if (studentData.otherFees && studentData.otherFees.length) {
+    studentData.otherFees.forEach(fee => {
+      const remaining = (fee.total || 0) - (fee.paid || 0);
+      const status = remaining === 0 ? "Paid" : "Pending";
+      const statusClass = remaining === 0 ? "status-paid" : "status-pending";
+      const row = document.createElement("tr");
+      row.innerHTML = `
+          <td>${fee.name}</td>
+          <td>₹${(fee.total || 0).toLocaleString()}</td>
+          <td>₹${(fee.paid || 0).toLocaleString()}</td>
+          <td>₹${remaining.toLocaleString()}</td>
+          <td><span class="status-badge ${statusClass}">${status}</span></td>
+      `;
+      tbody.appendChild(row);
+    });
+  }
+}
+
+function updateOverallSummary() {
+  let total = 0, paid = 0;
+  TERMS.forEach(t => {
+    total += t.total;
+    paid += t.paid;
+  });
   const remaining = total - paid;
-
   if (getEl("overallSummaryCard")) {
     getEl("overallSummaryCard").innerHTML = `
-      <div><strong>Total:</strong> ₹${total}</div>
-      <div><strong>Paid:</strong> ₹${paid}</div>
-      <div><strong>Remaining:</strong> ₹${remaining}</div>
+      <div><strong>Total:</strong> ₹${total.toLocaleString()}</div>
+      <div><strong>Paid:</strong> ₹${paid.toLocaleString()}</div>
+      <div><strong>Remaining:</strong> ₹${remaining.toLocaleString()}</div>
     `;
   }
+}
 
-  if (getEl("progressFill")) {
-    const percent = total ? (paid / total) * 100 : 0;
-    getEl("progressFill").style.width = percent + "%";
-  }
+function updateProgressBar() {
+  let total = 0, paid = 0;
+  TERMS.forEach(t => {
+    total += t.total;
+    paid += t.paid;
+  });
+  const percent = total ? (paid / total) * 100 : 0;
+  if (getEl("progressFill")) getEl("progressFill").style.width = percent + "%";
+  if (getEl("progressPercent")) getEl("progressPercent").innerText = Math.round(percent) + "%";
+}
 
-  if (getEl("progressPercent")) {
-    const percent = total ? (paid / total) * 100 : 0;
-    getEl("progressPercent").innerText = Math.round(percent) + "%";
+function updateOtherFeesSummary() {
+  let total = 0, paid = 0;
+  // Bus
+  if (studentData.busFee && studentData.busFee.enabled && studentData.busFee.monthly) {
+    Object.values(studentData.busFee.monthly).forEach(item => {
+      total += item.total || 0;
+      paid += item.paid || 0;
+    });
   }
+  // ECA
+  if (studentData.ecaFee && studentData.ecaFee.monthly) {
+    Object.values(studentData.ecaFee.monthly).forEach(item => {
+      total += item.total || 0;
+      paid += item.paid || 0;
+    });
+  }
+  // Annual
+  if (studentData.annualFee) {
+    total += studentData.annualFee.total || 0;
+    paid += studentData.annualFee.paid || 0;
+  }
+  // Other fees
+  if (studentData.otherFees) {
+    studentData.otherFees.forEach(fee => {
+      total += fee.total || 0;
+      paid += fee.paid || 0;
+    });
+  }
+  const remaining = total - paid;
+  if (getEl("overallSummaryCard")) {
+    getEl("overallSummaryCard").innerHTML = `
+      <div><strong>Total Other Fees:</strong> ₹${total.toLocaleString()}</div>
+      <div><strong>Paid:</strong> ₹${paid.toLocaleString()}</div>
+      <div><strong>Remaining:</strong> ₹${remaining.toLocaleString()}</div>
+    `;
+  }
+}
+
+function updateOtherProgressBar() {
+  let total = 0, paid = 0;
+  if (studentData.busFee && studentData.busFee.enabled && studentData.busFee.monthly) {
+    Object.values(studentData.busFee.monthly).forEach(item => {
+      total += item.total || 0;
+      paid += item.paid || 0;
+    });
+  }
+  if (studentData.ecaFee && studentData.ecaFee.monthly) {
+    Object.values(studentData.ecaFee.monthly).forEach(item => {
+      total += item.total || 0;
+      paid += item.paid || 0;
+    });
+  }
+  if (studentData.annualFee) {
+    total += studentData.annualFee.total || 0;
+    paid += studentData.annualFee.paid || 0;
+  }
+  if (studentData.otherFees) {
+    studentData.otherFees.forEach(fee => {
+      total += fee.total || 0;
+      paid += fee.paid || 0;
+    });
+  }
+  const percent = total ? (paid / total) * 100 : 0;
+  const fill = getEl("otherProgressFill");
+  const percentSpan = getEl("otherProgressPercent");
+  if (fill) fill.style.width = percent + "%";
+  if (percentSpan) percentSpan.innerText = Math.round(percent) + "%";
 }
 
 // ---------- SAVE SPECIFIC FIELDS (optimized writes) ----------
@@ -1031,7 +1232,7 @@ async function saveOtherFees() {
 }
 
 // ---------- RECEIPT FUNCTIONS ----------
-function generateReceiptCode(name, studentClass, termName, amount, existingReceipts) {
+function generateReceiptCode(name, studentClass, subType, amount, existingReceipts) {
   const words = name.trim().split(/\s+/);
   let initials;
   if (words.length === 1) {
@@ -1040,10 +1241,10 @@ function generateReceiptCode(name, studentClass, termName, amount, existingRecei
     initials = words.slice(0, 2).map(w => w[0]).join('').toUpperCase();
   }
   const classNum = studentClass.replace(/\D/g, "");
-  const termNum = (termName.match(/\d+/) || ["0"])[0];
+  const termNum = (subType.match(/\d+/) || ["0"])[0];
   const absAmount = Math.abs(amount);
   const amountPrefix = String(absAmount).substring(0, 2);
-  const previousPayments = existingReceipts.filter(r => r.type === termName).length;
+  const previousPayments = existingReceipts.filter(r => r.subType === subType).length;
   const sequence = previousPayments + 1;
   const idSuffix = ((studentId?.match(/\d+/)?.[0]) || "0").padStart(3, "0");
   return `${initials}${classNum}${termNum}${amountPrefix}${sequence}${idSuffix}`;
@@ -1053,7 +1254,7 @@ async function generateReceiptImage(data) {
   document.getElementById("r_name").innerText = data.name;
   document.getElementById("r_class").innerText = data.class;
   document.getElementById("r_amount").innerText = data.amount;
-  document.getElementById("r_term").innerText = data.subType || data.type;
+  document.getElementById("r_term").innerText = data.subType;
   document.getElementById("r_date").innerText = data.date;
   document.getElementById("r_code").innerText = data.code;
 
@@ -1087,7 +1288,6 @@ async function showReceiptSuccess(feeType, subType, amountPaid, receiptCode) {
     name: studentData.name,
     class: studentData.class,
     amount: amountPaid,
-    type: feeType,
     subType: subType,
     date: new Date().toISOString().slice(0,10),
     code: receiptCode
@@ -1201,12 +1401,16 @@ async function handlePaymentUpdate(feeType, identifier, amount, isFull) {
     render(); // only term affects UI
   } else if (feeType === "bus") {
     await saveBusFee();
+    if (currentView === "other") render();
   } else if (feeType === "eca") {
     await saveEcaFee();
+    if (currentView === "other") render();
   } else if (feeType === "annual") {
     await saveAnnualFee();
+    if (currentView === "other") render();
   } else if (feeType === "other") {
     await saveOtherFees();
+    if (currentView === "other") render();
   }
 
   // Generate receipt
@@ -1544,6 +1748,20 @@ function openHelp() {
   overlay.querySelector("#closeHelp").onclick = () => overlay.remove();
   overlay.querySelector("#chatBtn").onclick = () => window.open(WHATSAPP_URL);
 }
+
+// ---------- SWITCH VIEW ----------
+document.getElementById("showTerm").onclick = () => {
+  currentView = "term";
+  document.getElementById("showTerm").classList.add("active");
+  document.getElementById("showOther").classList.remove("active");
+  render();
+};
+document.getElementById("showOther").onclick = () => {
+  currentView = "other";
+  document.getElementById("showOther").classList.add("active");
+  document.getElementById("showTerm").classList.remove("active");
+  render();
+};
 
 // ---------- INIT ----------
 window.onload = () => {
