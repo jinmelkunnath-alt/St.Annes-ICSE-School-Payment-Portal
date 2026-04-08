@@ -968,10 +968,27 @@ async function loadStudent() {
     if (!studentData.receipts) studentData.receipts = [];
     TERMS = studentData.terms || [];
 
-    // Ensure other fee structures exist (for backward compatibility)
+    // ---------- FORCE DATA STRUCTURE FOR ALL FEE TYPES ----------
+    const months = ["june","july","august","september","october","november","december","january","february","march"];
+
+    // Bus Fee
     if (!studentData.busFee) studentData.busFee = { enabled: false, monthly: {} };
+    if (!studentData.busFee.monthly) studentData.busFee.monthly = {};
+
+    // ECA Fee
     if (!studentData.ecaFee) studentData.ecaFee = { monthly: {} };
+    if (!studentData.ecaFee.monthly) studentData.ecaFee.monthly = {};
+
+    // Create month structure for bus and ECA
+    months.forEach(m => {
+      if (!studentData.busFee.monthly[m]) studentData.busFee.monthly[m] = { total: 0, paid: 0 };
+      if (!studentData.ecaFee.monthly[m]) studentData.ecaFee.monthly[m] = { total: 0, paid: 0 };
+    });
+
+    // Annual Fee
     if (!studentData.annualFee) studentData.annualFee = { total: 0, paid: 0 };
+
+    // Other Fees
     if (!studentData.otherFees) studentData.otherFees = [];
 
     if (getEl("studentNameDisplay"))
@@ -1001,7 +1018,6 @@ function render() {
     renderTermFees(tbody);
     updateOverallSummary();
     updateProgressBar();
-    // Show/hide progress bars
     getEl("termProgress").style.display = "flex";
     getEl("otherProgress").style.display = "none";
   } else {
@@ -1018,6 +1034,7 @@ function renderTermFees(tbody) {
   let paid = 0;
 
   TERMS.forEach((t) => {
+    if (t.total === 0) return; // skip zero total rows
     const remaining = t.total - t.paid;
 
     total += t.total;
@@ -1039,11 +1056,12 @@ function renderTermFees(tbody) {
 }
 
 function renderOtherFees(tbody) {
-  // Bus Fee
+  // Bus Fee (only if enabled and total > 0)
   if (studentData.busFee && studentData.busFee.enabled && studentData.busFee.monthly) {
     const months = Object.keys(studentData.busFee.monthly);
     months.forEach(month => {
       const item = studentData.busFee.monthly[month];
+      if (!item || item.total === 0) return;
       const remaining = (item.total || 0) - (item.paid || 0);
       const status = remaining === 0 ? "Paid" : "Pending";
       const statusClass = remaining === 0 ? "status-paid" : "status-pending";
@@ -1059,11 +1077,12 @@ function renderOtherFees(tbody) {
     });
   }
 
-  // ECA Fee
+  // ECA Fee (show only if total > 0)
   if (studentData.ecaFee && studentData.ecaFee.monthly) {
     const months = Object.keys(studentData.ecaFee.monthly);
     months.forEach(month => {
       const item = studentData.ecaFee.monthly[month];
+      if (!item || item.total === 0) return;
       const remaining = (item.total || 0) - (item.paid || 0);
       const status = remaining === 0 ? "Paid" : "Pending";
       const statusClass = remaining === 0 ? "status-paid" : "status-pending";
@@ -1079,8 +1098,8 @@ function renderOtherFees(tbody) {
     });
   }
 
-  // Annual Fee
-  if (studentData.annualFee) {
+  // Annual Fee (only if total > 0)
+  if (studentData.annualFee && studentData.annualFee.total > 0) {
     const remaining = (studentData.annualFee.total || 0) - (studentData.annualFee.paid || 0);
     const status = remaining === 0 ? "Paid" : "Pending";
     const statusClass = remaining === 0 ? "status-paid" : "status-pending";
@@ -1095,9 +1114,10 @@ function renderOtherFees(tbody) {
     tbody.appendChild(row);
   }
 
-  // Other Fees
+  // Other Fees (only if total > 0)
   if (studentData.otherFees && studentData.otherFees.length) {
     studentData.otherFees.forEach(fee => {
+      if (!fee || fee.total === 0) return;
       const remaining = (fee.total || 0) - (fee.paid || 0);
       const status = remaining === 0 ? "Paid" : "Pending";
       const statusClass = remaining === 0 ? "status-paid" : "status-pending";
@@ -1133,6 +1153,7 @@ function updateOverallSummary() {
 function updateProgressBar() {
   let total = 0, paid = 0;
   TERMS.forEach(t => {
+    if (t.total === 0) return;
     total += t.total;
     paid += t.paid;
   });
@@ -1146,27 +1167,30 @@ function updateOtherFeesSummary() {
   // Bus
   if (studentData.busFee && studentData.busFee.enabled && studentData.busFee.monthly) {
     Object.values(studentData.busFee.monthly).forEach(item => {
-      total += item.total || 0;
-      paid += item.paid || 0;
+      if (!item || item.total === 0) return;
+      total += item.total;
+      paid += item.paid;
     });
   }
   // ECA
   if (studentData.ecaFee && studentData.ecaFee.monthly) {
     Object.values(studentData.ecaFee.monthly).forEach(item => {
-      total += item.total || 0;
-      paid += item.paid || 0;
+      if (!item || item.total === 0) return;
+      total += item.total;
+      paid += item.paid;
     });
   }
   // Annual
-  if (studentData.annualFee) {
-    total += studentData.annualFee.total || 0;
-    paid += studentData.annualFee.paid || 0;
+  if (studentData.annualFee && studentData.annualFee.total > 0) {
+    total += studentData.annualFee.total;
+    paid += studentData.annualFee.paid;
   }
   // Other fees
-  if (studentData.otherFees) {
+  if (studentData.otherFees && studentData.otherFees.length) {
     studentData.otherFees.forEach(fee => {
-      total += fee.total || 0;
-      paid += fee.paid || 0;
+      if (!fee || fee.total === 0) return;
+      total += fee.total;
+      paid += fee.paid;
     });
   }
   const remaining = total - paid;
@@ -1181,33 +1205,40 @@ function updateOtherFeesSummary() {
 
 function updateOtherProgressBar() {
   let total = 0, paid = 0;
+  // Bus
   if (studentData.busFee && studentData.busFee.enabled && studentData.busFee.monthly) {
     Object.values(studentData.busFee.monthly).forEach(item => {
-      total += item.total || 0;
-      paid += item.paid || 0;
+      if (!item || item.total === 0) return;
+      total += item.total;
+      paid += item.paid;
     });
   }
+  // ECA
   if (studentData.ecaFee && studentData.ecaFee.monthly) {
     Object.values(studentData.ecaFee.monthly).forEach(item => {
-      total += item.total || 0;
-      paid += item.paid || 0;
+      if (!item || item.total === 0) return;
+      total += item.total;
+      paid += item.paid;
     });
   }
-  if (studentData.annualFee) {
-    total += studentData.annualFee.total || 0;
-    paid += studentData.annualFee.paid || 0;
+  // Annual
+  if (studentData.annualFee && studentData.annualFee.total > 0) {
+    total += studentData.annualFee.total;
+    paid += studentData.annualFee.paid;
   }
-  if (studentData.otherFees) {
+  // Other fees
+  if (studentData.otherFees && studentData.otherFees.length) {
     studentData.otherFees.forEach(fee => {
-      total += fee.total || 0;
-      paid += fee.paid || 0;
+      if (!fee || fee.total === 0) return;
+      total += fee.total;
+      paid += fee.paid;
     });
   }
   const percent = total ? (paid / total) * 100 : 0;
   const fill = getEl("otherProgressFill");
-  const percentSpan = getEl("otherProgressPercent");
+  const text = getEl("otherProgressPercent");
   if (fill) fill.style.width = percent + "%";
-  if (percentSpan) percentSpan.innerText = Math.round(percent) + "%";
+  if (text) text.innerText = Math.round(percent) + "%";
 }
 
 // ---------- SAVE SPECIFIC FIELDS (optimized writes) ----------
