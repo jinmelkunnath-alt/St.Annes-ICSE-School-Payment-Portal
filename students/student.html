@@ -687,7 +687,6 @@
             position: relative;
             overflow: hidden;
         }
-        /* Watermark */
         .receipt-watermark {
             position: absolute;
             top: 50%;
@@ -699,7 +698,6 @@
             pointer-events: none;
             white-space: nowrap;
         }
-        /* Header */
         .receipt-header {
             text-align: center;
             margin-bottom: 20px;
@@ -713,7 +711,6 @@
             font-size: 12px;
             color: #6c86a3;
         }
-        /* Student section */
         .student-section {
             display: flex;
             justify-content: space-between;
@@ -730,7 +727,6 @@
             font-weight: 600;
             font-size: 14px;
         }
-        /* Amount section - FIXED for better visibility */
         .amount-section {
             margin: 20px 0;
             text-align: center;
@@ -758,7 +754,6 @@
         .amount-section h1 span {
             font-size: inherit;
         }
-        /* Details */
         .receipt-details {
             margin-top: 10px;
         }
@@ -772,7 +767,6 @@
         .receipt-details span {
             color: #6c86a3;
         }
-        /* Code */
         .receipt-code {
             margin-top: 15px;
             text-align: center;
@@ -791,7 +785,6 @@
             background: #eef2f8;
             font-weight: 600;
         }
-        /* Footer */
         .receipt-footer {
             text-align: center;
             margin-top: 16px;
@@ -826,7 +819,7 @@
             </div>
         </div>
         <div class="progress-wrapper" id="termProgress">
-            <div class="progress-label">OVERALL PAYMENT</div>
+            <div class="progress-label">TERM FEES PAYMENT</div>
             <div class="progress-bar-bg"><div class="progress-fill" id="progressFill"></div></div>
             <div class="progress-percent" id="progressPercent">0%</div>
         </div>
@@ -842,9 +835,7 @@
         <button id="showOther">Other Fees</button>
     </div>
 
-    <div class="table-wrapper" id="tableWrapper">
-        <!-- dynamic content -->
-    </div>
+    <div class="table-wrapper" id="tableWrapper"></div>
 
     <div class="action-buttons">
         <button id="payFeesBtn" class="btn btn-primary">💳 Pay Fees</button>
@@ -858,7 +849,7 @@
     <footer>Official fee record • Authorized personnel only</footer>
 </div>
 
-<!-- Hidden Receipt Template (Ultra Premium with Fixed Amount Section) -->
+<!-- Hidden Receipt Template -->
 <div id="receiptTemplate">
     <div class="receipt-card">
         <div class="receipt-watermark">ST. ANNE'S ICSE</div>
@@ -925,11 +916,11 @@ function safeNumber(val) {
   return isNaN(num) ? 0 : num;
 }
 
-// ---------- GET ID (NO LOWERCASE) ----------
+// ---------- GET ID (LOWERCASE NORMALIZATION) ----------
 const studentIdRaw = new URLSearchParams(window.location.search).get("id");
-const studentId = studentIdRaw ? studentIdRaw.trim() : null;
+const studentId = studentIdRaw ? studentIdRaw.trim().toLowerCase() : null;
 
-console.log("👉 URL ID:", studentId);
+console.log("👉 URL ID (lowercase):", studentId);
 
 // ---------- STATE ----------
 let TERMS = [];
@@ -949,7 +940,150 @@ function hideLoader() {
   if (app) app.style.display = "block";
 }
 
-// ---------- LOAD STUDENT (WITH ALL FIXES) ----------
+// ---------- NORMALIZATION FUNCTIONS ----------
+const months = ["june","july","august","september","october","november","december","january","february","march"];
+
+function normalizeTerms(rawTerms) {
+  let terms = Array.isArray(rawTerms) ? rawTerms : [];
+  if (terms.length === 0) {
+    return [
+      { name: "Term 1", total: 5000, paid: 0 },
+      { name: "Term 2", total: 5000, paid: 0 },
+      { name: "Term 3", total: 5000, paid: 0 }
+    ];
+  }
+  return terms.map((t, idx) => ({
+    name: t.name || t.term || `Term ${idx + 1}`,
+    total: safeNumber(t.total ?? t.amount ?? 0),
+    paid: safeNumber(t.paid ?? t.paidAmount ?? 0)
+  }));
+}
+
+function normalizeBusFee(raw) {
+  let busFee = { enabled: false, monthly: {} };
+  if (!raw || typeof raw !== "object") return busFee;
+
+  if (raw.monthly && typeof raw.monthly === "object") {
+    const monthly = {};
+    Object.keys(raw.monthly).forEach(month => {
+      const val = raw.monthly[month];
+      if (typeof val === "object") {
+        monthly[month] = {
+          total: safeNumber(val.total ?? 0),
+          paid: safeNumber(val.paid ?? 0)
+        };
+      } else {
+        monthly[month] = {
+          total: safeNumber(val),
+          paid: 0
+        };
+      }
+    });
+    busFee.monthly = monthly;
+    busFee.enabled = Object.keys(monthly).length > 0;
+  } else if (typeof raw === "object") {
+    const monthly = {};
+    Object.keys(raw).forEach(month => {
+      const val = raw[month];
+      if (typeof val === "object") {
+        monthly[month] = {
+          total: safeNumber(val.total ?? 0),
+          paid: safeNumber(val.paid ?? 0)
+        };
+      } else {
+        monthly[month] = {
+          total: safeNumber(val),
+          paid: 0
+        };
+      }
+    });
+    busFee.monthly = monthly;
+    busFee.enabled = Object.keys(monthly).length > 0;
+  }
+  // Fallback: if monthly exists but enabled false, set true
+  if (!busFee.enabled && Object.keys(busFee.monthly).length > 0) {
+    busFee.enabled = true;
+  }
+  return busFee;
+}
+
+function normalizeEcaFee(raw) {
+  let ecaFee = { monthly: {} };
+  if (!raw || typeof raw !== "object") {
+    months.forEach(m => { ecaFee.monthly[m] = { total: 1250, paid: 0 }; });
+    return ecaFee;
+  }
+  if (raw.monthly && typeof raw.monthly === "object") {
+    const monthly = {};
+    months.forEach(month => {
+      const item = raw.monthly[month];
+      if (item) {
+        monthly[month] = {
+          total: safeNumber(item.total ?? 1250),
+          paid: safeNumber(item.paid ?? 0)
+        };
+      } else {
+        monthly[month] = { total: 1250, paid: 0 };
+      }
+    });
+    ecaFee.monthly = monthly;
+  } else if (raw.monthlyAmount !== undefined) {
+    months.forEach(m => {
+      ecaFee.monthly[m] = { total: safeNumber(raw.monthlyAmount), paid: 0 };
+    });
+  } else {
+    months.forEach(m => { ecaFee.monthly[m] = { total: 1250, paid: 0 }; });
+  }
+  return ecaFee;
+}
+
+function normalizeAnnualAndOtherFees(rawOther, rawAnnual) {
+  let otherFees = [];
+  let annualFee = { total: 0, paid: 0 };
+
+  if (rawAnnual && typeof rawAnnual === "object") {
+    annualFee = {
+      total: safeNumber(rawAnnual.total ?? 0),
+      paid: safeNumber(rawAnnual.paid ?? 0)
+    };
+  }
+
+  if (rawOther && typeof rawOther === "object") {
+    if (Array.isArray(rawOther)) {
+      otherFees = rawOther.map(f => ({
+        name: f.name || "Other Fee",
+        total: safeNumber(f.total ?? 0),
+        paid: safeNumber(f.paid ?? 0)
+      }));
+    } else {
+      const keys = Object.keys(rawOther);
+      for (let key of keys) {
+        const val = rawOther[key];
+        if (key === "annualDay" && val && typeof val === "object") {
+          annualFee = {
+            total: safeNumber(val.total ?? 0),
+            paid: safeNumber(val.paid ?? 0)
+          };
+        } else if (val && typeof val === "object") {
+          otherFees.push({
+            name: key.charAt(0).toUpperCase() + key.slice(1),
+            total: safeNumber(val.total ?? 0),
+            paid: safeNumber(val.paid ?? 0)
+          });
+        } else {
+          otherFees.push({
+            name: key,
+            total: safeNumber(val),
+            paid: 0
+          });
+        }
+      }
+    }
+  }
+  return { otherFees, annualFee };
+}
+
+// ---------- LOAD STUDENT WITH ROBUST NORMALIZATION ----------
 async function loadStudent() {
   try {
     if (!studentId) {
@@ -969,86 +1103,34 @@ async function loadStudent() {
       return;
     }
 
-    studentData = snap.data();
-    console.log("✅ Raw student data:", studentData);
+    const raw = snap.data();
+    console.log("✅ Raw student data:", raw);
 
-    // ---------- DATA NORMALIZATION (FIX ALL STRUCTURES) ----------
-    studentData.terms = studentData.terms || [];
-    studentData.busFee = studentData.busFee || { enabled: false, monthly: {} };
-    studentData.ecaFee = studentData.ecaFee || { monthly: {} };
-    studentData.annualFee = studentData.annualFee || { total: 0, paid: 0 };
-    studentData.otherFees = studentData.otherFees || [];
-    studentData.receipts = studentData.receipts || [];
+    // Normalize each section
+    const normalizedTerms = normalizeTerms(raw.terms);
+    const normalizedBus = normalizeBusFee(raw.busFee);
+    const normalizedEca = normalizeEcaFee(raw.ecaFee || raw.eca);
+    const { otherFees, annualFee } = normalizeAnnualAndOtherFees(raw.otherFees, raw.annualFee);
 
-    // TERMS
-    studentData.terms = studentData.terms.map((t, i) => ({
-      name: t.name || t.term || `Term ${i + 1}`,
-      total: safeNumber(t.total ?? t.amount ?? 0),
-      paid: safeNumber(t.paid ?? t.paidAmount ?? 0)
-    }));
-    if (studentData.terms.length === 0) {
-      studentData.terms = [
-        { name: "Term 1", total: 5000, paid: 0 },
-        { name: "Term 2", total: 5000, paid: 0 },
-        { name: "Term 3", total: 5000, paid: 0 }
-      ];
-    }
+    // Build final studentData
+    studentData = {
+      name: raw.name || "Unknown",
+      class: String(raw.class || "Unknown").toUpperCase(),
+      phone: raw.phone || "",
+      receipts: Array.isArray(raw.receipts) ? raw.receipts : [],
+      terms: normalizedTerms,
+      busFee: normalizedBus,
+      ecaFee: normalizedEca,
+      annualFee: annualFee,
+      otherFees: otherFees
+    };
+
+    // Ensure fallback structures (prevent missing fields)
+    if (!studentData.ecaFee) studentData.ecaFee = { monthly: {} };
+    if (!studentData.busFee) studentData.busFee = { enabled: false, monthly: {} };
+    if (!studentData.otherFees) studentData.otherFees = [];
+
     TERMS = studentData.terms;
-
-    // BUS FEE
-    if (!studentData.busFee.monthly) {
-      const converted = {};
-      Object.keys(studentData.busFee).forEach(k => {
-        if (typeof studentData.busFee[k] === "object") {
-          converted[k] = studentData.busFee[k];
-        }
-      });
-      studentData.busFee = {
-        enabled: Object.keys(converted).length > 0,
-        monthly: converted
-      };
-    }
-    Object.keys(studentData.busFee.monthly).forEach(m => {
-      const item = studentData.busFee.monthly[m];
-      studentData.busFee.monthly[m] = {
-        total: safeNumber(item?.total ?? 0),
-        paid: safeNumber(item?.paid ?? 0)
-      };
-    });
-
-    // ECA FEE
-    if (!studentData.ecaFee.monthly) {
-      const converted = {};
-      Object.keys(studentData.ecaFee).forEach(k => {
-        if (typeof studentData.ecaFee[k] === "object") {
-          converted[k] = studentData.ecaFee[k];
-        }
-      });
-      studentData.ecaFee = { monthly: converted };
-    }
-    Object.keys(studentData.ecaFee.monthly).forEach(m => {
-      const item = studentData.ecaFee.monthly[m];
-      studentData.ecaFee.monthly[m] = {
-        total: item?.total ? safeNumber(item.total) : 1250,
-        paid: safeNumber(item?.paid ?? 0)
-      };
-    });
-
-    // ANNUAL
-    studentData.annualFee.total = safeNumber(studentData.annualFee.total ?? 0);
-    studentData.annualFee.paid = safeNumber(studentData.annualFee.paid ?? 0);
-
-    // OTHER FEES
-    studentData.otherFees = studentData.otherFees.map(f => ({
-      name: f.name || "Other Fee",
-      total: safeNumber(f.total ?? 0),
-      paid: safeNumber(f.paid ?? 0)
-    }));
-
-    // SAFE FIELDS
-    studentData.name = studentData.name || "Unknown";
-    studentData.class = String(studentData.class || "Unknown").toUpperCase();
-    studentData.phone = studentData.phone || "";
 
     console.log("🔥 FINAL NORMALIZED DATA:", studentData);
     console.log("📚 CLASS:", studentData.class);
@@ -1062,14 +1144,9 @@ async function loadStudent() {
 
   } catch (err) {
     console.error("🔥 CRITICAL LOAD ERROR:", err);
-    alert("Error: " + err.message);
+    alert("System error while loading student: " + err.message);
     hideLoader();
   }
-}
-
-// ---------- PHONE FORMATTING ----------
-function formatPhone(phone) {
-  return phone.replace(/\D/g, "").replace(/^0/, "").replace(/^91/, "91");
 }
 
 // ---------- RENDER (TERM / OTHER) ----------
@@ -1121,21 +1198,45 @@ function renderTermFees(tbody) {
     tbody.appendChild(row);
   });
   if (tbody.children.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5">No data available</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5">No term data available</td></tr>`;
   }
 }
 
-// ---------- SECTION HELPERS FOR OTHER FEES ----------
-function createTable(title) {
+// ---------- SECTION HELPERS FOR OTHER FEES WITH EXPANDABLE MONTHLY ----------
+function createExpandableSection(title, entries, isMonthly = false) {
   const wrapperDiv = document.createElement("div");
   wrapperDiv.className = "fee-section";
   wrapperDiv.style.marginBottom = "1.5rem";
-  const caption = document.createElement("h3");
-  caption.textContent = title;
-  caption.style.margin = "0 0 0.8rem 0";
-  caption.style.fontSize = "1.1rem";
-  caption.style.color = "#1e4a76";
-  wrapperDiv.appendChild(caption);
+
+  // Create header with toggle
+  const sectionHeader = document.createElement("div");
+  sectionHeader.style.display = "flex";
+  sectionHeader.style.justifyContent = "space-between";
+  sectionHeader.style.alignItems = "center";
+  sectionHeader.style.cursor = "pointer";
+  sectionHeader.style.padding = "0.5rem 0";
+  sectionHeader.style.borderBottom = "1px solid #e2e8f0";
+  sectionHeader.style.marginBottom = "0.5rem";
+
+  const titleSpan = document.createElement("span");
+  titleSpan.style.fontSize = "1.1rem";
+  titleSpan.style.fontWeight = "600";
+  titleSpan.style.color = "#1e4a76";
+  titleSpan.textContent = title;
+
+  const toggleIcon = document.createElement("span");
+  toggleIcon.className = "toggle-icon";
+  toggleIcon.textContent = "▶";
+  toggleIcon.style.fontSize = "0.9rem";
+  toggleIcon.style.transition = "transform 0.2s";
+
+  sectionHeader.appendChild(titleSpan);
+  sectionHeader.appendChild(toggleIcon);
+
+  const contentDiv = document.createElement("div");
+  contentDiv.style.maxHeight = "0px";
+  contentDiv.style.overflow = "hidden";
+  contentDiv.style.transition = "max-height 0.3s ease-out";
 
   const table = document.createElement("table");
   table.className = "fee-table";
@@ -1145,79 +1246,142 @@ function createTable(title) {
     </thead>
     <tbody></tbody>
   `;
-  wrapperDiv.appendChild(table);
-  return { wrapperDiv, tbody: table.querySelector("tbody") };
-}
+  const tbody = table.querySelector("tbody");
 
-function createRow(name, total, paid, remaining) {
-  const row = document.createElement("tr");
-  const status = remaining === 0 ? "Paid" : "Pending";
-  const statusClass = remaining === 0 ? "status-paid" : "status-pending";
-  row.innerHTML = `
-      <td>${name}</td>
-      <td>₹${total.toLocaleString()}</td>
-      <td>₹${paid.toLocaleString()}</td>
-      <td>₹${remaining.toLocaleString()}</td>
-      <td><span class="status-badge ${statusClass}">${status}</span></td>
-  `;
-  return row;
+  // Fill rows (no zero check, always show)
+  entries.forEach(([key, item]) => {
+    const name = isMonthly ? key.charAt(0).toUpperCase() + key.slice(1) : key;
+    const total = item.total;
+    const paid = item.paid;
+    const remaining = total - paid;
+    const status = remaining === 0 ? "Paid" : "Pending";
+    const statusClass = remaining === 0 ? "status-paid" : "status-pending";
+    const row = document.createElement("tr");
+    row.innerHTML = `
+        <td>${name}</td>
+        <td>₹${total.toLocaleString()}</td>
+        <td>₹${paid.toLocaleString()}</td>
+        <td>₹${remaining.toLocaleString()}</td>
+        <td><span class="status-badge ${statusClass}">${status}</span></td>
+    `;
+    tbody.appendChild(row);
+  });
+
+  contentDiv.appendChild(table);
+  wrapperDiv.appendChild(sectionHeader);
+  wrapperDiv.appendChild(contentDiv);
+
+  let expanded = false;
+  sectionHeader.onclick = () => {
+    expanded = !expanded;
+    contentDiv.style.maxHeight = expanded ? "500px" : "0px";
+    toggleIcon.textContent = expanded ? "▼" : "▶";
+  };
+
+  return wrapperDiv;
 }
 
 function renderOtherSections(container) {
   let hasAny = false;
 
-  // Bus Fee
-  if (studentData.busFee?.enabled) {
-    const { wrapperDiv, tbody } = createTable("Bus Fees");
-    Object.entries(studentData.busFee.monthly).forEach(([key, item]) => {
-      if (!item) return;
-      const remaining = item.total - item.paid;
-      tbody.appendChild(createRow(key.charAt(0).toUpperCase() + key.slice(1), item.total, item.paid, remaining));
-    });
-    if (tbody.children.length > 0) {
-      container.appendChild(wrapperDiv);
-      hasAny = true;
-    }
-  }
-
-  // ECA Fee
-  if (studentData.ecaFee?.monthly) {
-    const { wrapperDiv, tbody } = createTable("ECA Fees");
-    Object.entries(studentData.ecaFee.monthly).forEach(([key, item]) => {
-      if (!item) return;
-      const remaining = item.total - item.paid;
-      tbody.appendChild(createRow(key.charAt(0).toUpperCase() + key.slice(1), item.total, item.paid, remaining));
-    });
-    if (tbody.children.length > 0) {
-      container.appendChild(wrapperDiv);
-      hasAny = true;
-    }
-  }
-
-  // Annual Fee
-  if (studentData.annualFee.total > 0) {
-    const { wrapperDiv, tbody } = createTable("Annual Day Fee");
-    const remaining = studentData.annualFee.total - studentData.annualFee.paid;
-    tbody.appendChild(createRow("Annual Day Fee", studentData.annualFee.total, studentData.annualFee.paid, remaining));
-    container.appendChild(wrapperDiv);
+  // Bus Fee (if enabled and has months)
+  if (studentData.busFee.enabled && Object.keys(studentData.busFee.monthly).length > 0) {
+    const entries = Object.entries(studentData.busFee.monthly);
+    const busSection = createExpandableSection("Bus Fees", entries, true);
+    container.appendChild(busSection);
     hasAny = true;
   }
 
-  // Other Fees
-  if (studentData.otherFees.length > 0) {
-    const { wrapperDiv, tbody } = createTable("Other Fees");
-    studentData.otherFees.forEach(fee => {
-      if (!fee) return;
-      const remaining = fee.total - fee.paid;
-      tbody.appendChild(createRow(fee.name, fee.total, fee.paid, remaining));
-    });
-    if (tbody.children.length > 0) {
-      container.appendChild(wrapperDiv);
-      hasAny = true;
-    }
+  // ECA Fee (always show 10 months)
+  if (studentData.ecaFee && studentData.ecaFee.monthly) {
+    const entries = Object.entries(studentData.ecaFee.monthly);
+    const ecaSection = createExpandableSection("ECA Fees", entries, true);
+    container.appendChild(ecaSection);
+    hasAny = true;
   }
 
-  if (!hasAny) {
+  // Annual Fee (single row, no expand needed)
+  if (studentData.annualFee.total > 0) {
+    const annualWrapper = document.createElement("div");
+    annualWrapper.className = "fee-section";
+    annualWrapper.style.marginBottom = "1.5rem";
+
+    const titleSpan = document.createElement("span");
+    titleSpan.style.fontSize = "1.1rem";
+    titleSpan.style.fontWeight = "600";
+    titleSpan.style.color = "#1e4a76";
+    titleSpan.textContent = "Annual Day Fee";
+    annualWrapper.appendChild(titleSpan);
+
+    const table = document.createElement("table");
+    table.className = "fee-table";
+    table.innerHTML = `
+      <thead>
+        <tr><th>Fee Item</th><th>Total Fee (₹)</th><th>Paid (₹)</th><th>Remaining (₹)</th><th>Status</th></tr>
+      </thead>
+      <tbody></tbody>
+    `;
+    const tbody = table.querySelector("tbody");
+    const remaining = studentData.annualFee.total - studentData.annualFee.paid;
+    const status = remaining === 0 ? "Paid" : "Pending";
+    const statusClass = remaining === 0 ? "status-paid" : "status-pending";
+    const row = document.createElement("tr");
+    row.innerHTML = `
+        <td>Annual Day Fee</td>
+        <td>₹${studentData.annualFee.total.toLocaleString()}</td>
+        <td>₹${studentData.annualFee.paid.toLocaleString()}</td>
+        <td>₹${remaining.toLocaleString()}</td>
+        <td><span class="status-badge ${statusClass}">${status}</span></td>
+    `;
+    tbody.appendChild(row);
+    annualWrapper.appendChild(table);
+    container.appendChild(annualWrapper);
+    hasAny = true;
+  }
+
+  // Other Fees (non-monthly)
+  if (studentData.otherFees.length > 0) {
+    const otherWrapper = document.createElement("div");
+    otherWrapper.className = "fee-section";
+    otherWrapper.style.marginBottom = "1.5rem";
+
+    const titleSpan = document.createElement("span");
+    titleSpan.style.fontSize = "1.1rem";
+    titleSpan.style.fontWeight = "600";
+    titleSpan.style.color = "#1e4a76";
+    titleSpan.textContent = "Other Fees";
+    otherWrapper.appendChild(titleSpan);
+
+    const table = document.createElement("table");
+    table.className = "fee-table";
+    table.innerHTML = `
+      <thead>
+        <tr><th>Fee Item</th><th>Total Fee (₹)</th><th>Paid (₹)</th><th>Remaining (₹)</th><th>Status</th></tr>
+      </thead>
+      <tbody></tbody>
+    `;
+    const tbody = table.querySelector("tbody");
+    studentData.otherFees.forEach(fee => {
+      const remaining = fee.total - fee.paid;
+      const status = remaining === 0 ? "Paid" : "Pending";
+      const statusClass = remaining === 0 ? "status-paid" : "status-pending";
+      const row = document.createElement("tr");
+      row.innerHTML = `
+          <td>${fee.name}</td>
+          <td>₹${fee.total.toLocaleString()}</td>
+          <td>₹${fee.paid.toLocaleString()}</td>
+          <td>₹${remaining.toLocaleString()}</td>
+          <td><span class="status-badge ${statusClass}">${status}</span></td>
+      `;
+      tbody.appendChild(row);
+    });
+    otherWrapper.appendChild(table);
+    container.appendChild(otherWrapper);
+    hasAny = true;
+  }
+
+  // Show message only if truly nothing exists
+  if (!hasAny && !studentData.busFee.enabled && Object.keys(studentData.ecaFee.monthly || {}).length === 0 && studentData.annualFee.total === 0 && studentData.otherFees.length === 0) {
     const emptyMsg = document.createElement("p");
     emptyMsg.textContent = "No other fees configured for this student.";
     emptyMsg.style.padding = "2rem";
@@ -1227,7 +1391,7 @@ function renderOtherSections(container) {
   }
 }
 
-// ---------- SUMMARY & PROGRESS ----------
+// ---------- SUMMARY & PROGRESS (FIXED) ----------
 function updateOverallSummary() {
   let total = 0, paid = 0;
   TERMS.forEach(t => {
@@ -1252,28 +1416,25 @@ function updateProgressBar() {
     paid += t.paid;
   });
   const percent = total > 0 ? (safeNumber(paid) / safeNumber(total)) * 100 : 0;
+  console.log("Progress Debug → Total:", total, "Paid:", paid, "Percent:", percent);
   if (getEl("progressFill")) getEl("progressFill").style.width = percent + "%";
   if (getEl("progressPercent")) getEl("progressPercent").innerText = Math.round(percent) + "%";
 }
 
 function updateOtherFeesSummary() {
   let total = 0, paid = 0;
-  // Bus
-  if (studentData.busFee?.enabled) {
+  if (studentData.busFee.enabled) {
     Object.values(studentData.busFee.monthly).forEach(item => {
       total += item.total;
       paid += item.paid;
     });
   }
-  // ECA
-  Object.values(studentData.ecaFee?.monthly || {}).forEach(item => {
+  Object.values(studentData.ecaFee.monthly).forEach(item => {
     total += item.total;
     paid += item.paid;
   });
-  // Annual
   total += studentData.annualFee.total;
   paid += studentData.annualFee.paid;
-  // Other
   studentData.otherFees.forEach(f => {
     total += f.total;
     paid += f.paid;
@@ -1290,14 +1451,13 @@ function updateOtherFeesSummary() {
 
 function updateOtherProgressBar() {
   let total = 0, paid = 0;
-
-  if (studentData.busFee?.enabled) {
+  if (studentData.busFee.enabled) {
     Object.values(studentData.busFee.monthly).forEach(i => {
       total += i.total;
       paid += i.paid;
     });
   }
-  Object.values(studentData.ecaFee?.monthly || {}).forEach(i => {
+  Object.values(studentData.ecaFee.monthly).forEach(i => {
     total += i.total;
     paid += i.paid;
   });
@@ -1307,8 +1467,8 @@ function updateOtherProgressBar() {
     total += f.total;
     paid += f.paid;
   });
-
   const percent = total > 0 ? (safeNumber(paid) / safeNumber(total)) * 100 : 0;
+  console.log("Other Progress Debug → Total:", total, "Paid:", paid, "Percent:", percent);
   const fill = getEl("otherProgressFill");
   const text = getEl("otherProgressPercent");
   if (fill) fill.style.width = percent + "%";
@@ -1375,9 +1535,8 @@ function downloadReceipt(imageDataUrl, filename) {
 }
 
 function openWhatsApp(phoneNumber, message) {
-  const formatted = formatPhone(phoneNumber);
   const encodedMsg = encodeURIComponent(message);
-  window.open(`https://wa.me/${formatted}?text=${encodedMsg}`, "_blank");
+  window.open(`https://wa.me/${phoneNumber}?text=${encodedMsg}`, "_blank");
 }
 
 async function storeReceipt(receiptObj) {
@@ -1388,7 +1547,6 @@ async function storeReceipt(receiptObj) {
 }
 
 async function showReceiptSuccess(feeType, subType, amountPaid, receiptCode) {
-  // Remove any existing popup overlays
   document.querySelectorAll(".popup-overlay").forEach(e => e.remove());
 
   const receiptData = {
@@ -1450,7 +1608,7 @@ async function handlePaymentUpdate(feeType, identifier, amount, isFull) {
     item = TERMS[termIndex];
     subType = item.name;
   } else if (feeType === "bus") {
-    if (!studentData.busFee || !studentData.busFee.enabled) {
+    if (!studentData.busFee.enabled) {
       alert("Bus fee not enabled for this student");
       return false;
     }
@@ -1546,7 +1704,6 @@ async function handlePaymentUpdate(feeType, identifier, amount, isFull) {
 
 // ---------- ADMIN MODAL FLOW ----------
 function createModal(title, contentHtml, onConfirm, onCancel) {
-    // Remove existing overlays to prevent stacking
     document.querySelectorAll(".popup-overlay").forEach(e => e.remove());
 
     const overlay = document.createElement("div");
@@ -1649,7 +1806,7 @@ async function adminLogin() {
                             () => {}
                         );
                     } else if (feeType === "bus" || feeType === "eca") {
-                        if (feeType === "bus" && (!studentData.busFee || !studentData.busFee.enabled)) {
+                        if (feeType === "bus" && (!studentData.busFee.enabled)) {
                             alert("Bus fee not enabled for this student");
                             return;
                         }
@@ -1895,7 +2052,6 @@ window.onload = () => {
 
   loadStudent();
 };
-
 </script>
 </body>
 </html>
