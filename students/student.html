@@ -924,8 +924,11 @@ const UPI_ID = "jinmelkunnath@oksbi";
 const WHATSAPP_URL = "https://wa.me/917012808911";
 const QR_URL = "https://i.ibb.co/8RSZRz0/IMG-20260329-160905.png";
 
-// ---------- GET ID ----------
-const studentId = new URLSearchParams(window.location.search).get("id");
+// ---------- GET ID (SAFE NORMALIZATION) ----------
+const studentIdRaw = new URLSearchParams(window.location.search).get("id");
+const studentId = studentIdRaw ? studentIdRaw.trim().toLowerCase() : null;
+
+console.log("👉 URL ID (normalized):", studentId);
 
 // ---------- STATE ----------
 let TERMS = [];
@@ -941,101 +944,92 @@ function getEl(id) {
 function hideLoader() {
   const loader = getEl("loader");
   const app = getEl("appContainer");
-
   if (loader) loader.style.display = "none";
   if (app) app.style.display = "block";
 }
 
-// ---------- LOAD STUDENT (ONLY ONCE) ----------
+// ---------- LOAD STUDENT (CRITICAL FIXES) ----------
 async function loadStudent() {
   try {
     if (!studentId) {
-      alert("Missing student ID in URL");
+      alert("Missing student ID in URL.\n\nExample: student.html?id=mariya001");
       hideLoader();
       return;
     }
 
+    console.log("📦 Firestore Path: students/" + studentId);
     const ref = doc(db, "students", studentId);
     const snap = await getDoc(ref);
 
     if (!snap.exists()) {
-      alert("Student not found in Firebase");
+      console.warn("❌ Student NOT FOUND in Firestore:", studentId);
+      alert(`Student not found.\n\nID: "${studentId}"\n\nPossible reasons:\n- Wrong ID\n- Case mismatch\n- Student not added in database`);
       hideLoader();
       return;
     }
 
     studentData = snap.data();
-    console.log("🔥 FULL STUDENT DATA:", studentData);
-    console.log("🚌 Bus Fee:", studentData.busFee);
-    console.log("🎯 ECA Fee:", studentData.ecaFee);
-    console.log("📅 Terms:", studentData.terms);
+    console.log("✅ STUDENT FOUND:", studentData);
+
+    // Fallback for missing core fields
+    if (!studentData || Object.keys(studentData).length === 0) {
+      alert("Student data is empty or corrupted.");
+      hideLoader();
+      return;
+    }
+
+    studentData.name = studentData.name || "Unknown";
+    studentData.class = studentData.class || "Unknown";
+    studentData.phone = studentData.phone || "";
 
     if (!studentData.receipts) studentData.receipts = [];
-    TERMS = studentData.terms || [];
+    TERMS = Array.isArray(studentData.terms) ? studentData.terms : [];
+
+    console.log("🔥 FULL STUDENT DATA:", studentData);
+    console.log("📚 CLASS:", studentData.class);
+    console.log("👤 NAME:", studentData.name);
+    console.log("🚌 Bus Fee:", studentData.busFee);
+    console.log("🎯 ECA Fee:", studentData.ecaFee);
+    console.log("📅 Terms:", TERMS);
 
     // ---------- FORCE DATA STRUCTURE FOR ALL FEE TYPES ----------
     const months = ["june","july","august","september","october","november","december","january","february","march"];
 
     // Bus Fee
-    if (!studentData.busFee) {
-      studentData.busFee = { enabled: false, monthly: {} };
-    }
-    if (!studentData.busFee.monthly) {
-      studentData.busFee.monthly = {};
-    }
+    if (!studentData.busFee) studentData.busFee = { enabled: false, monthly: {} };
+    if (!studentData.busFee.monthly) studentData.busFee.monthly = {};
 
     // ECA Fee
-    if (!studentData.ecaFee) {
-      studentData.ecaFee = { monthly: {} };
-    }
-    if (!studentData.ecaFee.monthly) {
-      studentData.ecaFee.monthly = {};
-    }
+    if (!studentData.ecaFee) studentData.ecaFee = { monthly: {} };
+    if (!studentData.ecaFee.monthly) studentData.ecaFee.monthly = {};
 
-    // Month initialization
     months.forEach(m => {
       // BUS
-      if (!studentData.busFee.monthly[m]) {
-        studentData.busFee.monthly[m] = { total: 0, paid: 0 };
-      }
-      if (studentData.busFee.monthly[m].total === undefined) {
-        studentData.busFee.monthly[m].total = 0;
-      }
+      if (!studentData.busFee.monthly[m]) studentData.busFee.monthly[m] = { total: 0, paid: 0 };
+      if (studentData.busFee.monthly[m].total === undefined) studentData.busFee.monthly[m].total = 0;
 
       // ECA
-      if (!studentData.ecaFee.monthly[m]) {
-        studentData.ecaFee.monthly[m] = { total: 1250, paid: 0 };
-      }
-      if (!studentData.ecaFee.monthly[m].total) {
-        studentData.ecaFee.monthly[m].total = 1250;
-      }
+      if (!studentData.ecaFee.monthly[m]) studentData.ecaFee.monthly[m] = { total: 1250, paid: 0 };
+      if (!studentData.ecaFee.monthly[m].total) studentData.ecaFee.monthly[m].total = 1250;
     });
 
     // Annual Fee
-    if (!studentData.annualFee) {
-      studentData.annualFee = { total: 750, paid: 0 };
-    }
-    if (!studentData.annualFee.total) {
-      studentData.annualFee.total = 750;
-    }
+    if (!studentData.annualFee) studentData.annualFee = { total: 750, paid: 0 };
+    if (!studentData.annualFee.total) studentData.annualFee.total = 750;
 
     // Other Fees
-    if (!studentData.otherFees) {
-      studentData.otherFees = [];
-    }
+    if (!studentData.otherFees) studentData.otherFees = [];
 
-    if (getEl("studentNameDisplay"))
-      getEl("studentNameDisplay").innerText = studentData.name || "-";
-
-    if (getEl("studentClassSpan"))
-      getEl("studentClassSpan").innerText = "📖 Class: " + (studentData.class || "-");
+    // Update UI
+    if (getEl("studentNameDisplay")) getEl("studentNameDisplay").innerText = studentData.name;
+    if (getEl("studentClassSpan")) getEl("studentClassSpan").innerText = "📖 Class: " + studentData.class;
 
     render();
     hideLoader();
 
   } catch (err) {
-    console.error("LOAD ERROR:", err);
-    alert("Error loading student data");
+    console.error("🔥 CRITICAL LOAD ERROR:", err);
+    alert("System error while loading student. Please refresh the page.");
     hideLoader();
   }
 }
@@ -1067,7 +1061,7 @@ function renderTermFees(tbody) {
   let paid = 0;
 
   TERMS.forEach((t) => {
-    if (t.total === 0 && t.paid === 0) return; // skip zero rows
+    if (t.total === 0 && t.paid === 0) return;
     const remaining = t.total - t.paid;
 
     total += t.total;
@@ -1176,17 +1170,13 @@ function renderOtherFees(tbody) {
 
 function updateOverallSummary() {
   let total = 0, paid = 0;
-
   TERMS.forEach(t => {
     if (!t || t.total === 0) return;
     total += t.total;
     paid += t.paid;
   });
-
   const remaining = total - paid;
-
   console.log("📊 TERM TOTAL:", total, "PAID:", paid);
-
   if (getEl("overallSummaryCard")) {
     getEl("overallSummaryCard").innerHTML = `
       <div><strong>Total:</strong> ₹${total.toLocaleString()}</div>
