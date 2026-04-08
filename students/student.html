@@ -948,7 +948,7 @@ function hideLoader() {
   if (app) app.style.display = "block";
 }
 
-// ---------- LOAD STUDENT (CRITICAL FIXES) ----------
+// ---------- LOAD STUDENT WITH ROBUST NORMALIZATION ----------
 async function loadStudent() {
   try {
     if (!studentId) {
@@ -969,56 +969,85 @@ async function loadStudent() {
     }
 
     studentData = snap.data();
-    console.log("✅ STUDENT FOUND:", studentData);
+    console.log("✅ Raw student data:", studentData);
 
-    // Fallback for missing core fields
-    if (!studentData || Object.keys(studentData).length === 0) {
-      alert("Student data is empty or corrupted.");
-      hideLoader();
-      return;
+    // ---------- DATA NORMALIZATION (CRITICAL FIX) ----------
+    // 1. Terms normalization
+    if (!Array.isArray(studentData.terms)) {
+      studentData.terms = [];
     }
+    studentData.terms = studentData.terms.map((t, index) => {
+      return {
+        name: t.name || t.term || `Term ${index + 1}`,
+        total: Number(t.total ?? t.amount ?? 0),
+        paid: Number(t.paid ?? t.paidAmount ?? 0)
+      };
+    });
+    if (studentData.terms.length === 0) {
+      studentData.terms = [
+        { name: "Term 1", total: 5000, paid: 0 },
+        { name: "Term 2", total: 5000, paid: 0 },
+        { name: "Term 3", total: 5000, paid: 0 }
+      ];
+    }
+    TERMS = studentData.terms;
 
+    // 2. Bus fee normalization
+    if (!studentData.busFee || typeof studentData.busFee !== "object") {
+      studentData.busFee = { enabled: false, monthly: {} };
+    }
+    if (!studentData.busFee.monthly || typeof studentData.busFee.monthly !== "object") {
+      studentData.busFee.monthly = {};
+    }
+    Object.keys(studentData.busFee.monthly).forEach(m => {
+      const item = studentData.busFee.monthly[m];
+      studentData.busFee.monthly[m] = {
+        total: Number(item?.total ?? 0),
+        paid: Number(item?.paid ?? 0)
+      };
+    });
+
+    // 3. ECA fee normalization
+    if (!studentData.ecaFee || typeof studentData.ecaFee !== "object") {
+      studentData.ecaFee = { monthly: {} };
+    }
+    if (!studentData.ecaFee.monthly || typeof studentData.ecaFee.monthly !== "object") {
+      studentData.ecaFee.monthly = {};
+    }
+    Object.keys(studentData.ecaFee.monthly).forEach(m => {
+      const item = studentData.ecaFee.monthly[m];
+      studentData.ecaFee.monthly[m] = {
+        total: Number(item?.total ?? 1250),
+        paid: Number(item?.paid ?? 0)
+      };
+    });
+
+    // 4. Annual fee normalization
+    if (!studentData.annualFee || typeof studentData.annualFee !== "object") {
+      studentData.annualFee = { total: 750, paid: 0 };
+    }
+    studentData.annualFee.total = Number(studentData.annualFee.total ?? 750);
+    studentData.annualFee.paid = Number(studentData.annualFee.paid ?? 0);
+
+    // 5. Other fees normalization
+    if (!Array.isArray(studentData.otherFees)) {
+      studentData.otherFees = [];
+    }
+    studentData.otherFees = studentData.otherFees.map(f => ({
+      name: f.name || "Other Fee",
+      total: Number(f.total ?? 0),
+      paid: Number(f.paid ?? 0)
+    }));
+
+    // 6. Name and class fallback
     studentData.name = studentData.name || "Unknown";
     studentData.class = studentData.class || "Unknown";
     studentData.phone = studentData.phone || "";
-
     if (!studentData.receipts) studentData.receipts = [];
-    TERMS = Array.isArray(studentData.terms) ? studentData.terms : [];
 
-    console.log("🔥 FULL STUDENT DATA:", studentData);
+    console.log("🔥 FINAL NORMALIZED DATA:", studentData);
     console.log("📚 CLASS:", studentData.class);
     console.log("👤 NAME:", studentData.name);
-    console.log("🚌 Bus Fee:", studentData.busFee);
-    console.log("🎯 ECA Fee:", studentData.ecaFee);
-    console.log("📅 Terms:", TERMS);
-
-    // ---------- FORCE DATA STRUCTURE FOR ALL FEE TYPES ----------
-    const months = ["june","july","august","september","october","november","december","january","february","march"];
-
-    // Bus Fee
-    if (!studentData.busFee) studentData.busFee = { enabled: false, monthly: {} };
-    if (!studentData.busFee.monthly) studentData.busFee.monthly = {};
-
-    // ECA Fee
-    if (!studentData.ecaFee) studentData.ecaFee = { monthly: {} };
-    if (!studentData.ecaFee.monthly) studentData.ecaFee.monthly = {};
-
-    months.forEach(m => {
-      // BUS
-      if (!studentData.busFee.monthly[m]) studentData.busFee.monthly[m] = { total: 0, paid: 0 };
-      if (studentData.busFee.monthly[m].total === undefined) studentData.busFee.monthly[m].total = 0;
-
-      // ECA
-      if (!studentData.ecaFee.monthly[m]) studentData.ecaFee.monthly[m] = { total: 1250, paid: 0 };
-      if (!studentData.ecaFee.monthly[m].total) studentData.ecaFee.monthly[m].total = 1250;
-    });
-
-    // Annual Fee
-    if (!studentData.annualFee) studentData.annualFee = { total: 750, paid: 0 };
-    if (!studentData.annualFee.total) studentData.annualFee.total = 750;
-
-    // Other Fees
-    if (!studentData.otherFees) studentData.otherFees = [];
 
     // Update UI
     if (getEl("studentNameDisplay")) getEl("studentNameDisplay").innerText = studentData.name;
