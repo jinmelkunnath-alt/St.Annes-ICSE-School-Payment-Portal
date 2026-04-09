@@ -3,13 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>St. Annes ICSE | Term Fee System with Receipts</title>
+    <title>St. Annes ICSE | Term Fee System</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             background: #f5f7fc;
@@ -18,10 +14,7 @@
             line-height: 1.4;
         }
 
-        h1, h2, h3 {
-            font-weight: 600;
-            letter-spacing: -0.02em;
-        }
+        h1, h2, h3 { font-weight: 600; letter-spacing: -0.02em; }
 
         .app-container {
             max-width: 1400px;
@@ -46,7 +39,6 @@
             gap: 1rem;
             border-bottom: 2px solid #e2e8f0;
         }
-
         .school-brand h1 {
             font-size: 1.5rem;
             color: #0f2b3d;
@@ -57,19 +49,12 @@
         .school-brand h1::after {
             content: '';
             position: absolute;
-            bottom: -4px;
-            left: 0;
-            width: 60px;
-            height: 3px;
+            bottom: -4px; left: 0;
+            width: 60px; height: 3px;
             background: linear-gradient(90deg, #1e4a76, #60a5fa);
             border-radius: 3px;
         }
-
-        .header-actions {
-            display: flex;
-            gap: 0.75rem;
-            flex-wrap: wrap;
-        }
+        .header-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
 
         /* ── BUTTONS ── */
         .btn {
@@ -89,14 +74,8 @@
             border: 1px solid #dce5ef;
         }
         .btn-secondary:hover { background: #e2e9f2; }
-        .btn-primary {
-            background: #1e4a76;
-            color: white;
-        }
-        .btn-primary:hover {
-            background: #0f3a5c;
-            transform: translateY(-1px);
-        }
+        .btn-primary { background: #1e4a76; color: white; }
+        .btn-primary:hover { background: #0f3a5c; transform: translateY(-1px); }
 
         /* ── STUDENT CARD ── */
         .student-card {
@@ -112,7 +91,6 @@
             gap: 1.2rem;
             border-left: 4px solid #3b82f6;
         }
-
         .student-info h2 {
             font-size: 1.6rem;
             color: #0b2b40;
@@ -122,12 +100,7 @@
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
         }
-        .student-meta {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            margin-top: 0.5rem;
-        }
+        .student-meta { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 0.5rem; }
         .student-meta span {
             background: #f0f4fa;
             padding: 0.3rem 1rem;
@@ -140,7 +113,7 @@
         /* ── PROGRESS BAR — ISSUE 1 FIX ── */
         .progress-wrapper {
             min-width: 200px;
-            flex: 1;
+            flex: 1;          /* FIX: fills space properly */
         }
         .progress-label {
             font-size: 0.75rem;
@@ -154,11 +127,11 @@
             border-radius: 40px;
             height: 9px;
             overflow: hidden;
-            width: 100%;
+            width: 100%;      /* FIX: always full width */
             position: relative;
         }
         .progress-fill {
-            display: block;
+            display: block;   /* FIX: block so width renders */
             background: linear-gradient(90deg, #2c6e9e, #60a5fa);
             width: 0%;
             height: 100%;
@@ -175,11 +148,7 @@
         }
 
         /* ── FEE SWITCH ── */
-        .fee-switch {
-            display: flex;
-            gap: 0.75rem;
-            margin-bottom: 1.2rem;
-        }
+        .fee-switch { display: flex; gap: 0.75rem; margin-bottom: 1.2rem; }
         .fee-switch button {
             background: #eef2f8;
             border: none;
@@ -198,7 +167,7 @@
             transform: translateY(-1px);
         }
 
-        /* ── TERM TABLE WRAPPER ── */
+        /* ── TABLE WRAPPER ── */
         .table-wrapper {
             overflow-x: auto;
             margin: 1.8rem 0 1.5rem;
@@ -299,11 +268,7 @@
             animation: spin 0.8s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .loader-text {
-            margin-top: 1rem;
-            color: #2c6e9e;
-            font-weight: 500;
-        }
+        .loader-text { margin-top: 1rem; color: #2c6e9e; font-weight: 500; }
 
         footer {
             text-align: center;
@@ -315,31 +280,17 @@
         /* ── RESPONSIVE ── */
         @media (max-width: 640px) {
             .app-container { padding: 0.8rem; }
-            .sticky-header {
-                flex-direction: column;
-                align-items: stretch;
-                text-align: center;
-            }
-            .student-card {
-                flex-direction: column;
-                align-items: stretch;
-            }
+            .sticky-header { flex-direction: column; align-items: stretch; text-align: center; }
+            .student-card  { flex-direction: column; align-items: stretch; }
             .student-info h2 { font-size: 1.4rem; }
             .btn { padding: 0.5rem 1rem; }
-            .total-card {
-                flex-direction: column;
-                align-items: flex-start;
-            }
+            .total-card { flex-direction: column; align-items: flex-start; }
             .fee-switch { justify-content: center; }
             .progress-wrapper { min-width: unset; width: 100%; }
         }
 
         /* ── TICK ANIMATION ── */
-        .tick-container {
-            display: flex;
-            justify-content: center;
-            margin: 15px 0;
-        }
+        .tick-container { display: flex; justify-content: center; margin: 15px 0; }
         .tick-svg { width: 70px; height: 70px; }
         .tick-circle {
             stroke: #4CAF50; stroke-width: 3;
@@ -355,7 +306,7 @@
         @keyframes circleAnim { to { stroke-dashoffset: 0; } }
         @keyframes checkAnim  { to { stroke-dashoffset: 0; } }
 
-        /* ── POPUP ── */
+        /* ── POPUPS ── */
         .popup-overlay {
             position: fixed;
             top: 0; left: 0;
@@ -437,6 +388,7 @@
             flex-shrink: 0;
             margin-left: 0.5rem;
             transition: all 0.2s;
+            font-family: inherit;
         }
         .copy-btn:hover { background: #e2e9f2; }
         .upi-pay-btn {
@@ -451,101 +403,48 @@
             cursor: pointer;
             margin: 0.5rem 0;
             transition: all 0.2s;
+            font-family: inherit;
         }
-        .upi-pay-btn:hover {
-            background: #0f3a5c;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(30,74,118,0.2);
-        }
-        .whatsapp-note {
-            font-size: 0.75rem;
-            margin-top: 0.8rem;
-            color: #5a6e8a;
-        }
-        .whatsapp-link {
-            color: #25D366;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: underline;
-            transition: opacity 0.2s;
-        }
+        .upi-pay-btn:hover { background: #0f3a5c; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(30,74,118,0.2); }
+        .whatsapp-note { font-size: 0.75rem; margin-top: 0.8rem; color: #5a6e8a; }
+        .whatsapp-link { color: #25D366; font-weight: 600; cursor: pointer; text-decoration: underline; transition: opacity 0.2s; }
         .whatsapp-link:hover { opacity: 0.8; }
-        .help-content {
-            text-align: left;
-            margin: 1rem 0;
-            font-size: 0.85rem;
-            line-height: 1.6;
-        }
+        .help-content { text-align: left; margin: 1rem 0; font-size: 0.85rem; line-height: 1.6; }
         .help-content p { margin: 0.4rem 0; }
         .whatsapp-chat-btn {
-            background: #25D366;
-            color: white;
-            border: none;
-            border-radius: 2rem;
-            padding: 0.7rem;
-            font-weight: 600;
-            font-size: 0.85rem;
-            cursor: pointer;
-            width: 100%;
-            transition: all 0.2s;
+            background: #25D366; color: white;
+            border: none; border-radius: 2rem;
+            padding: 0.7rem; font-weight: 600;
+            font-size: 0.85rem; cursor: pointer;
+            width: 100%; transition: all 0.2s;
+            font-family: inherit;
         }
-        .whatsapp-chat-btn:hover {
-            background: #1da851;
-            transform: translateY(-1px);
-        }
+        .whatsapp-chat-btn:hover { background: #1da851; transform: translateY(-1px); }
 
         /* ── ADMIN INPUTS ── */
         .admin-modal-input {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            margin: 0.8rem 0;
-            border: 1px solid #cbdde9;
-            border-radius: 1rem;
-            font-size: 0.9rem;
-            background: white;
-            font-family: inherit;
+            width: 100%; padding: 0.75rem 1rem; margin: 0.8rem 0;
+            border: 1px solid #cbdde9; border-radius: 1rem;
+            font-size: 0.9rem; background: white; font-family: inherit;
             transition: all 0.2s ease;
         }
-        .admin-modal-input:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 2px rgba(59,130,246,0.2);
-        }
+        .admin-modal-input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.2); }
         .admin-select {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            margin: 0.8rem 0;
-            border: 1px solid #cbdde9;
-            border-radius: 1rem;
-            font-size: 0.9rem;
-            background: white;
-            font-family: inherit;
-            cursor: pointer;
+            width: 100%; padding: 0.75rem 1rem; margin: 0.8rem 0;
+            border: 1px solid #cbdde9; border-radius: 1rem;
+            font-size: 0.9rem; background: white; font-family: inherit; cursor: pointer;
         }
-        .admin-select:focus {
-            outline: none;
-            border-color: #3b82f6;
-        }
+        .admin-select:focus { outline: none; border-color: #3b82f6; }
         .modal-btn {
-            border: none;
-            background: #eef2f8;
-            padding: 0.55rem 1.2rem;
-            border-radius: 2rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-family: inherit;
+            border: none; background: #eef2f8;
+            padding: 0.55rem 1.2rem; border-radius: 2rem;
+            font-weight: 500; cursor: pointer;
+            transition: all 0.2s ease; font-family: inherit;
         }
-        .modal-btn.primary {
-            background: #1e4a76;
-            color: white;
-        }
-        .modal-btn.primary:hover {
-            background: #0f3a5c;
-            transform: translateY(-1px);
-        }
+        .modal-btn.primary { background: #1e4a76; color: white; }
+        .modal-btn.primary:hover { background: #0f3a5c; transform: translateY(-1px); }
 
-        /* ── PREMIUM EXPANDABLE — ISSUES 2, 3 FIX ── */
+        /* ── PREMIUM EXPANDABLE SECTIONS — ISSUES 2,3 FIX ── */
         .other-sections-wrapper {
             display: flex;
             flex-direction: column;
@@ -561,9 +460,7 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
             transition: box-shadow 0.25s ease;
         }
-        .expandable-section:hover {
-            box-shadow: 0 5px 18px rgba(0,0,0,0.08);
-        }
+        .expandable-section:hover { box-shadow: 0 5px 18px rgba(0,0,0,0.08); }
 
         .expandable-header {
             display: flex;
@@ -580,18 +477,10 @@
             transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
         }
         .expandable-header:hover  { background: #f0f5fc; }
-        .expandable-header:active { transform: scale(0.985); }
-        .expandable-header.open {
-            border-bottom-color: #e4eaf4;
-            background: #edf3fc;
-        }
+        .expandable-header:active { transform: scale(0.985); }   /* ISSUE 3 */
+        .expandable-header.open   { border-bottom-color: #e4eaf4; background: #edf3fc; }
 
-        .expandable-title {
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: #1e4a76;
-            letter-spacing: -0.01em;
-        }
+        .expandable-title { font-size: 0.95rem; font-weight: 600; color: #1e4a76; letter-spacing: -0.01em; }
 
         /* ISSUE 3: smooth arrow */
         .expandable-arrow {
@@ -605,17 +494,15 @@
         }
         .expandable-arrow.open { transform: rotate(90deg); }
 
-        /* ISSUE 3: smooth content expansion */
+        /* ISSUE 3: smooth expand */
         .expandable-content {
             max-height: 0;
             overflow: hidden;
             transition: max-height 0.45s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
-        .expandable-inner {
-            padding: 0.75rem 0.9rem 1rem;
-        }
+        .expandable-inner { padding: 0.75rem 0.9rem 1rem; }
 
-        /* ISSUE 2: horizontal scroll inside sections */
+        /* ISSUE 2: horizontal scroll */
         .expandable-scroll {
             overflow-x: auto;
             width: 100%;
@@ -623,51 +510,35 @@
         }
 
         /* ── RECEIPT ── */
-        #receiptTemplate {
-            position: absolute;
-            left: -9999px;
-            top: 0;
-        }
+        #receiptTemplate { position: absolute; left: -9999px; top: 0; }
         .receipt-card {
-            width: 360px;
-            background: #ffffff;
-            padding: 24px;
-            border-radius: 24px;
+            width: 360px; background: #ffffff;
+            padding: 24px; border-radius: 24px;
             font-family: 'Inter', sans-serif;
             box-shadow: 0 25px 50px rgba(0,0,0,0.12);
-            position: relative;
-            overflow: hidden;
+            position: relative; overflow: hidden;
         }
         .receipt-watermark {
-            position: absolute;
-            top: 50%; left: 50%;
+            position: absolute; top: 50%; left: 50%;
             transform: translate(-50%,-50%);
-            font-size: 42px;
-            font-weight: 700;
+            font-size: 42px; font-weight: 700;
             color: rgba(30,74,118,0.05);
-            pointer-events: none;
-            white-space: nowrap;
+            pointer-events: none; white-space: nowrap;
         }
         .receipt-header { text-align: center; margin-bottom: 20px; }
         .receipt-header h2 { color: #1e4a76; font-size: 20px; margin-bottom: 4px; }
         .receipt-header p  { font-size: 12px; color: #6c86a3; }
         .student-section {
-            display: flex;
-            justify-content: space-between;
-            background: #f5f9ff;
-            padding: 12px 14px;
-            border-radius: 14px;
-            margin-bottom: 18px;
+            display: flex; justify-content: space-between;
+            background: #f5f9ff; padding: 12px 14px;
+            border-radius: 14px; margin-bottom: 18px;
         }
         .student-section .label { font-size: 11px; color: #6c86a3; }
         .student-section .value { font-weight: 600; font-size: 14px; }
         .amount-section {
-            margin: 20px 0;
-            text-align: center;
+            margin: 20px 0; text-align: center;
             background: linear-gradient(135deg, #1e4a76, #3b82f6);
-            padding: 18px;
-            border-radius: 16px;
-            color: white;
+            padding: 18px; border-radius: 16px; color: white;
             box-shadow: 0 10px 25px rgba(30,74,118,0.25);
         }
         .amount-section span { font-size: 12px; opacity: 0.85; letter-spacing: 0.5px; }
@@ -678,31 +549,20 @@
         .amount-section h1 span { font-size: inherit; }
         .receipt-details { margin-top: 10px; }
         .receipt-details div {
-            display: flex;
-            justify-content: space-between;
-            font-size: 13px;
-            padding: 6px 0;
+            display: flex; justify-content: space-between;
+            font-size: 13px; padding: 6px 0;
             border-bottom: 1px dashed #e2e8f0;
         }
         .receipt-details span { color: #6c86a3; }
         .receipt-code { margin-top: 15px; text-align: center; }
         .receipt-code span { font-size: 11px; color: #6c86a3; }
         .receipt-code div {
-            margin-top: 5px;
-            font-family: monospace;
-            font-size: 16px;
-            letter-spacing: 2px;
-            padding: 8px;
-            border-radius: 10px;
-            background: #eef2f8;
-            font-weight: 600;
+            margin-top: 5px; font-family: monospace;
+            font-size: 16px; letter-spacing: 2px;
+            padding: 8px; border-radius: 10px;
+            background: #eef2f8; font-weight: 600;
         }
-        .receipt-footer {
-            text-align: center;
-            margin-top: 16px;
-            font-size: 11px;
-            color: #8da0b0;
-        }
+        .receipt-footer { text-align: center; margin-top: 16px; font-size: 11px; color: #8da0b0; }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
@@ -714,7 +574,7 @@
     <div class="loader-text">Loading term fee system ...</div>
 </div>
 
-<!-- MAIN APP -->
+<!-- APP -->
 <div class="app-container" id="appContainer" style="display:none;">
 
     <div class="sticky-header">
@@ -722,7 +582,7 @@
             <h1>St. Annes ICSE School Kottody</h1>
         </div>
         <div class="header-actions">
-            <button id="logoutBtn" class="btn btn-secondary">🚪 Logout</button>
+            <button id="logoutBtn" class="btn btn-secondary">&#x1F6AA; Logout</button>
         </div>
     </div>
 
@@ -730,10 +590,11 @@
         <div class="student-info">
             <h2 id="studentNameDisplay">Loading...</h2>
             <div class="student-meta">
-                <span id="studentClassSpan">📖 Class: --</span>
+                <span id="studentClassSpan">&#x1F4D6; Class: --</span>
             </div>
         </div>
 
+        <!-- Term progress -->
         <div class="progress-wrapper" id="termProgress">
             <div class="progress-label">TERM FEES PAYMENT</div>
             <div class="progress-bar-bg">
@@ -742,6 +603,7 @@
             <div class="progress-percent" id="progressPercent">0%</div>
         </div>
 
+        <!-- Other progress -->
         <div class="progress-wrapper" id="otherProgress" style="display:none;">
             <div class="progress-label">OTHER FEES PAYMENT</div>
             <div class="progress-bar-bg">
@@ -751,27 +613,28 @@
         </div>
     </div>
 
+    <!-- ✅ NAVIGATION TABS — KEEP BOTH -->
     <div class="fee-switch">
-        <button id="showTerm" class="active">Term Fees</button>
+        <button id="showTerm"  class="active">Term Fees</button>
         <button id="showOther">Other Fees</button>
     </div>
 
     <div class="table-wrapper" id="tableWrapper"></div>
 
     <div class="action-buttons">
-        <button id="payFeesBtn" class="btn btn-primary">💳 Pay Fees</button>
-        <button id="helpBtn"    class="btn btn-secondary">❓ Help</button>
+        <button id="payFeesBtn" class="btn btn-primary">&#x1F4B3; Pay Fees</button>
+        <button id="helpBtn"    class="btn btn-secondary">&#x2753; Help</button>
     </div>
     <div class="payment-note">
-        💡 The fee paid will be updated within 36 working hours.
+        &#x1F4A1; The fee paid will be updated within 36 working hours.
     </div>
 
     <div id="overallSummaryCard" class="total-card"></div>
 
-    <footer>Official fee record • Authorized personnel only</footer>
+    <footer>Official fee record &bull; Authorized personnel only</footer>
 </div>
 
-<!-- HIDDEN RECEIPT TEMPLATE -->
+<!-- HIDDEN RECEIPT -->
 <div id="receiptTemplate">
     <div class="receipt-card">
         <div class="receipt-watermark">ST. ANNE'S ICSE</div>
@@ -814,12 +677,12 @@ import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/fi
 
 /* ─── FIREBASE ─── */
 const firebaseConfig = {
-  apiKey:            "AIzaSyArC1RsGTkS0cr5glTfgUdTktjcfj_Ad88",
-  authDomain:        "fee-payment-portal.firebaseapp.com",
-  projectId:         "fee-payment-portal",
-  storageBucket:     "fee-payment-portal.firebasestorage.app",
-  messagingSenderId: "1036013822615",
-  appId:             "1:1036013822615:web:6c4159f84bae9882963fd2"
+    apiKey:            "AIzaSyArC1RsGTkS0cr5glTfgUdTktjcfj_Ad88",
+    authDomain:        "fee-payment-portal.firebaseapp.com",
+    projectId:         "fee-payment-portal",
+    storageBucket:     "fee-payment-portal.firebasestorage.app",
+    messagingSenderId: "1036013822615",
+    appId:             "1:1036013822615:web:6c4159f84bae9882963fd2"
 };
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
@@ -832,9 +695,9 @@ const QR_URL         = "https://i.ibb.co/8RSZRz0/IMG-20260329-160905.png";
 const MONTHS         = ["june","july","august","september","october","november","december","january","february","march"];
 
 /* ─── HELPERS ─── */
-function safeNumber(val) { const n = Number(val); return isNaN(n) ? 0 : n; }
-function getEl(id)        { return document.getElementById(id); }
-function cap(str)         { return str ? str.charAt(0).toUpperCase() + str.slice(1) : str; }
+function safeNumber(v) { const n = Number(v); return isNaN(n) ? 0 : n; }
+function getEl(id)     { return document.getElementById(id); }
+function capFirst(s)   { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
 
 /* ─── URL PARAM ─── */
 const studentIdRaw = new URLSearchParams(window.location.search).get("id");
@@ -848,457 +711,449 @@ let currentView = "term";
 
 /* ─── LOADER ─── */
 function hideLoader() {
-  const ld = getEl("loader");
-  const ap = getEl("appContainer");
-  if (ld) ld.style.display = "none";
-  if (ap) ap.style.display = "block";
+    const ld = getEl("loader");
+    const ap = getEl("appContainer");
+    if (ld) ld.style.display = "none";
+    if (ap) ap.style.display = "block";
 }
 
 /* ══════════════════════════════════════════
-   NORMALIZATION
+   NORMALISATION
 ══════════════════════════════════════════ */
-function normalizeTerms(rawTerms) {
-  const terms = Array.isArray(rawTerms) ? rawTerms : [];
-  if (!terms.length) {
-    return [
-      { name:"Term 1", total:5000, paid:0 },
-      { name:"Term 2", total:5000, paid:0 },
-      { name:"Term 3", total:5000, paid:0 }
+function normalizeTerms(raw) {
+    const arr = Array.isArray(raw) ? raw : [];
+    if (!arr.length) return [
+        { name:"Term 1", total:5000, paid:0 },
+        { name:"Term 2", total:5000, paid:0 },
+        { name:"Term 3", total:5000, paid:0 }
     ];
-  }
-  return terms.map((t, i) => ({
-    name:  t.name  || t.term    || `Term ${i + 1}`,
-    total: safeNumber(t.total   ?? t.amount     ?? 0),
-    paid:  safeNumber(t.paid    ?? t.paidAmount ?? 0)
-  }));
+    return arr.map((t, i) => ({
+        name:  t.name  || t.term    || `Term ${i + 1}`,
+        total: safeNumber(t.total   ?? t.amount     ?? 0),
+        paid:  safeNumber(t.paid    ?? t.paidAmount ?? 0)
+    }));
 }
 
 function normalizeBusFee(raw) {
-  const busFee = { enabled:false, monthly:{} };
-  if (!raw || typeof raw !== "object") return busFee;
-  const src = (raw.monthly && typeof raw.monthly === "object") ? raw.monthly : raw;
-  Object.keys(src).forEach(month => {
-    const val = src[month];
-    busFee.monthly[month] = typeof val === "object"
-      ? { total: safeNumber(val.total ?? 0), paid: safeNumber(val.paid ?? 0) }
-      : { total: safeNumber(val),            paid: 0 };
-  });
-  busFee.enabled = Object.keys(busFee.monthly).length > 0;
-  return busFee;
+    const result = { enabled: false, monthly: {} };
+    if (!raw || typeof raw !== "object") return result;
+    const src = (raw.monthly && typeof raw.monthly === "object") ? raw.monthly : raw;
+    Object.keys(src).forEach(m => {
+        const v = src[m];
+        result.monthly[m] = typeof v === "object"
+            ? { total: safeNumber(v.total ?? 0), paid: safeNumber(v.paid ?? 0) }
+            : { total: safeNumber(v), paid: 0 };
+    });
+    result.enabled = Object.keys(result.monthly).length > 0;
+    return result;
 }
 
 function normalizeEcaFee(raw) {
-  const ecaFee = { monthly:{} };
-  if (!raw || typeof raw !== "object") {
-    MONTHS.forEach(m => { ecaFee.monthly[m] = { total:1250, paid:0 }; });
-    return ecaFee;
-  }
-  const src = (raw.monthly && typeof raw.monthly === "object") ? raw.monthly : null;
-  MONTHS.forEach(m => {
-    const item = src ? src[m] : null;
-    ecaFee.monthly[m] = item
-      ? { total: safeNumber(item.total ?? 1250), paid: safeNumber(item.paid ?? 0) }
-      : raw.monthlyAmount !== undefined
-        ? { total: safeNumber(raw.monthlyAmount), paid: 0 }
-        : { total: 1250, paid: 0 };
-  });
-  return ecaFee;
+    const result = { monthly: {} };
+    if (!raw || typeof raw !== "object") {
+        MONTHS.forEach(m => { result.monthly[m] = { total: 1250, paid: 0 }; });
+        return result;
+    }
+    const src = (raw.monthly && typeof raw.monthly === "object") ? raw.monthly : null;
+    MONTHS.forEach(m => {
+        const item = src ? src[m] : null;
+        result.monthly[m] = item
+            ? { total: safeNumber(item.total ?? 1250), paid: safeNumber(item.paid ?? 0) }
+            : raw.monthlyAmount !== undefined
+                ? { total: safeNumber(raw.monthlyAmount), paid: 0 }
+                : { total: 1250, paid: 0 };
+    });
+    return result;
 }
 
 function normalizeAnnualAndOtherFees(rawOther, rawAnnual) {
-  let otherFees = [];
-  let annualFee = { total:0, paid:0 };
-  if (rawAnnual && typeof rawAnnual === "object") {
-    annualFee = { total: safeNumber(rawAnnual.total ?? 0), paid: safeNumber(rawAnnual.paid ?? 0) };
-  }
-  if (rawOther && typeof rawOther === "object") {
-    if (Array.isArray(rawOther)) {
-      otherFees = rawOther.map(f => ({
-        name:  f.name  || "Other Fee",
-        total: safeNumber(f.total ?? 0),
-        paid:  safeNumber(f.paid  ?? 0)
-      }));
-    } else {
-      Object.keys(rawOther).forEach(key => {
-        const val = rawOther[key];
-        if (key === "annualDay" && val && typeof val === "object") {
-          annualFee = { total: safeNumber(val.total ?? 0), paid: safeNumber(val.paid ?? 0) };
-        } else if (val && typeof val === "object") {
-          otherFees.push({ name: cap(key), total: safeNumber(val.total ?? 0), paid: safeNumber(val.paid ?? 0) });
-        } else {
-          otherFees.push({ name: key, total: safeNumber(val), paid: 0 });
-        }
-      });
+    let otherFees = [];
+    let annualFee = { total: 0, paid: 0 };
+
+    if (rawAnnual && typeof rawAnnual === "object") {
+        annualFee = { total: safeNumber(rawAnnual.total ?? 0), paid: safeNumber(rawAnnual.paid ?? 0) };
     }
-  }
-  return { otherFees, annualFee };
+    if (rawOther && typeof rawOther === "object") {
+        if (Array.isArray(rawOther)) {
+            otherFees = rawOther.map(f => ({
+                name:  f.name  || "Other Fee",
+                total: safeNumber(f.total ?? 0),
+                paid:  safeNumber(f.paid  ?? 0)
+            }));
+        } else {
+            Object.keys(rawOther).forEach(key => {
+                const val = rawOther[key];
+                if (key === "annualDay" && val && typeof val === "object") {
+                    annualFee = { total: safeNumber(val.total ?? 0), paid: safeNumber(val.paid ?? 0) };
+                } else if (val && typeof val === "object") {
+                    otherFees.push({ name: capFirst(key), total: safeNumber(val.total ?? 0), paid: safeNumber(val.paid ?? 0) });
+                } else {
+                    otherFees.push({ name: key, total: safeNumber(val), paid: 0 });
+                }
+            });
+        }
+    }
+    return { otherFees, annualFee };
+}
+
+/* ── ISSUE 5: centralised defaults ── */
+function enforceDefaults() {
+    if (!studentData.busFee    || typeof studentData.busFee !== "object")    studentData.busFee    = { enabled: false, monthly: {} };
+    if (!studentData.busFee.monthly)                                          studentData.busFee.monthly = {};
+    if (!studentData.ecaFee    || typeof studentData.ecaFee !== "object")    studentData.ecaFee    = { monthly: {} };
+    if (!studentData.ecaFee.monthly)                                          studentData.ecaFee.monthly = {};
+    if (!studentData.annualFee || typeof studentData.annualFee !== "object") studentData.annualFee = { total: 0, paid: 0 };
+    if (!Array.isArray(studentData.otherFees))                               studentData.otherFees = [];
+    if (!Array.isArray(TERMS))                                                TERMS = [];
 }
 
 /* ══════════════════════════════════════════
    LOAD STUDENT
 ══════════════════════════════════════════ */
 async function loadStudent() {
-  try {
-    if (!studentId) {
-      alert("Missing student ID in URL.\n\nExample: student.html?id=mariya001");
-      hideLoader(); return;
+    try {
+        if (!studentId) {
+            alert("Missing student ID in URL.\n\nExample: student.html?id=mariya001");
+            hideLoader(); return;
+        }
+        const snap = await getDoc(doc(db, "students", studentId));
+        if (!snap.exists()) {
+            alert(`Student not found.\n\nID: "${studentId}"\n\nCheck the ID and try again.`);
+            hideLoader(); return;
+        }
+        const raw = snap.data();
+        console.log("✅ Raw data:", raw);
+
+        const { otherFees, annualFee } = normalizeAnnualAndOtherFees(raw.otherFees, raw.annualFee);
+
+        studentData = {
+            name:      raw.name  || "Unknown",
+            class:     String(raw.class || "Unknown").toUpperCase(),
+            phone:     raw.phone || "",
+            receipts:  Array.isArray(raw.receipts) ? raw.receipts : [],
+            terms:     normalizeTerms(raw.terms),
+            busFee:    normalizeBusFee(raw.busFee),
+            ecaFee:    normalizeEcaFee(raw.ecaFee || raw.eca),
+            annualFee: annualFee,
+            otherFees: otherFees
+        };
+
+        enforceDefaults();
+        TERMS = studentData.terms;
+
+        const nEl = getEl("studentNameDisplay");
+        const cEl = getEl("studentClassSpan");
+        if (nEl) nEl.innerText = studentData.name;
+        if (cEl) cEl.innerText = "📖 Class: " + studentData.class;
+
+        render();
+        hideLoader();
+    } catch (err) {
+        console.error("🔥 Load error:", err);
+        alert("System error: " + err.message);
+        hideLoader();
     }
-    const snap = await getDoc(doc(db, "students", studentId));
-    if (!snap.exists()) {
-      alert(`Student not found.\n\nID: "${studentId}"\n\nCheck the ID and try again.`);
-      hideLoader(); return;
-    }
-
-    const raw = snap.data();
-    console.log("✅ Raw data:", raw);
-
-    const { otherFees, annualFee } = normalizeAnnualAndOtherFees(raw.otherFees, raw.annualFee);
-
-    studentData = {
-      name:      raw.name  || "Unknown",
-      class:     String(raw.class || "Unknown").toUpperCase(),
-      phone:     raw.phone || "",
-      receipts:  Array.isArray(raw.receipts) ? raw.receipts : [],
-      terms:     normalizeTerms(raw.terms),
-      busFee:    normalizeBusFee(raw.busFee),
-      ecaFee:    normalizeEcaFee(raw.ecaFee || raw.eca),
-      annualFee: annualFee,
-      otherFees: otherFees
-    };
-
-    enforceDefaults();
-    TERMS = studentData.terms;
-
-    const nameEl  = getEl("studentNameDisplay");
-    const classEl = getEl("studentClassSpan");
-    if (nameEl)  nameEl.innerText  = studentData.name;
-    if (classEl) classEl.innerText = "📖 Class: " + studentData.class;
-
-    render();
-    hideLoader();
-  } catch (err) {
-    console.error("🔥 Load error:", err);
-    alert("System error: " + err.message);
-    hideLoader();
-  }
-}
-
-/* ─── ISSUE 5: centralised safety guard ─── */
-function enforceDefaults() {
-  if (!studentData.busFee    || typeof studentData.busFee !== "object")
-    studentData.busFee = { enabled:false, monthly:{} };
-  if (!studentData.busFee.monthly)
-    studentData.busFee.monthly = {};
-  if (!studentData.ecaFee    || typeof studentData.ecaFee !== "object")
-    studentData.ecaFee = { monthly:{} };
-  if (!studentData.ecaFee.monthly)
-    studentData.ecaFee.monthly = {};
-  if (!studentData.annualFee || typeof studentData.annualFee !== "object")
-    studentData.annualFee = { total:0, paid:0 };
-  if (!Array.isArray(studentData.otherFees))
-    studentData.otherFees = [];
-  if (!Array.isArray(TERMS))
-    TERMS = [];
 }
 
 /* ══════════════════════════════════════════
-   TOTALS — ISSUE 4: single source of truth
+   TOTALS — single source of truth (ISSUE 4)
 ══════════════════════════════════════════ */
 function calcTermTotals() {
-  let total = 0, paid = 0;
-  TERMS.forEach(t => {
-    total += safeNumber(t.total);
-    paid  += safeNumber(t.paid);
-  });
-  return { total, paid, remaining: total - paid };
+    let total = 0, paid = 0;
+    TERMS.forEach(t => { total += safeNumber(t.total); paid += safeNumber(t.paid); });
+    return { total, paid, remaining: total - paid };
 }
 
 function calcOtherTotals() {
-  let total = 0, paid = 0;
-  if (studentData.busFee && studentData.busFee.enabled) {
-    Object.values(studentData.busFee.monthly || {}).forEach(i => {
-      total += safeNumber(i.total);
-      paid  += safeNumber(i.paid);
-    });
-  }
-  Object.values((studentData.ecaFee && studentData.ecaFee.monthly) || {}).forEach(i => {
-    total += safeNumber(i.total);
-    paid  += safeNumber(i.paid);
-  });
-  total += safeNumber((studentData.annualFee || {}).total);
-  paid  += safeNumber((studentData.annualFee || {}).paid);
-  (studentData.otherFees || []).forEach(f => {
-    total += safeNumber(f.total);
-    paid  += safeNumber(f.paid);
-  });
-  return { total, paid, remaining: total - paid };
+    let total = 0, paid = 0;
+    if (studentData.busFee && studentData.busFee.enabled) {
+        Object.values(studentData.busFee.monthly || {}).forEach(i => { total += safeNumber(i.total); paid += safeNumber(i.paid); });
+    }
+    Object.values((studentData.ecaFee && studentData.ecaFee.monthly) || {}).forEach(i => { total += safeNumber(i.total); paid += safeNumber(i.paid); });
+    total += safeNumber((studentData.annualFee || {}).total);
+    paid  += safeNumber((studentData.annualFee || {}).paid);
+    (studentData.otherFees || []).forEach(f => { total += safeNumber(f.total); paid += safeNumber(f.paid); });
+    return { total, paid, remaining: total - paid };
 }
 
 /* ══════════════════════════════════════════
-   PROGRESS BARS — ISSUE 1, 4 FIX
+   PROGRESS BARS — ISSUE 1 FIX
 ══════════════════════════════════════════ */
 function applyProgress(fillId, textId, total, paid) {
-  /* ISSUE 1: safeNumber ensures no NaN ever reaches the bar */
-  const pct = (safeNumber(total) > 0)
-    ? Math.min(100, (safeNumber(paid) / safeNumber(total)) * 100)
-    : 0;
-  const rounded = Math.round(pct);
-
-  const fill = getEl(fillId);
-  const text = getEl(textId);
-  if (fill) {
-    fill.style.width    = pct + "%";
-    fill.style.minWidth = pct > 0 ? "6px" : "0";
-  }
-  if (text) text.innerText = rounded + "%";
-  console.log(`📊 ${fillId} → ${rounded}%  (total:${total}, paid:${paid})`);
+    /* ISSUE 1: safeNumber both sides — NaN impossible */
+    const pct = (safeNumber(total) > 0)
+        ? Math.min(100, (safeNumber(paid) / safeNumber(total)) * 100)
+        : 0;
+    const fill = getEl(fillId);
+    const text = getEl(textId);
+    if (fill) {
+        fill.style.width    = pct + "%";
+        fill.style.minWidth = pct > 0 ? "6px" : "0";
+    }
+    if (text) text.innerText = Math.round(pct) + "%";
+    console.log(`📊 ${fillId} → ${Math.round(pct)}%  (total:${total} paid:${paid})`);
 }
 
-function updateProgressBar()      { const {total, paid} = calcTermTotals();  applyProgress("progressFill",      "progressPercent",      total, paid); }
-function updateOtherProgressBar() { const {total, paid} = calcOtherTotals(); applyProgress("otherProgressFill", "otherProgressPercent", total, paid); }
+function updateProgressBar()      { const { total, paid } = calcTermTotals();  applyProgress("progressFill",      "progressPercent",      total, paid); }
+function updateOtherProgressBar() { const { total, paid } = calcOtherTotals(); applyProgress("otherProgressFill", "otherProgressPercent", total, paid); }
 
 /* ══════════════════════════════════════════
    SUMMARY CARDS
 ══════════════════════════════════════════ */
 function updateOverallSummary() {
-  const { total, paid, remaining } = calcTermTotals();
-  const c = getEl("overallSummaryCard");
-  if (c) c.innerHTML = `
-    <div><strong>Total:</strong> &#8377;${total.toLocaleString()}</div>
-    <div><strong>Paid:</strong> &#8377;${paid.toLocaleString()}</div>
-    <div><strong>Remaining:</strong> &#8377;${remaining.toLocaleString()}</div>`;
+    const { total, paid, remaining } = calcTermTotals();
+    const c = getEl("overallSummaryCard");
+    if (c) c.innerHTML = `
+        <div><strong>Total:</strong> &#8377;${total.toLocaleString()}</div>
+        <div><strong>Paid:</strong> &#8377;${paid.toLocaleString()}</div>
+        <div><strong>Remaining:</strong> &#8377;${remaining.toLocaleString()}</div>`;
 }
 
 function updateOtherFeesSummary() {
-  const { total, paid, remaining } = calcOtherTotals();
-  const c = getEl("overallSummaryCard");
-  if (c) c.innerHTML = `
-    <div><strong>Total Other Fees:</strong> &#8377;${total.toLocaleString()}</div>
-    <div><strong>Paid:</strong> &#8377;${paid.toLocaleString()}</div>
-    <div><strong>Remaining:</strong> &#8377;${remaining.toLocaleString()}</div>`;
+    const { total, paid, remaining } = calcOtherTotals();
+    const c = getEl("overallSummaryCard");
+    if (c) c.innerHTML = `
+        <div><strong>Total Other Fees:</strong> &#8377;${total.toLocaleString()}</div>
+        <div><strong>Paid:</strong> &#8377;${paid.toLocaleString()}</div>
+        <div><strong>Remaining:</strong> &#8377;${remaining.toLocaleString()}</div>`;
 }
 
 /* ══════════════════════════════════════════
-   RENDER — ISSUE 7: unconditional render()
+   RENDER — unconditional (ISSUE 4)
 ══════════════════════════════════════════ */
 function render() {
-  enforceDefaults();
+    enforceDefaults();
 
-  const wrapper = getEl("tableWrapper");
-  if (!wrapper) return;
-  wrapper.innerHTML = "";
+    const wrapper = getEl("tableWrapper");
+    if (!wrapper) return;
+    wrapper.innerHTML = "";
 
-  const tp = getEl("termProgress");
-  const op = getEl("otherProgress");
+    const tp = getEl("termProgress");
+    const op = getEl("otherProgress");
 
-  if (currentView === "term") {
-    /* Restore term-table styling */
-    wrapper.style.cssText = "";
+    if (currentView === "term") {
+        /* Restore card styling */
+        wrapper.style.cssText = "";
 
+        const table = document.createElement("table");
+        table.className = "fee-table";
+        table.innerHTML = `
+            <thead>
+                <tr>
+                    <th>Fee Item</th>
+                    <th>Total Fee (&#8377;)</th>
+                    <th>Paid (&#8377;)</th>
+                    <th>Remaining (&#8377;)</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody></tbody>`;
+        wrapper.appendChild(table);
+        renderTermFees(table.querySelector("tbody"));
+        updateOverallSummary();
+        updateProgressBar();
+        if (tp) tp.style.display = "flex";
+        if (op) op.style.display = "none";
+
+    } else {
+        /* Strip card styling for expandable list */
+        wrapper.style.background = "transparent";
+        wrapper.style.boxShadow  = "none";
+        wrapper.style.border     = "none";
+        wrapper.style.margin     = "1rem 0";
+
+        const outer = document.createElement("div");
+        outer.className = "other-sections-wrapper";
+        wrapper.appendChild(outer);
+        renderOtherSections(outer);
+        updateOtherFeesSummary();
+        updateOtherProgressBar();
+        if (tp) tp.style.display = "none";
+        if (op) op.style.display = "flex";
+    }
+}
+
+/* ── Term rows ── */
+function renderTermFees(tbody) {
+    if (!tbody) return;
+    if (!TERMS.length) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:2rem;color:#6c86a3;">No term data available</td></tr>`;
+        return;
+    }
+    TERMS.forEach(t => {
+        const remaining = safeNumber(t.total) - safeNumber(t.paid);
+        const isPaid    = remaining <= 0;
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${t.name}</td>
+            <td>&#8377;${safeNumber(t.total).toLocaleString()}</td>
+            <td>&#8377;${safeNumber(t.paid).toLocaleString()}</td>
+            <td>&#8377;${remaining.toLocaleString()}</td>
+            <td><span class="status-badge ${isPaid ? "status-paid" : "status-pending"}">${isPaid ? "Paid" : "Pending"}</span></td>`;
+        tbody.appendChild(row);
+    });
+}
+
+/* ══════════════════════════════════════════
+   PREMIUM EXPANDABLE SECTION — ISSUES 2,3
+══════════════════════════════════════════ */
+function createExpandableSection(title, entries, isMonthly) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "expandable-section";
+
+    /* Header */
+    const header = document.createElement("div");
+    header.className = "expandable-header";
+
+    const titleSpan = document.createElement("span");
+    titleSpan.className   = "expandable-title";
+    titleSpan.textContent = title;
+
+    const arrow = document.createElement("span");
+    arrow.className   = "expandable-arrow";
+    arrow.textContent = "▶";
+
+    header.appendChild(titleSpan);
+    header.appendChild(arrow);
+
+    /* Animated shell */
+    const contentDiv = document.createElement("div");
+    contentDiv.className = "expandable-content";
+
+    /* Inner padding wrapper (scrollHeight target) */
+    const innerDiv = document.createElement("div");
+    innerDiv.className = "expandable-inner";
+
+    /* ISSUE 2: scroll wrapper for tables */
+    const scrollWrapper = document.createElement("div");
+    scrollWrapper.className = "expandable-scroll";
+
+    /* Table */
     const table = document.createElement("table");
     table.className = "fee-table";
     table.innerHTML = `
-      <thead>
-        <tr>
-          <th>Fee Item</th><th>Total Fee (&#8377;)</th>
-          <th>Paid (&#8377;)</th><th>Remaining (&#8377;)</th><th>Status</th>
-        </tr>
-      </thead>
-      <tbody></tbody>`;
-    wrapper.appendChild(table);
-    renderTermFees(table.querySelector("tbody"));
-    updateOverallSummary();
-    updateProgressBar();
-    if (tp) tp.style.display = "flex";
-    if (op) op.style.display = "none";
+        <thead>
+            <tr>
+                <th>Fee Item</th>
+                <th>Total (&#8377;)</th>
+                <th>Paid (&#8377;)</th>
+                <th>Remaining (&#8377;)</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody></tbody>`;
+    const tbody = table.querySelector("tbody");
 
-  } else {
-    /* Strip card styling for other-sections list */
-    wrapper.style.background = "transparent";
-    wrapper.style.boxShadow  = "none";
-    wrapper.style.border     = "none";
-    wrapper.style.margin     = "1rem 0";
+    entries.forEach(([key, item]) => {
+        if (!item || item.total === undefined) return;
+        const name      = isMonthly ? capFirst(key) : key;
+        const total     = safeNumber(item.total);
+        const paid      = safeNumber(item.paid);
+        const remaining = total - paid;
+        const isPaid    = remaining <= 0;
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${name}</td>
+            <td>&#8377;${total.toLocaleString()}</td>
+            <td>&#8377;${paid.toLocaleString()}</td>
+            <td>&#8377;${remaining.toLocaleString()}</td>
+            <td><span class="status-badge ${isPaid ? "status-paid" : "status-pending"}">${isPaid ? "Paid" : "Pending"}</span></td>`;
+        tbody.appendChild(row);
+    });
 
-    const outer = document.createElement("div");
-    outer.className = "other-sections-wrapper";
-    wrapper.appendChild(outer);
-    renderOtherSections(outer);
-    updateOtherFeesSummary();
-    updateOtherProgressBar();
-    if (tp) tp.style.display = "none";
-    if (op) op.style.display = "flex";
-  }
-}
-
-/* ─── Term rows ─── */
-function renderTermFees(tbody) {
-  if (!tbody) return;
-  if (!TERMS.length) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:2rem;color:#6c86a3;">No term data available</td></tr>`;
-    return;
-  }
-  TERMS.forEach(t => {
-    const remaining = safeNumber(t.total) - safeNumber(t.paid);
-    const isPaid    = remaining <= 0;
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${t.name}</td>
-      <td>&#8377;${safeNumber(t.total).toLocaleString()}</td>
-      <td>&#8377;${safeNumber(t.paid).toLocaleString()}</td>
-      <td>&#8377;${remaining.toLocaleString()}</td>
-      <td><span class="status-badge ${isPaid ? 'status-paid' : 'status-pending'}">${isPaid ? 'Paid' : 'Pending'}</span></td>`;
-    tbody.appendChild(row);
-  });
-}
-
-/* ══════════════════════════════════════════
-   PREMIUM EXPANDABLE SECTION — ISSUE 2, 3
-══════════════════════════════════════════ */
-function createExpandableSection(title, entries, isMonthly) {
-  const wrapper = document.createElement("div");
-  wrapper.className = "expandable-section";
-
-  /* Header */
-  const header = document.createElement("div");
-  header.className = "expandable-header";
-
-  const titleSpan = document.createElement("span");
-  titleSpan.className   = "expandable-title";
-  titleSpan.textContent = title;
-
-  const arrow = document.createElement("span");
-  arrow.className   = "expandable-arrow";
-  arrow.textContent = "▶";
-
-  header.appendChild(titleSpan);
-  header.appendChild(arrow);
-
-  /* Animated shell */
-  const contentDiv = document.createElement("div");
-  contentDiv.className = "expandable-content";
-
-  /* Inner padding div (scroll-height target) */
-  const innerDiv = document.createElement("div");
-  innerDiv.className = "expandable-inner";
-
-  /* ISSUE 2: horizontal scroll wrapper */
-  const scrollWrapper = document.createElement("div");
-  scrollWrapper.className = "expandable-scroll";
-
-  /* Table */
-  const table = document.createElement("table");
-  table.className = "fee-table";
-  table.innerHTML = `
-    <thead>
-      <tr>
-        <th>Fee Item</th><th>Total (&#8377;)</th>
-        <th>Paid (&#8377;)</th><th>Remaining (&#8377;)</th><th>Status</th>
-      </tr>
-    </thead>
-    <tbody></tbody>`;
-  const tbody = table.querySelector("tbody");
-
-  entries.forEach(([key, item]) => {
-    if (!item || item.total === undefined) return;
-    const name      = isMonthly ? cap(key) : key;
-    const total     = safeNumber(item.total);
-    const paid      = safeNumber(item.paid);
-    const remaining = total - paid;
-    const isPaid    = remaining <= 0;
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${name}</td>
-      <td>&#8377;${total.toLocaleString()}</td>
-      <td>&#8377;${paid.toLocaleString()}</td>
-      <td>&#8377;${remaining.toLocaleString()}</td>
-      <td><span class="status-badge ${isPaid ? 'status-paid' : 'status-pending'}">${isPaid ? 'Paid' : 'Pending'}</span></td>`;
-    tbody.appendChild(row);
-  });
-
-  if (!tbody.children.length) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:1.5rem;color:#6c86a3;">No data available</td></tr>`;
-  }
-
-  scrollWrapper.appendChild(table);
-  innerDiv.appendChild(scrollWrapper);
-  contentDiv.appendChild(innerDiv);
-  wrapper.appendChild(header);
-  wrapper.appendChild(contentDiv);
-
-  /* ── Toggle — ISSUE 3: rAF + scrollHeight ── */
-  let expanded = false;
-  header.addEventListener("click", () => {
-    expanded = !expanded;
-    if (expanded) {
-      requestAnimationFrame(() => {
-        contentDiv.style.maxHeight = innerDiv.scrollHeight + "px";
-      });
-      arrow.classList.add("open");
-      header.classList.add("open");
-    } else {
-      contentDiv.style.maxHeight = "0";
-      arrow.classList.remove("open");
-      header.classList.remove("open");
+    if (!tbody.children.length) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:1.5rem;color:#6c86a3;">No data available</td></tr>`;
     }
-  });
 
-  return wrapper;
+    scrollWrapper.appendChild(table);
+    innerDiv.appendChild(scrollWrapper);
+    contentDiv.appendChild(innerDiv);
+    wrapper.appendChild(header);
+    wrapper.appendChild(contentDiv);
+
+    /* ── ISSUE 3: toggle with rAF + scrollHeight ── */
+    let expanded = false;
+    header.addEventListener("click", () => {
+        expanded = !expanded;
+        if (expanded) {
+            requestAnimationFrame(() => {
+                contentDiv.style.maxHeight = innerDiv.scrollHeight + "px";
+            });
+            arrow.classList.add("open");
+            header.classList.add("open");
+        } else {
+            contentDiv.style.maxHeight = "0";
+            arrow.classList.remove("open");
+            header.classList.remove("open");
+        }
+    });
+
+    return wrapper;
 }
 
 /* ══════════════════════════════════════════
-   RENDER OTHER SECTIONS — ISSUE 3, 6 FIX
+   RENDER OTHER SECTIONS
+   ✅ Bus  — conditional
+   ✅ ECA  — always
+   ✅ Annual — conditional
+   ✅ Custom fees — EACH as own section (NOT grouped)
 ══════════════════════════════════════════ */
 function renderOtherSections(container) {
-  let hasAny = false;
+    let hasAny = false;
 
-  /* 1. Bus Fee */
-  if (studentData.busFee && studentData.busFee.enabled
-      && Object.keys(studentData.busFee.monthly || {}).length > 0) {
+    /* 1. BUS FEE — only if enabled / has months */
+    const busHasMonths = Object.keys(studentData.busFee.monthly || {}).length > 0;
+    if (studentData.busFee.enabled || busHasMonths) {
+        container.appendChild(
+            createExpandableSection("&#x1F68C;  Bus Fees", Object.entries(studentData.busFee.monthly), true)
+        );
+        hasAny = true;
+    }
+
+    /* 2. ECA FEE — ALWAYS show (mandatory for all students) */
+    /* If monthly is empty after normalization, seed defaults */
+    if (!studentData.ecaFee.monthly || !Object.keys(studentData.ecaFee.monthly).length) {
+        MONTHS.forEach(m => { studentData.ecaFee.monthly[m] = { total: 1250, paid: 0 }; });
+    }
     container.appendChild(
-      createExpandableSection("🚌  Bus Fees", Object.entries(studentData.busFee.monthly), true)
+        createExpandableSection("&#x1F3A8;  ECA Fees", Object.entries(studentData.ecaFee.monthly), true)
     );
     hasAny = true;
-  }
 
-  /* 2. ECA Fee */
-  if (studentData.ecaFee && studentData.ecaFee.monthly
-      && Object.keys(studentData.ecaFee.monthly).length > 0) {
-    container.appendChild(
-      createExpandableSection("🎨  ECA Fees", Object.entries(studentData.ecaFee.monthly), true)
-    );
-    hasAny = true;
-  }
+    /* 3. ANNUAL DAY FEE — only if total > 0 */
+    if (safeNumber(studentData.annualFee.total) > 0) {
+        container.appendChild(
+            createExpandableSection("&#x1F3AD;  Annual Day Fee", [
+                ["Annual Day Fee", {
+                    total: safeNumber(studentData.annualFee.total),
+                    paid:  safeNumber(studentData.annualFee.paid)
+                }]
+            ], false)
+        );
+        hasAny = true;
+    }
 
-  /* 3. Annual Day Fee */
-  if (studentData.annualFee && safeNumber(studentData.annualFee.total) > 0) {
-    container.appendChild(
-      createExpandableSection("🎭  Annual Day Fee", [
-        ["Annual Day Fee", {
-          total: safeNumber(studentData.annualFee.total),
-          paid:  safeNumber(studentData.annualFee.paid)
-        }]
-      ], false)
-    );
-    hasAny = true;
-  }
+    /* 4. CUSTOM FEES — each fee as its OWN separate section
+       ❌ NO grouping under "Other Fees"
+       ✅ Each rendered independently                          */
+    (studentData.otherFees || []).forEach(fee => {
+        const entries = [[fee.name, {
+            total: safeNumber(fee.total),
+            paid:  safeNumber(fee.paid)
+        }]];
+        /* Use the fee name as the section title directly */
+        const section = createExpandableSection(fee.name, entries, false);
+        container.appendChild(section);
+        hasAny = true;
+    });
 
-  /* 4. Other Fees — flat, not nested (ISSUE 3 FIX) */
-  if (studentData.otherFees && studentData.otherFees.length > 0) {
-    const entries = studentData.otherFees.map(f => [
-      f.name || "Other Fee",
-      { total: safeNumber(f.total), paid: safeNumber(f.paid) }
-    ]);
-    container.appendChild(createExpandableSection("📋  Other Fees", entries, false));
-    hasAny = true;
-  }
-
-  /* ISSUE 6: only show when truly nothing */
-  if (!hasAny) {
-    const msg = document.createElement("p");
-    msg.textContent = "No other fees configured for this student.";
-    msg.style.cssText = "padding:2.5rem;text-align:center;color:#6c86a3;font-size:0.9rem;";
-    container.appendChild(msg);
-  }
+    /* Empty state — only when truly nothing */
+    if (!hasAny) {
+        const msg = document.createElement("p");
+        msg.textContent = "No other fees configured for this student.";
+        msg.style.cssText = "padding:2.5rem;text-align:center;color:#6c86a3;font-size:0.9rem;";
+        container.appendChild(msg);
+    }
 }
 
 /* ══════════════════════════════════════════
@@ -1315,404 +1170,404 @@ const saveOtherFees = () => updateDoc(dbDoc(), { otherFees: studentData.otherFee
    RECEIPT
 ══════════════════════════════════════════ */
 function generateReceiptCode(name, studentClass, subType, amount) {
-  const words    = name.trim().split(/\s+/);
-  const initials = words.length === 1
-    ? words[0][0].toUpperCase() + "X"
-    : words.slice(0,2).map(w => w[0]).join("").toUpperCase();
-  const classNum = studentClass.replace(/\D/g, "");
-  const termNum  = (subType.match(/\d+/) || ["0"])[0];
-  const amtPfx   = String(Math.abs(amount)).substring(0, 2);
-  const seq      = Date.now().toString().slice(-4);
-  const idSfx    = ((studentId?.match(/\d+/)?.[0]) || "0").padStart(3, "0");
-  return `${initials}${classNum}${termNum}${amtPfx}${seq}${idSfx}`;
+    const words    = name.trim().split(/\s+/);
+    const initials = words.length === 1
+        ? words[0][0].toUpperCase() + "X"
+        : words.slice(0, 2).map(w => w[0]).join("").toUpperCase();
+    const classNum = studentClass.replace(/\D/g, "");
+    const termNum  = (subType.match(/\d+/) || ["0"])[0];
+    const amtPfx   = String(Math.abs(amount)).substring(0, 2);
+    const seq      = Date.now().toString().slice(-4);
+    const idSfx    = ((studentId?.match(/\d+/)?.[0]) || "0").padStart(3, "0");
+    return `${initials}${classNum}${termNum}${amtPfx}${seq}${idSfx}`;
 }
 
 async function generateReceiptImage(data) {
-  const set = (id, val) => { const el = getEl(id); if (el) el.innerText = val; };
-  set("r_name",   data.name);
-  set("r_class",  data.class);
-  set("r_amount", data.amount);
-  set("r_term",   data.subType);
-  set("r_date",   data.date);
-  set("r_code",   data.code);
-  const canvas = await html2canvas(getEl("receiptTemplate"), { scale:2, backgroundColor:"#ffffff" });
-  return canvas.toDataURL("image/png");
+    const set = (id, val) => { const el = getEl(id); if (el) el.innerText = val; };
+    set("r_name",   data.name);
+    set("r_class",  data.class);
+    set("r_amount", data.amount);
+    set("r_term",   data.subType);
+    set("r_date",   data.date);
+    set("r_code",   data.code);
+    const canvas = await html2canvas(getEl("receiptTemplate"), { scale: 2, backgroundColor: "#ffffff" });
+    return canvas.toDataURL("image/png");
 }
 
 function downloadReceipt(url, filename) {
-  const a = document.createElement("a");
-  a.href = url; a.download = filename; a.click();
+    const a = document.createElement("a");
+    a.href = url; a.download = filename; a.click();
 }
 
-function openWhatsApp(phone, message) {
-  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, "_blank");
+function openWhatsApp(phone, msg) {
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, "_blank");
 }
 
 async function storeReceipt(obj) {
-  if (!Array.isArray(studentData.receipts)) studentData.receipts = [];
-  studentData.receipts.push(obj);
-  await updateDoc(dbDoc(), { receipts: studentData.receipts });
+    if (!Array.isArray(studentData.receipts)) studentData.receipts = [];
+    studentData.receipts.push(obj);
+    await updateDoc(dbDoc(), { receipts: studentData.receipts });
 }
 
 async function showReceiptSuccess(feeType, subType, amountPaid, receiptCode) {
-  document.querySelectorAll(".popup-overlay").forEach(e => e.remove());
+    document.querySelectorAll(".popup-overlay").forEach(e => e.remove());
 
-  const imgUrl = await generateReceiptImage({
-    name: studentData.name, class: studentData.class,
-    amount: amountPaid, subType,
-    date: new Date().toISOString().slice(0,10),
-    code: receiptCode
-  });
+    const imgUrl = await generateReceiptImage({
+        name: studentData.name, class: studentData.class,
+        amount: amountPaid, subType,
+        date: new Date().toISOString().slice(0, 10),
+        code: receiptCode
+    });
 
-  const overlay = document.createElement("div");
-  overlay.className = "popup-overlay";
-  overlay.innerHTML = `
-    <div class="popup-card" style="max-width:360px;">
-      <div class="popup-close" id="closeSuccess">&#10006;</div>
-      <h3>Payment Successful</h3>
-      <div class="tick-container">
-        <svg class="tick-svg" viewBox="0 0 52 52">
-          <circle class="tick-circle" cx="26" cy="26" r="25" fill="none"/>
-          <path   class="tick-check"  fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
-        </svg>
-      </div>
-      <p style="font-weight:500;margin-bottom:10px;">${subType} &middot; &#8377;${amountPaid}</p>
-      <img src="${imgUrl}" alt="Receipt" style="width:100%;border-radius:12px;">
-      <div style="display:flex;gap:0.5rem;margin-top:12px;">
-        <button id="dlReceiptBtn" class="btn btn-primary"   style="flex:1;">&#8659; Download</button>
-        <button id="waReceiptBtn" class="btn btn-secondary" style="flex:1;">&#128172; WhatsApp</button>
-      </div>
-      <p class="whatsapp-note" style="margin-top:10px;">Code: <strong>${receiptCode}</strong></p>
-    </div>`;
-  document.body.appendChild(overlay);
+    const overlay = document.createElement("div");
+    overlay.className = "popup-overlay";
+    overlay.innerHTML = `
+        <div class="popup-card" style="max-width:360px;">
+            <div class="popup-close" id="closeSuccess">&#10006;</div>
+            <h3>Payment Successful</h3>
+            <div class="tick-container">
+                <svg class="tick-svg" viewBox="0 0 52 52">
+                    <circle class="tick-circle" cx="26" cy="26" r="25" fill="none"/>
+                    <path   class="tick-check"  fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                </svg>
+            </div>
+            <p style="font-weight:500;margin-bottom:10px;">${subType} &middot; &#8377;${amountPaid}</p>
+            <img src="${imgUrl}" alt="Receipt" style="width:100%;border-radius:12px;">
+            <div style="display:flex;gap:0.5rem;margin-top:12px;">
+                <button id="dlBtn" class="btn btn-primary"   style="flex:1;">&#8659; Download</button>
+                <button id="waBtn" class="btn btn-secondary" style="flex:1;">&#128172; WhatsApp</button>
+            </div>
+            <p class="whatsapp-note" style="margin-top:10px;">Code: <strong>${receiptCode}</strong></p>
+        </div>`;
+    document.body.appendChild(overlay);
 
-  overlay.querySelector("#closeSuccess").onclick = () => overlay.remove();
-  overlay.querySelector("#dlReceiptBtn").onclick  = () => downloadReceipt(imgUrl, `${receiptCode}.png`);
-  overlay.querySelector("#waReceiptBtn").onclick  = () =>
-    openWhatsApp(studentData.phone,
-      `Dear Parent,\n\nYour payment of ₹${amountPaid} for ${subType} has been updated.\nReceipt Code: ${receiptCode}\n\nThank you,\nSt. Anne's ICSE School`);
+    overlay.querySelector("#closeSuccess").onclick = () => overlay.remove();
+    overlay.querySelector("#dlBtn").onclick = () => downloadReceipt(imgUrl, `${receiptCode}.png`);
+    overlay.querySelector("#waBtn").onclick = () =>
+        openWhatsApp(studentData.phone,
+            `Dear Parent,\n\nYour payment of ₹${amountPaid} for ${subType} has been updated.\nReceipt Code: ${receiptCode}\n\nThank you,\nSt. Anne's ICSE School`);
 }
 
 /* ══════════════════════════════════════════
-   PAYMENT HANDLER — ISSUE 7: always render()
+   PAYMENT HANDLER — ISSUE 4: always render()
 ══════════════════════════════════════════ */
 async function handlePaymentUpdate(feeType, identifier, amount, isFull) {
-  enforceDefaults();
-  let item = null, subType = "";
+    enforceDefaults();
+    let item = null, subType = "";
 
-  if (feeType === "term") {
-    const idx = parseInt(identifier);
-    if (isNaN(idx) || !TERMS[idx]) { alert("Invalid term selected"); return false; }
-    item = TERMS[idx]; subType = item.name;
+    if (feeType === "term") {
+        const idx = parseInt(identifier);
+        if (isNaN(idx) || !TERMS[idx]) { alert("Invalid term selected"); return false; }
+        item = TERMS[idx]; subType = item.name;
 
-  } else if (feeType === "bus") {
-    if (!studentData.busFee.enabled) { alert("Bus fee not enabled for this student"); return false; }
-    const m = identifier;
-    if (!studentData.busFee.monthly[m]) studentData.busFee.monthly[m] = { total:0, paid:0 };
-    item = studentData.busFee.monthly[m];
-    subType = `Bus Fee - ${cap(m)}`;
+    } else if (feeType === "bus") {
+        if (!studentData.busFee.enabled) { alert("Bus fee not enabled for this student"); return false; }
+        const m = identifier;
+        if (!studentData.busFee.monthly[m]) studentData.busFee.monthly[m] = { total: 0, paid: 0 };
+        item = studentData.busFee.monthly[m];
+        subType = `Bus Fee - ${capFirst(m)}`;
 
-  } else if (feeType === "eca") {
-    const m = identifier;
-    if (!studentData.ecaFee.monthly[m]) studentData.ecaFee.monthly[m] = { total:1250, paid:0 };
-    item = studentData.ecaFee.monthly[m];
-    subType = `ECA Fee - ${cap(m)}`;
+    } else if (feeType === "eca") {
+        const m = identifier;
+        if (!studentData.ecaFee.monthly[m]) studentData.ecaFee.monthly[m] = { total: 1250, paid: 0 };
+        item = studentData.ecaFee.monthly[m];
+        subType = `ECA Fee - ${capFirst(m)}`;
 
-  } else if (feeType === "annual") {
-    item = studentData.annualFee; subType = "Annual Day Fee";
+    } else if (feeType === "annual") {
+        item = studentData.annualFee; subType = "Annual Day Fee";
 
-  } else if (feeType === "other") {
-    const idx = parseInt(identifier);
-    if (isNaN(idx) || !studentData.otherFees[idx]) { alert("Other fee not found"); return false; }
-    item = studentData.otherFees[idx]; subType = item.name;
+    } else if (feeType === "other") {
+        const idx = parseInt(identifier);
+        if (isNaN(idx) || !studentData.otherFees[idx]) { alert("Other fee not found"); return false; }
+        item = studentData.otherFees[idx]; subType = item.name;
 
-  } else { alert("Invalid fee type"); return false; }
+    } else { alert("Invalid fee type"); return false; }
 
-  if (!item || item.total === undefined) { alert("Fee item has no total amount set"); return false; }
+    if (!item || item.total === undefined) { alert("Fee item has no total amount set"); return false; }
 
-  let addedAmount;
-  if (isFull) {
-    addedAmount = safeNumber(item.total) - safeNumber(item.paid);
-    item.paid   = item.total;
-  } else {
-    let newPaid = Math.max(0, Math.min(safeNumber(item.total), safeNumber(item.paid) + safeNumber(amount)));
-    addedAmount = newPaid - safeNumber(item.paid);
-    if (addedAmount === 0 && amount !== 0) { alert("Amount would not change paid value (already at limit)."); return false; }
-    item.paid = newPaid;
-  }
-  if (addedAmount <= 0) { alert("Invalid payment amount"); return false; }
+    let addedAmount;
+    if (isFull) {
+        addedAmount = safeNumber(item.total) - safeNumber(item.paid);
+        item.paid   = item.total;
+    } else {
+        const newPaid = Math.max(0, Math.min(safeNumber(item.total), safeNumber(item.paid) + safeNumber(amount)));
+        addedAmount   = newPaid - safeNumber(item.paid);
+        if (addedAmount === 0 && amount !== 0) { alert("Amount would not change paid value (already at limit)."); return false; }
+        item.paid = newPaid;
+    }
+    if (addedAmount <= 0) { alert("Invalid payment amount"); return false; }
 
-  /* Save */
-  if      (feeType === "term")   await saveTermFees();
-  else if (feeType === "bus")    await saveBusFee();
-  else if (feeType === "eca")    await saveEcaFee();
-  else if (feeType === "annual") await saveAnnualFee();
-  else if (feeType === "other")  await saveOtherFees();
+    /* Save */
+    if      (feeType === "term")   await saveTermFees();
+    else if (feeType === "bus")    await saveBusFee();
+    else if (feeType === "eca")    await saveEcaFee();
+    else if (feeType === "annual") await saveAnnualFee();
+    else if (feeType === "other")  await saveOtherFees();
 
-  render(); /* ISSUE 7: unconditional */
+    render(); /* ISSUE 4: always unconditional */
 
-  const code = generateReceiptCode(studentData.name, studentData.class, subType, addedAmount);
-  await storeReceipt({ code, amount: addedAmount, type: feeType, subType, date: new Date().toISOString().slice(0,10) });
-  await showReceiptSuccess(feeType, subType, addedAmount, code);
-  return true;
+    const code = generateReceiptCode(studentData.name, studentData.class, subType, addedAmount);
+    await storeReceipt({ code, amount: addedAmount, type: feeType, subType, date: new Date().toISOString().slice(0, 10) });
+    await showReceiptSuccess(feeType, subType, addedAmount, code);
+    return true;
 }
 
 /* ══════════════════════════════════════════
    ADMIN MODAL FLOW
 ══════════════════════════════════════════ */
 function createModal(title, contentHtml, onConfirm, onCancel) {
-  document.querySelectorAll(".popup-overlay").forEach(e => e.remove());
-  const overlay = document.createElement("div");
-  overlay.className = "popup-overlay";
-  overlay.innerHTML = `
-    <div class="popup-card">
-      <div class="popup-close" id="modalClose">&#10006;</div>
-      <h3>${title}</h3>
-      ${contentHtml}
-      <div style="margin-top:1rem;display:flex;gap:0.5rem;justify-content:flex-end;">
-        <button id="modalCancel"  class="modal-btn">Cancel</button>
-        <button id="modalConfirm" class="modal-btn primary">Continue</button>
-      </div>
-    </div>`;
-  document.body.appendChild(overlay);
+    document.querySelectorAll(".popup-overlay").forEach(e => e.remove());
+    const overlay = document.createElement("div");
+    overlay.className = "popup-overlay";
+    overlay.innerHTML = `
+        <div class="popup-card">
+            <div class="popup-close" id="modalClose">&#10006;</div>
+            <h3>${title}</h3>
+            ${contentHtml}
+            <div style="margin-top:1rem;display:flex;gap:0.5rem;justify-content:flex-end;">
+                <button id="modalCancel"  class="modal-btn">Cancel</button>
+                <button id="modalConfirm" class="modal-btn primary">Continue</button>
+            </div>
+        </div>`;
+    document.body.appendChild(overlay);
 
-  const close = () => overlay.remove();
-  overlay.querySelector("#modalClose").onclick   = () => { close(); onCancel && onCancel(); };
-  overlay.querySelector("#modalCancel").onclick  = () => { close(); onCancel && onCancel(); };
-  overlay.querySelector("#modalConfirm").onclick = () => {
-    const vals = Array.from(overlay.querySelectorAll("input,select")).map(i => i.value);
-    close();
-    onConfirm && onConfirm(vals);
-  };
+    const close = () => overlay.remove();
+    overlay.querySelector("#modalClose").onclick   = () => { close(); onCancel && onCancel(); };
+    overlay.querySelector("#modalCancel").onclick  = () => { close(); onCancel && onCancel(); };
+    overlay.querySelector("#modalConfirm").onclick = () => {
+        const vals = Array.from(overlay.querySelectorAll("input,select")).map(i => i.value);
+        close();
+        onConfirm && onConfirm(vals);
+    };
 }
 
 function adminLogin() {
-  createModal("Admin Login",
-    `<input type="password" class="admin-modal-input" placeholder="Enter admin password">`,
-    ([pwd]) => {
-      if (pwd !== ADMIN_PASSWORD) { alert("Wrong password"); return; }
+    createModal("Admin Login",
+        `<input type="password" class="admin-modal-input" placeholder="Enter admin password">`,
+        ([pwd]) => {
+            if (pwd !== ADMIN_PASSWORD) { alert("Wrong password"); return; }
 
-      createModal("Select Fee Type",
-        `<select class="admin-select">
-          <option value="term">Term Fee</option>
-          <option value="bus">Bus Fee</option>
-          <option value="eca">ECA Fee</option>
-          <option value="annual">Annual Day Fee</option>
-          <option value="other">Other Fee</option>
-        </select>`,
-        ([feeType]) => {
+            createModal("Select Fee Type",
+                `<select class="admin-select">
+                    <option value="term">Term Fee</option>
+                    <option value="bus">Bus Fee</option>
+                    <option value="eca">ECA Fee</option>
+                    <option value="annual">Annual Day Fee</option>
+                    <option value="other">Other Fee</option>
+                </select>`,
+                ([feeType]) => {
 
-          if (feeType === "term") {
-            createModal("Select Action",
-              `<select class="admin-select">
-                <option value="full">Full Payment</option>
-                <option value="partial">Partial Payment</option>
-              </select>`,
-              ([action]) => {
-                createModal("Select Term",
-                  `<select class="admin-select">
-                    ${TERMS.map((t,i) => `<option value="${i}">${t.name}</option>`).join("")}
-                  </select>`,
-                  async ([termIdx]) => {
-                    if (action === "full") {
-                      await handlePaymentUpdate("term", termIdx, 0, true);
-                    } else {
-                      createModal("Enter Amount",
-                        `<input type="number" class="admin-modal-input" placeholder="Amount (positive or negative)">`,
-                        async ([amt]) => {
-                          const n = parseFloat(amt);
-                          if (isNaN(n)) { alert("Invalid amount"); return; }
-                          await handlePaymentUpdate("term", termIdx, n, false);
-                        }, () => {});
+                    if (feeType === "term") {
+                        createModal("Select Action",
+                            `<select class="admin-select">
+                                <option value="full">Full Payment</option>
+                                <option value="partial">Partial Payment</option>
+                            </select>`,
+                            ([action]) => {
+                                createModal("Select Term",
+                                    `<select class="admin-select">
+                                        ${TERMS.map((t, i) => `<option value="${i}">${t.name}</option>`).join("")}
+                                    </select>`,
+                                    async ([termIdx]) => {
+                                        if (action === "full") {
+                                            await handlePaymentUpdate("term", termIdx, 0, true);
+                                        } else {
+                                            createModal("Enter Amount",
+                                                `<input type="number" class="admin-modal-input" placeholder="Amount (positive or negative)">`,
+                                                async ([amt]) => {
+                                                    const n = parseFloat(amt);
+                                                    if (isNaN(n)) { alert("Invalid amount"); return; }
+                                                    await handlePaymentUpdate("term", termIdx, n, false);
+                                                }, () => {});
+                                        }
+                                    }, () => {});
+                            }, () => {});
+
+                    } else if (feeType === "bus" || feeType === "eca") {
+                        if (feeType === "bus" && !studentData.busFee.enabled) {
+                            alert("Bus fee not enabled for this student"); return;
+                        }
+                        createModal("Select Month",
+                            `<select class="admin-select">
+                                ${MONTHS.map(m => `<option value="${m}">${capFirst(m)}</option>`).join("")}
+                            </select>`,
+                            ([month]) => {
+                                createModal("Select Action",
+                                    `<select class="admin-select">
+                                        <option value="full">Full Payment</option>
+                                        <option value="partial">Partial Payment</option>
+                                    </select>`,
+                                    ([action]) => {
+                                        if (action === "full") {
+                                            handlePaymentUpdate(feeType, month, 0, true);
+                                        } else {
+                                            createModal("Enter Amount",
+                                                `<input type="number" class="admin-modal-input" placeholder="Amount (positive or negative)">`,
+                                                async ([amt]) => {
+                                                    const n = parseFloat(amt);
+                                                    if (isNaN(n)) { alert("Invalid amount"); return; }
+                                                    await handlePaymentUpdate(feeType, month, n, false);
+                                                }, () => {});
+                                        }
+                                    }, () => {});
+                            }, () => {});
+
+                    } else if (feeType === "annual") {
+                        createModal("Select Action",
+                            `<select class="admin-select">
+                                <option value="full">Full Payment</option>
+                                <option value="partial">Partial Payment</option>
+                            </select>`,
+                            ([action]) => {
+                                if (action === "full") {
+                                    handlePaymentUpdate("annual", null, 0, true);
+                                } else {
+                                    createModal("Enter Amount",
+                                        `<input type="number" class="admin-modal-input" placeholder="Amount (positive or negative)">`,
+                                        async ([amt]) => {
+                                            const n = parseFloat(amt);
+                                            if (isNaN(n)) { alert("Invalid amount"); return; }
+                                            await handlePaymentUpdate("annual", null, n, false);
+                                        }, () => {});
+                                }
+                            }, () => {});
+
+                    } else if (feeType === "other") {
+                        if (!studentData.otherFees || !studentData.otherFees.length) {
+                            alert("No other fees configured for this student"); return;
+                        }
+                        createModal("Select Fee",
+                            `<select class="admin-select">
+                                ${studentData.otherFees.map((f, i) => `<option value="${i}">${f.name}</option>`).join("")}
+                            </select>`,
+                            ([fIdx]) => {
+                                createModal("Select Action",
+                                    `<select class="admin-select">
+                                        <option value="full">Full Payment</option>
+                                        <option value="partial">Partial Payment</option>
+                                    </select>`,
+                                    ([action]) => {
+                                        if (action === "full") {
+                                            handlePaymentUpdate("other", fIdx, 0, true);
+                                        } else {
+                                            createModal("Enter Amount",
+                                                `<input type="number" class="admin-modal-input" placeholder="Amount (positive or negative)">`,
+                                                async ([amt]) => {
+                                                    const n = parseFloat(amt);
+                                                    if (isNaN(n)) { alert("Invalid amount"); return; }
+                                                    await handlePaymentUpdate("other", fIdx, n, false);
+                                                }, () => {});
+                                        }
+                                    }, () => {});
+                            }, () => {});
                     }
-                  }, () => {});
-              }, () => {});
-
-          } else if (feeType === "bus" || feeType === "eca") {
-            if (feeType === "bus" && !studentData.busFee.enabled) { alert("Bus fee not enabled for this student"); return; }
-            createModal("Select Month",
-              `<select class="admin-select">
-                ${MONTHS.map(m => `<option value="${m}">${cap(m)}</option>`).join("")}
-              </select>`,
-              ([month]) => {
-                createModal("Select Action",
-                  `<select class="admin-select">
-                    <option value="full">Full Payment</option>
-                    <option value="partial">Partial Payment</option>
-                  </select>`,
-                  ([action]) => {
-                    if (action === "full") {
-                      handlePaymentUpdate(feeType, month, 0, true);
-                    } else {
-                      createModal("Enter Amount",
-                        `<input type="number" class="admin-modal-input" placeholder="Amount (positive or negative)">`,
-                        async ([amt]) => {
-                          const n = parseFloat(amt);
-                          if (isNaN(n)) { alert("Invalid amount"); return; }
-                          await handlePaymentUpdate(feeType, month, n, false);
-                        }, () => {});
-                    }
-                  }, () => {});
-              }, () => {});
-
-          } else if (feeType === "annual") {
-            createModal("Select Action",
-              `<select class="admin-select">
-                <option value="full">Full Payment</option>
-                <option value="partial">Partial Payment</option>
-              </select>`,
-              ([action]) => {
-                if (action === "full") {
-                  handlePaymentUpdate("annual", null, 0, true);
-                } else {
-                  createModal("Enter Amount",
-                    `<input type="number" class="admin-modal-input" placeholder="Amount (positive or negative)">`,
-                    async ([amt]) => {
-                      const n = parseFloat(amt);
-                      if (isNaN(n)) { alert("Invalid amount"); return; }
-                      await handlePaymentUpdate("annual", null, n, false);
-                    }, () => {});
-                }
-              }, () => {});
-
-          } else if (feeType === "other") {
-            if (!studentData.otherFees || !studentData.otherFees.length) {
-              alert("No other fees configured for this student"); return;
-            }
-            createModal("Select Other Fee",
-              `<select class="admin-select">
-                ${studentData.otherFees.map((f,i) => `<option value="${i}">${f.name}</option>`).join("")}
-              </select>`,
-              ([fIdx]) => {
-                createModal("Select Action",
-                  `<select class="admin-select">
-                    <option value="full">Full Payment</option>
-                    <option value="partial">Partial Payment</option>
-                  </select>`,
-                  ([action]) => {
-                    if (action === "full") {
-                      handlePaymentUpdate("other", fIdx, 0, true);
-                    } else {
-                      createModal("Enter Amount",
-                        `<input type="number" class="admin-modal-input" placeholder="Amount (positive or negative)">`,
-                        async ([amt]) => {
-                          const n = parseFloat(amt);
-                          if (isNaN(n)) { alert("Invalid amount"); return; }
-                          await handlePaymentUpdate("other", fIdx, n, false);
-                        }, () => {});
-                    }
-                  }, () => {});
-              }, () => {});
-          }
+                }, () => {});
         }, () => {});
-    }, () => {});
 }
 
 /* ── Hidden admin triggers ── */
 document.addEventListener("keydown", e => {
-  if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "a") {
-    e.preventDefault(); adminLogin();
-  }
+    if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "a") { e.preventDefault(); adminLogin(); }
 });
 const _nameEl = getEl("studentNameDisplay");
 let pressTimer = null, moved = false;
 if (_nameEl) {
-  _nameEl.addEventListener("touchmove",   () => { moved = true; });
-  _nameEl.addEventListener("touchstart",  () => {
-    moved = false;
-    pressTimer = setTimeout(() => { if (!moved) adminLogin(); }, 1200);
-  });
-  _nameEl.addEventListener("touchend",    () => clearTimeout(pressTimer));
-  _nameEl.addEventListener("touchcancel", () => clearTimeout(pressTimer));
+    _nameEl.addEventListener("touchmove",   () => { moved = true; });
+    _nameEl.addEventListener("touchstart",  () => {
+        moved = false;
+        pressTimer = setTimeout(() => { if (!moved) adminLogin(); }, 1200);
+    });
+    _nameEl.addEventListener("touchend",    () => clearTimeout(pressTimer));
+    _nameEl.addEventListener("touchcancel", () => clearTimeout(pressTimer));
 }
 
 /* ══════════════════════════════════════════
    PAY POPUP
 ══════════════════════════════════════════ */
 function openPay() {
-  document.querySelectorAll(".popup-overlay").forEach(e => e.remove());
-  const overlay = document.createElement("div");
-  overlay.className = "popup-overlay";
-  overlay.innerHTML = `
-    <div class="popup-card">
-      <div class="popup-close" id="closePay">&#10006;</div>
-      <h3>Pay Fees</h3>
-      <img src="${QR_URL}" alt="UPI QR Code" class="qr-image">
-      <div class="upi-copy-area">
-        <span class="upi-id">${UPI_ID}</span>
-        <button id="copyBtn" class="copy-btn">&#128203; Copy</button>
-      </div>
-      <button id="upiBtn" class="upi-pay-btn">Pay via UPI</button>
-      <p class="whatsapp-note">Send screenshot to <span id="waLink" class="whatsapp-link">Office WhatsApp</span></p>
-    </div>`;
-  document.body.appendChild(overlay);
+    document.querySelectorAll(".popup-overlay").forEach(e => e.remove());
+    const overlay = document.createElement("div");
+    overlay.className = "popup-overlay";
+    overlay.innerHTML = `
+        <div class="popup-card">
+            <div class="popup-close" id="closePay">&#10006;</div>
+            <h3>Pay Fees</h3>
+            <img src="${QR_URL}" alt="UPI QR Code" class="qr-image">
+            <div class="upi-copy-area">
+                <span class="upi-id">${UPI_ID}</span>
+                <button id="copyBtn" class="copy-btn">&#128203; Copy</button>
+            </div>
+            <button id="upiBtn" class="upi-pay-btn">Pay via UPI</button>
+            <p class="whatsapp-note">Send screenshot to <span id="waLink" class="whatsapp-link">Office WhatsApp</span></p>
+        </div>`;
+    document.body.appendChild(overlay);
 
-  overlay.querySelector("#closePay").onclick = () => overlay.remove();
-  const cb = overlay.querySelector("#copyBtn");
-  cb.onclick = () => {
-    navigator.clipboard.writeText(UPI_ID).catch(() => {});
-    cb.textContent = "✔ Copied";
-    setTimeout(() => { cb.innerHTML = "&#128203; Copy"; }, 1400);
-  };
-  overlay.querySelector("#upiBtn").onclick = () => { window.location.href = `upi://pay?pa=${UPI_ID}`; };
-  overlay.querySelector("#waLink").onclick  = () => window.open(WHATSAPP_URL);
+    overlay.querySelector("#closePay").onclick = () => overlay.remove();
+    const cb = overlay.querySelector("#copyBtn");
+    cb.onclick = () => {
+        navigator.clipboard.writeText(UPI_ID).catch(() => {});
+        cb.textContent = "✔ Copied";
+        setTimeout(() => { cb.innerHTML = "&#128203; Copy"; }, 1400);
+    };
+    overlay.querySelector("#upiBtn").onclick = () => { window.location.href = `upi://pay?pa=${UPI_ID}`; };
+    overlay.querySelector("#waLink").onclick  = () => window.open(WHATSAPP_URL);
 }
 
 /* ══════════════════════════════════════════
    HELP POPUP
 ══════════════════════════════════════════ */
 function openHelp() {
-  document.querySelectorAll(".popup-overlay").forEach(e => e.remove());
-  const overlay = document.createElement("div");
-  overlay.className = "popup-overlay";
-  overlay.innerHTML = `
-    <div class="popup-card">
-      <div class="popup-close" id="closeHelp">&#10006;</div>
-      <h3>Help &amp; Support</h3>
-      <div class="help-content">
-        <p>&#128222; For assistance, please contact the school office:</p>
-        <p><strong>Phone:</strong> +91 12345 67890</p>
-        <p><strong>Email:</strong> office@stannes.edu</p>
-        <p><strong>Office Hours:</strong> Mon&ndash;Fri, 9:00 AM &ndash; 4:00 PM</p>
-      </div>
-      <button id="chatBtn" class="whatsapp-chat-btn">&#128172; Chat on WhatsApp</button>
-    </div>`;
-  document.body.appendChild(overlay);
+    document.querySelectorAll(".popup-overlay").forEach(e => e.remove());
+    const overlay = document.createElement("div");
+    overlay.className = "popup-overlay";
+    overlay.innerHTML = `
+        <div class="popup-card">
+            <div class="popup-close" id="closeHelp">&#10006;</div>
+            <h3>Help &amp; Support</h3>
+            <div class="help-content">
+                <p>&#128222; For assistance, please contact the school office:</p>
+                <p><strong>Phone:</strong> +91 12345 67890</p>
+                <p><strong>Email:</strong> office@stannes.edu</p>
+                <p><strong>Office Hours:</strong> Mon&ndash;Fri, 9:00 AM &ndash; 4:00 PM</p>
+            </div>
+            <button id="chatBtn" class="whatsapp-chat-btn">&#128172; Chat on WhatsApp</button>
+        </div>`;
+    document.body.appendChild(overlay);
 
-  overlay.querySelector("#closeHelp").onclick = () => overlay.remove();
-  overlay.querySelector("#chatBtn").onclick    = () => window.open(WHATSAPP_URL);
+    overlay.querySelector("#closeHelp").onclick = () => overlay.remove();
+    overlay.querySelector("#chatBtn").onclick    = () => window.open(WHATSAPP_URL);
 }
 
 /* ══════════════════════════════════════════
    SWITCH VIEW
 ══════════════════════════════════════════ */
 getEl("showTerm").onclick  = () => {
-  currentView = "term";
-  getEl("showTerm").classList.add("active");
-  getEl("showOther").classList.remove("active");
-  render();
+    currentView = "term";
+    getEl("showTerm").classList.add("active");
+    getEl("showOther").classList.remove("active");
+    render();
 };
 getEl("showOther").onclick = () => {
-  currentView = "other";
-  getEl("showOther").classList.add("active");
-  getEl("showTerm").classList.remove("active");
-  render();
+    currentView = "other";
+    getEl("showOther").classList.add("active");
+    getEl("showTerm").classList.remove("active");
+    render();
 };
 
 /* ══════════════════════════════════════════
    INIT
 ══════════════════════════════════════════ */
 window.onload = () => {
-  const logout = getEl("logoutBtn");
-  if (logout) logout.onclick = () => { location.href = "../index.html"; };
+    const logout = getEl("logoutBtn");
+    if (logout) logout.onclick = () => { location.href = "../index.html"; };
 
-  const pay  = getEl("payFeesBtn");
-  if (pay)  pay.onclick  = openPay;
+    const pay = getEl("payFeesBtn");
+    if (pay)  pay.onclick  = openPay;
 
-  const help = getEl("helpBtn");
-  if (help) help.onclick = openHelp;
+    const help = getEl("helpBtn");
+    if (help) help.onclick = openHelp;
 
-  loadStudent();
+    loadStudent();
 };
 </script>
 </body>
