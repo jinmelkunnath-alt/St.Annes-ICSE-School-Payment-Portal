@@ -654,7 +654,6 @@ const TERM_NAMES = [
   "Term 3 (December – February)"
 ];
 
-/* Dynamic icon map — matched by lowercase fee name keywords */
 const FEE_ICONS = {
   bus:       "🚌", transport: "🚌",
   eca:       "🎨", arts:      "🎨", art: "🎨",
@@ -698,7 +697,7 @@ function orderedEntries(obj) {
    STATE
 ═══════════════════════════════════════════ */
 const studentId = (new URLSearchParams(location.search).get("id") || "").trim().toLowerCase();
-let SD   = {};   /* studentData */
+let SD   = {};
 let TERMS = [];
 let VIEW  = "term";
 
@@ -739,7 +738,6 @@ function normalizeBusFee(raw) {
 }
 
 function normalizeEcaFee(raw) {
-  /* Always a single one-time fee — collapse old monthly structures */
   if (raw && raw.monthly && typeof raw.monthly === "object") {
     let total = 0, paid = 0;
     Object.values(raw.monthly).forEach(m => { total += safe(m.total ?? 0); paid += safe(m.paid ?? 0); });
@@ -756,12 +754,11 @@ function normalizeAnnualFee(raw) {
   return { total, paid: safe(raw.paid ?? 0) };
 }
 
-/* Normalize otherFees array — each item can be one-time or monthly */
 function normalizeOtherFees(raw) {
   if (!Array.isArray(raw)) return [];
   return raw
     .filter(f => f && f.name)
-    .filter(f => f.name.toLowerCase() !== "eca") /* skip ECA duplicates */
+    .filter(f => f.name.toLowerCase() !== "eca")
     .map(f => {
       const type = (f.type || "one-time").toLowerCase();
       if (type === "monthly" && f.monthly && typeof f.monthly === "object") {
@@ -775,7 +772,7 @@ function normalizeOtherFees(raw) {
         return { name: f.name, type: "monthly", monthly };
       }
       const total = safe(f.total ?? 0);
-      if (!total) return null; /* hide zero fees */
+      if (!total) return null;
       return { name: f.name, type: "one-time", total, paid: safe(f.paid ?? 0) };
     })
     .filter(Boolean);
@@ -798,7 +795,6 @@ async function loadStudent() {
     if (!snap.exists()) { alert(`Student not found: "${studentId}"`); hideLoader(); return; }
 
     const raw = snap.data();
-    console.log("✅ Raw data:", raw);
 
     SD = {
       name:       raw.name  || "Unknown",
@@ -838,15 +834,11 @@ function calcTermTotals() {
 function calcOtherTotals() {
   let total = 0, paid = 0;
 
-  /* Bus */
   if (SD.busFee) {
     Object.values(SD.busFee.monthly).forEach(m => { total += safe(m.total); paid += safe(m.paid); });
   }
-  /* ECA */
   total += safe(SD.ecaFee.total); paid += safe(SD.ecaFee.paid);
-  /* Annual */
   if (SD.annualFee) { total += safe(SD.annualFee.total); paid += safe(SD.annualFee.paid); }
-  /* Custom */
   SD.otherFees.forEach(f => {
     if (f.type === "monthly") {
       Object.values(f.monthly).forEach(m => { total += safe(m.total); paid += safe(m.paid); });
@@ -863,9 +855,10 @@ function calcOtherTotals() {
 ═══════════════════════════════════════════ */
 function updateProgress(total, paid) {
   const pct = safe(total) > 0 ? Math.min(100, (safe(paid) / safe(total)) * 100) : 0;
-  const bar = el("progressBar"); const txt = el("progressPct");
+  const bar = el("progressBar");
+  const txt = el("progressPct");
   const blk = el("progressBlock");
-  blk.style.display = "block";
+  blk.style.display  = "block";
   bar.style.width    = pct + "%";
   bar.style.minWidth = pct > 0 ? "5px" : "0";
   txt.textContent    = Math.round(pct) + "%";
@@ -892,12 +885,11 @@ function renderSummary(total, paid, remaining) {
 }
 
 /* ═══════════════════════════════════════════
-   FEE TABLE BUILDER (shared)
+   FEE TABLE BUILDER
 ═══════════════════════════════════════════ */
 function buildFeeTable(rows) {
-  /* rows: [{ label, total, paid }] */
   const trs = rows.map(r => {
-    const rem   = safe(r.total) - safe(r.paid);
+    const rem    = safe(r.total) - safe(r.paid);
     const isPaid = rem <= 0;
     return `<tr>
       <td style="text-align:left">${r.label}</td>
@@ -920,7 +912,7 @@ function buildFeeTable(rows) {
 /* ═══════════════════════════════════════════
    EXPANDABLE CARD BUILDER
 ═══════════════════════════════════════════ */
-let openCard = null; /* accordion — only one open at a time */
+let openCard = null;
 
 function buildExpCard({ id, icon, title, subtitle, rows }) {
   const card = document.createElement("div");
@@ -944,7 +936,6 @@ function buildExpCard({ id, icon, title, subtitle, rows }) {
       <div class="exp-body-inner">${buildFeeTable(rows)}</div>
     </div>`;
 
-  /* live summary badge */
   updateCardSummary(card, rows, id);
 
   const hdr  = card.querySelector(`#hdr-${id}`);
@@ -954,14 +945,13 @@ function buildExpCard({ id, icon, title, subtitle, rows }) {
   hdr.addEventListener("click", () => {
     const isOpen = arr.classList.contains("open");
 
-    /* close any currently open card */
     if (openCard && openCard !== card) {
       const ob = openCard.querySelector(".exp-body");
       const oa = openCard.querySelector(".exp-arrow");
       const oh = openCard.querySelector(".exp-header");
       if (ob) ob.style.maxHeight = "0";
-      if (oa) { oa.classList.remove("open"); }
-      if (oh) { oh.classList.remove("open"); }
+      if (oa) oa.classList.remove("open");
+      if (oh) oh.classList.remove("open");
     }
 
     if (isOpen) {
@@ -1016,7 +1006,6 @@ function render() {
   }
 }
 
-/* ── Term view ── */
 function renderTermView(container) {
   const rows = TERMS.map(t => ({ label: t.name, total: t.total, paid: t.paid }));
   const wrap = document.createElement("div");
@@ -1025,18 +1014,14 @@ function renderTermView(container) {
   container.appendChild(wrap);
 }
 
-/* ── Other fees view ── */
 function renderOtherView(container) {
   const list = document.createElement("div");
   list.className = "sections-list";
   let anySection = false;
 
-  /* 1. BUS — only if it exists in DB */
   if (SD.busFee) {
     const entries = orderedEntries(SD.busFee.monthly);
     const rows    = entries.map(([m, v]) => ({ label: capF(m), total: safe(v.total), paid: safe(v.paid) }));
-    const busTotal = rows.reduce((a, r) => a + r.total, 0);
-    const busPaid  = rows.reduce((a, r) => a + r.paid,  0);
     list.appendChild(buildExpCard({
       id: "bus", icon: iconFor("bus"),
       title: "Bus Fees",
@@ -1046,7 +1031,6 @@ function renderOtherView(container) {
     anySection = true;
   }
 
-  /* 2. ECA — ALWAYS visible, single one-time row */
   {
     const rows = [{ label: "ECA Fee", total: safe(SD.ecaFee.total), paid: safe(SD.ecaFee.paid) }];
     list.appendChild(buildExpCard({
@@ -1058,7 +1042,6 @@ function renderOtherView(container) {
     anySection = true;
   }
 
-  /* 3. ANNUAL DAY — only if total > 0 */
   if (SD.annualFee && safe(SD.annualFee.total) > 0) {
     const rows = [{ label: "Annual Day Fee", total: safe(SD.annualFee.total), paid: safe(SD.annualFee.paid) }];
     list.appendChild(buildExpCard({
@@ -1068,7 +1051,6 @@ function renderOtherView(container) {
     anySection = true;
   }
 
-  /* 4. CUSTOM FEES — each as its own section, no grouping */
   SD.otherFees.forEach((fee, idx) => {
     let rows = [];
     if (fee.type === "monthly") {
@@ -1077,7 +1059,6 @@ function renderOtherView(container) {
     } else {
       rows = [{ label: fee.name, total: safe(fee.total), paid: safe(fee.paid) }];
     }
-    /* skip if sum is 0 */
     if (!rows.reduce((a, r) => a + r.total, 0)) return;
 
     list.appendChild(buildExpCard({
@@ -1100,25 +1081,26 @@ function renderOtherView(container) {
 /* ═══════════════════════════════════════════
    FIRESTORE SAVES
 ═══════════════════════════════════════════ */
-const dbRef  = () => doc(db, "students", studentId);
-const saveTerms   = () => updateDoc(dbRef(), { terms:     TERMS });
-const saveBus     = () => updateDoc(dbRef(), { busFee:    SD.busFee });
-const saveEca     = () => updateDoc(dbRef(), { ecaFee:    { total: safe(SD.ecaFee.total), paid: safe(SD.ecaFee.paid) } });
-const saveAnnual  = () => updateDoc(dbRef(), { annualFee: SD.annualFee });
-const saveOthers  = () => updateDoc(dbRef(), { otherFees: SD.otherFees });
+const dbRef      = () => doc(db, "students", studentId);
+const saveTerms  = () => updateDoc(dbRef(), { terms:     TERMS });
+const saveBus    = () => updateDoc(dbRef(), { busFee:    SD.busFee });
+const saveEca    = () => updateDoc(dbRef(), { ecaFee:    { total: safe(SD.ecaFee.total), paid: safe(SD.ecaFee.paid) } });
+const saveAnnual = () => updateDoc(dbRef(), { annualFee: SD.annualFee });
+const saveOthers = () => updateDoc(dbRef(), { otherFees: SD.otherFees });
 
 /* ═══════════════════════════════════════════
    RECEIPT
 ═══════════════════════════════════════════ */
 function receiptCode(name, cls, subType, amount) {
   const words    = name.trim().split(/\s+/);
-  const initials = words.length === 1 ? words[0][0].toUpperCase() + "X"
-                 : words.slice(0,2).map(w=>w[0]).join("").toUpperCase();
-  const cn   = cls.replace(/\D/g,"");
+  const initials = words.length === 1
+    ? words[0][0].toUpperCase() + "X"
+    : words.slice(0,2).map(w => w[0]).join("").toUpperCase();
+  const cn   = cls.replace(/\D/g, "");
   const tn   = (subType.match(/\d+/) || ["0"])[0];
-  const ap   = String(Math.abs(amount)).slice(0,2);
+  const ap   = String(Math.abs(amount)).slice(0, 2);
   const seq  = Date.now().toString().slice(-4);
-  const idSfx = ((studentId.match(/\d+/)||["0"])[0]).padStart(3,"0");
+  const idSfx = ((studentId.match(/\d+/) || ["0"])[0]).padStart(3, "0");
   return `${initials}${cn}${tn}${ap}${seq}${idSfx}`;
 }
 
@@ -1130,7 +1112,7 @@ async function renderReceiptImg(data) {
   s("rt-fee",    data.fee);
   s("rt-date",   data.date);
   s("rt-code",   data.code);
-  const canvas = await html2canvas(el("receipt-tpl"), { scale:2, backgroundColor:"#fff" });
+  const canvas = await html2canvas(el("receipt-tpl"), { scale: 2, backgroundColor: "#fff" });
   return canvas.toDataURL("image/png");
 }
 
@@ -1150,7 +1132,7 @@ async function showSuccess(subType, amount, code) {
     name: SD.name, class: SD.class,
     amount, fee: subType, date: today(), code
   });
-  const ov = overlay(`
+  const m = overlay(`
     <button class="modal-close">✕</button>
     <h3>Payment Updated ✓</h3>
     <div class="receipt-wrap">
@@ -1168,8 +1150,8 @@ async function showSuccess(subType, amount, code) {
         <button class="btn-action btn-help" id="rcpt-wa">💬 Send</button>
       </div>
     </div>`);
-  ov.querySelector("#rcpt-dl").onclick = () => dlReceipt(imgUrl, code);
-  ov.querySelector("#rcpt-wa").onclick = () =>
+  m.querySelector("#rcpt-dl").onclick = () => dlReceipt(imgUrl, code);
+  m.querySelector("#rcpt-wa").onclick = () =>
     window.open(`https://wa.me/${SD.phone}?text=${encodeURIComponent(
       `Dear Parent,\n\nPayment of ${fmtRs(amount)} for ${subType} has been updated.\nReceipt: ${code}\n\nSt. Anne's ICSE School`
     )}`);
@@ -1190,7 +1172,7 @@ async function applyPayment(feeType, identifier, amount, isFull) {
   } else if (feeType === "bus") {
     if (!SD.busFee) { alert("Bus fee not configured"); return false; }
     const m = identifier;
-    if (!SD.busFee.monthly[m]) SD.busFee.monthly[m] = { total:0, paid:0 };
+    if (!SD.busFee.monthly[m]) SD.busFee.monthly[m] = { total: 0, paid: 0 };
     item = SD.busFee.monthly[m];
     subType = `Bus Fee – ${capF(m)}`;
 
@@ -1202,38 +1184,53 @@ async function applyPayment(feeType, identifier, amount, isFull) {
     item = SD.annualFee; subType = "Annual Day Fee";
 
   } else if (feeType === "other") {
-    const idx = parseInt(identifier);
-    if (isNaN(idx) || !SD.otherFees[idx]) { alert("Fee not found"); return false; }
-    const fee = SD.otherFees[idx];
-    if (fee.type === "monthly") {
-      /* identifier is "idx:month" */
-      const [fIdx, month] = String(identifier).split(":");
-      const f = SD.otherFees[parseInt(fIdx)];
-      if (!f || !month) { alert("Fee not found"); return false; }
-      if (!f.monthly[month]) f.monthly[month] = { total:0, paid:0 };
-      item = f.monthly[month];
-      subType = `${f.name} – ${capF(month)}`;
+    const parts = String(identifier).split(":");
+    if (parts.length === 2) {
+      /* monthly other fee: identifier = "feeIndex:month" */
+      const fIdx  = parseInt(parts[0]);
+      const month = parts[1];
+      const fee   = SD.otherFees[fIdx];
+      if (!fee || !month) { alert("Fee not found"); return false; }
+      if (!fee.monthly[month]) fee.monthly[month] = { total: 0, paid: 0 };
+      item    = fee.monthly[month];
+      subType = `${fee.name} – ${capF(month)}`;
     } else {
-      item = fee; subType = fee.name;
+      /* one-time other fee */
+      const idx = parseInt(identifier);
+      if (isNaN(idx) || !SD.otherFees[idx]) { alert("Fee not found"); return false; }
+      item    = SD.otherFees[idx];
+      subType = item.name;
     }
 
-  } else { alert("Unknown fee type"); return false; }
+  } else {
+    alert("Unknown fee type"); return false;
+  }
 
   if (!item || item.total === undefined) { alert("Fee has no total set"); return false; }
 
-  let added;
-  if (isFull) {
-    added = safe(item.total) - safe(item.paid);
-    item.paid = item.total;
-  } else {
-    const newPaid = Math.max(0, Math.min(safe(item.total), safe(item.paid) + safe(amount)));
-    added = newPaid - safe(item.paid);
-    if (added === 0 && amount !== 0) { alert("Already at limit"); return false; }
-    item.paid = newPaid;
-  }
-  if (added <= 0) { alert("Invalid amount"); return false; }
+  const currentPaid = safe(item.paid);
+  const totalAmt    = safe(item.total);
+  let newPaid;
 
-  /* save */
+  if (isFull) {
+    /* Full payment: set paid = total */
+    newPaid = totalAmt;
+  } else {
+    /* Partial payment: add amount (positive or negative), then clamp */
+    newPaid = Math.max(0, Math.min(totalAmt, currentPaid + safe(amount)));
+  }
+
+  const delta = newPaid - currentPaid;
+
+  /* delta of 0 means nothing changed */
+  if (delta === 0) {
+    toast("No change — paid amount is already at this value.");
+    return false;
+  }
+
+  item.paid = newPaid;
+
+  /* Persist to Firestore */
   if      (feeType === "term")   await saveTerms();
   else if (feeType === "bus")    await saveBus();
   else if (feeType === "eca")    await saveEca();
@@ -1242,22 +1239,26 @@ async function applyPayment(feeType, identifier, amount, isFull) {
 
   render();
 
-  const code = receiptCode(SD.name, SD.class, subType, added);
-  await storeReceipt({ code, amount: added, type: feeType, subType, date: today() });
-  await showSuccess(subType, added, code);
+  /* Receipt uses absolute delta so it always shows a positive amount */
+  const absAmount = Math.abs(delta);
+  const code = receiptCode(SD.name, SD.class, subType, absAmount);
+  await storeReceipt({ code, amount: delta, type: feeType, subType, date: today() });
+  await showSuccess(subType, absAmount, code);
   return true;
 }
 
 /* ═══════════════════════════════════════════
    MODAL SYSTEM
 ═══════════════════════════════════════════ */
-function closeAllOverlays() { document.querySelectorAll(".overlay").forEach(o => o.remove()); }
+function closeAllOverlays() {
+  document.querySelectorAll(".overlay").forEach(o => o.remove());
+}
 
 function overlay(html) {
   closeAllOverlays();
   const ov = document.createElement("div");
   ov.className = "overlay";
-  const m  = document.createElement("div");
+  const m = document.createElement("div");
   m.className = "modal";
   m.innerHTML = html;
   ov.appendChild(m);
@@ -1268,61 +1269,76 @@ function overlay(html) {
   return m;
 }
 
-function confirmModal(title, html, onOk) {
-  const m = overlay(`
-    <button class="modal-close">✕</button>
-    <h3>${title}</h3>
-    ${html}
-    <div class="modal-actions">
-      <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
-      <button class="btn-modal btn-modal-ok"     id="m-ok">Continue</button>
-    </div>`);
-  m.querySelector("#m-cancel").onclick = closeAllOverlays;
-  m.querySelector("#m-ok").onclick = () => {
-    const vals = Array.from(m.querySelectorAll("input,select")).map(i => i.value);
-    closeAllOverlays();
-    onOk(vals);
-  };
-  return m;
-}
-
 /* ═══════════════════════════════════════════
    ADMIN FLOW
 ═══════════════════════════════════════════ */
 function adminEntry() {
-  confirmModal("Admin Login",
-    `<label>Password</label>
-     <input type="password" placeholder="Enter password" autocomplete="off">`,
-    ([pwd]) => {
-      if (pwd !== ADMIN_PASS) { toast("Wrong password"); return; }
-      adminSelectFeeType();
-    });
+  const m = overlay(`
+    <button class="modal-close">✕</button>
+    <h3>Admin Login</h3>
+    <label>Password</label>
+    <input type="password" id="admin-pwd" placeholder="Enter password" autocomplete="off">
+    <div class="modal-actions">
+      <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
+      <button class="btn-modal btn-modal-ok"     id="m-ok">Login</button>
+    </div>`);
+
+  m.querySelector("#m-cancel").onclick = closeAllOverlays;
+  m.querySelector("#m-ok").onclick = () => {
+    const pwd = m.querySelector("#admin-pwd").value;
+    if (pwd !== ADMIN_PASS) { toast("Wrong password"); return; }
+    closeAllOverlays();
+    adminSelectFeeType();
+  };
 }
 
 function adminSelectFeeType() {
-  /* Build options dynamically — only show fee types that exist */
   const opts = [`<option value="term">Term Fee</option>`];
-  if (SD.busFee)    opts.push(`<option value="bus">Bus Fee</option>`);
+  if (SD.busFee)             opts.push(`<option value="bus">Bus Fee</option>`);
   opts.push(`<option value="eca">ECA Fee</option>`);
-  if (SD.annualFee) opts.push(`<option value="annual">Annual Day Fee</option>`);
-  if (SD.otherFees.length) opts.push(`<option value="other">Other Fee</option>`);
+  if (SD.annualFee)          opts.push(`<option value="annual">Annual Day Fee</option>`);
+  if (SD.otherFees.length)   opts.push(`<option value="other">Other Fee</option>`);
 
-  confirmModal("Select Fee Type",
-    `<label>Fee Type</label><select>${opts.join("")}</select>`,
-    ([feeType]) => {
-      if      (feeType === "term")   adminTermFlow();
-      else if (feeType === "bus")    adminMonthlyFlow("bus", "Bus Fee");
-      else if (feeType === "eca")    adminActionFlow("eca", null, "ECA Fee");
-      else if (feeType === "annual") adminActionFlow("annual", null, "Annual Day Fee");
-      else if (feeType === "other")  adminOtherFlow();
-    });
+  const m = overlay(`
+    <button class="modal-close">✕</button>
+    <h3>Select Fee Type</h3>
+    <label>Fee Type</label>
+    <select id="fee-type-sel">${opts.join("")}</select>
+    <div class="modal-actions">
+      <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
+      <button class="btn-modal btn-modal-ok"     id="m-ok">Next</button>
+    </div>`);
+
+  m.querySelector("#m-cancel").onclick = closeAllOverlays;
+  m.querySelector("#m-ok").onclick = () => {
+    const feeType = m.querySelector("#fee-type-sel").value;
+    closeAllOverlays();
+    if      (feeType === "term")   adminTermFlow();
+    else if (feeType === "bus")    adminMonthlyFlow("bus", "Bus Fee");
+    else if (feeType === "eca")    adminActionFlow("eca", null, "ECA Fee");
+    else if (feeType === "annual") adminActionFlow("annual", null, "Annual Day Fee");
+    else if (feeType === "other")  adminOtherFlow();
+  };
 }
 
 function adminTermFlow() {
-  const opts = TERMS.map((t,i) => `<option value="${i}">${t.name}</option>`).join("");
-  confirmModal("Select Term",
-    `<label>Term</label><select>${opts}</select>`,
-    ([idx]) => adminActionFlow("term", idx, TERMS[parseInt(idx)]?.name || "Term"));
+  const opts = TERMS.map((t, i) => `<option value="${i}">${t.name}</option>`).join("");
+  const m = overlay(`
+    <button class="modal-close">✕</button>
+    <h3>Select Term</h3>
+    <label>Term</label>
+    <select id="term-sel">${opts}</select>
+    <div class="modal-actions">
+      <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
+      <button class="btn-modal btn-modal-ok"     id="m-ok">Next</button>
+    </div>`);
+
+  m.querySelector("#m-cancel").onclick = closeAllOverlays;
+  m.querySelector("#m-ok").onclick = () => {
+    const idx = m.querySelector("#term-sel").value;
+    closeAllOverlays();
+    adminActionFlow("term", idx, TERMS[parseInt(idx)]?.name || "Term");
+  };
 }
 
 function adminMonthlyFlow(feeType, feeLabel) {
@@ -1330,83 +1346,131 @@ function adminMonthlyFlow(feeType, feeLabel) {
     ? MONTH_ORDER.filter(m => SD.busFee && SD.busFee.monthly[m])
     : MONTH_ORDER;
   const opts = availMonths.map(m => `<option value="${m}">${capF(m)}</option>`).join("");
-  confirmModal("Select Month",
-    `<label>Month</label><select>${opts}</select>`,
-    ([month]) => adminActionFlow(feeType, month, `${feeLabel} – ${capF(month)}`));
+
+  const modal = overlay(`
+    <button class="modal-close">✕</button>
+    <h3>Select Month</h3>
+    <label>Month</label>
+    <select id="month-sel">${opts}</select>
+    <div class="modal-actions">
+      <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
+      <button class="btn-modal btn-modal-ok"     id="m-ok">Next</button>
+    </div>`);
+
+  modal.querySelector("#m-cancel").onclick = closeAllOverlays;
+  modal.querySelector("#m-ok").onclick = () => {
+    const month = modal.querySelector("#month-sel").value;
+    closeAllOverlays();
+    adminActionFlow(feeType, month, `${feeLabel} – ${capF(month)}`);
+  };
 }
 
 function adminOtherFlow() {
-  const opts = SD.otherFees.map((f,i) => `<option value="${i}">${f.name}</option>`).join("");
-  confirmModal("Select Fee",
-    `<label>Fee</label><select>${opts}</select>`,
-    ([idx]) => {
-      const fee = SD.otherFees[parseInt(idx)];
-      if (!fee) return;
-      if (fee.type === "monthly") {
-        const months = MONTH_ORDER.filter(m => fee.monthly && fee.monthly[m]);
-        const mopts  = months.map(m => `<option value="${m}">${capF(m)}</option>`).join("");
-        confirmModal("Select Month",
-          `<label>Month</label><select>${mopts}</select>`,
-          ([month]) => adminActionFlow("other", `${idx}:${month}`, `${fee.name} – ${capF(month)}`));
-      } else {
-        adminActionFlow("other", idx, fee.name);
-      }
-    });
+  const opts = SD.otherFees.map((f, i) => `<option value="${i}">${f.name}</option>`).join("");
+
+  const m = overlay(`
+    <button class="modal-close">✕</button>
+    <h3>Select Fee</h3>
+    <label>Fee</label>
+    <select id="other-sel">${opts}</select>
+    <div class="modal-actions">
+      <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
+      <button class="btn-modal btn-modal-ok"     id="m-ok">Next</button>
+    </div>`);
+
+  m.querySelector("#m-cancel").onclick = closeAllOverlays;
+  m.querySelector("#m-ok").onclick = () => {
+    const idx = parseInt(m.querySelector("#other-sel").value);
+    const fee = SD.otherFees[idx];
+    closeAllOverlays();
+    if (!fee) return;
+
+    if (fee.type === "monthly") {
+      const months = MONTH_ORDER.filter(mo => fee.monthly && fee.monthly[mo]);
+      const mopts  = months.map(mo => `<option value="${mo}">${capF(mo)}</option>`).join("");
+
+      const m2 = overlay(`
+        <button class="modal-close">✕</button>
+        <h3>Select Month</h3>
+        <label>Month</label>
+        <select id="month-sel">${mopts}</select>
+        <div class="modal-actions">
+          <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
+          <button class="btn-modal btn-modal-ok"     id="m-ok">Next</button>
+        </div>`);
+
+      m2.querySelector("#m-cancel").onclick = closeAllOverlays;
+      m2.querySelector("#m-ok").onclick = () => {
+        const month = m2.querySelector("#month-sel").value;
+        closeAllOverlays();
+        adminActionFlow("other", `${idx}:${month}`, `${fee.name} – ${capF(month)}`);
+      };
+    } else {
+      adminActionFlow("other", String(idx), fee.name);
+    }
+  };
 }
 
+/* ── adminActionFlow: single overlay, only Full + Partial ── */
 function adminActionFlow(feeType, identifier, label) {
-  confirmModal(`Update: ${label}`,
-    `<label>Action</label>
-     <select id="action-sel">
-       <option value="full">Full Payment</option>
-       <option value="partial">Partial Payment</option>
-       <option value="adjust">Manual Adjust (negative allowed)</option>
-     </select>
-     <div id="amt-row" style="display:none">
-       <label>Amount (₹)</label>
-       <input type="number" id="amt-inp" placeholder="Enter amount">
-     </div>`,
-    ([action, amount]) => {
-      const m = document.createElement("div"); /* won't exist — we use direct values */
-      /* action and amount are from the vals array at close */
-      /* handled below */
-    });
-
-  /* Re-open with live show/hide */
-  closeAllOverlays();
-  const mod = overlay(`
+  const m = overlay(`
     <button class="modal-close">✕</button>
     <h3>Update: ${label}</h3>
     <label>Action</label>
     <select id="action-sel">
       <option value="full">Full Payment</option>
       <option value="partial">Partial Payment</option>
-      <option value="adjust">Manual Adjust (−ve allowed)</option>
     </select>
-    <div id="amt-row" style="display:none">
-      <label>Amount (₹)</label>
-      <input type="number" id="amt-inp" placeholder="Enter amount">
+    <div id="amt-row" style="display:none;margin-top:0.6rem">
+      <label>Amount (₹) — use negative to reduce</label>
+      <input type="number" id="amt-inp" placeholder="e.g. 500 or -200">
     </div>
     <div class="modal-actions">
       <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
       <button class="btn-modal btn-modal-ok"     id="m-ok">Confirm</button>
     </div>`);
 
-  const sel    = mod.querySelector("#action-sel");
-  const amtRow = mod.querySelector("#amt-row");
-  sel.onchange = () => { amtRow.style.display = sel.value !== "full" ? "block" : "none"; };
+  const sel    = m.querySelector("#action-sel");
+  const amtRow = m.querySelector("#amt-row");
+  const amtInp = m.querySelector("#amt-inp");
 
-  mod.querySelector("#m-cancel").onclick = closeAllOverlays;
-  mod.querySelector("#m-ok").onclick = async () => {
+  sel.onchange = () => {
+    amtRow.style.display = sel.value === "partial" ? "block" : "none";
+  };
+
+  m.querySelector("#m-cancel").onclick = closeAllOverlays;
+
+  m.querySelector("#m-ok").onclick = async () => {
     const action = sel.value;
-    const rawAmt = parseFloat(mod.querySelector("#amt-inp")?.value || "0");
-    closeAllOverlays();
+
     if (action === "full") {
+      closeAllOverlays();
       await applyPayment(feeType, identifier, 0, true);
-    } else {
-      if (isNaN(rawAmt)) { toast("Invalid amount"); return; }
-      await applyPayment(feeType, identifier, rawAmt, false);
+      return;
     }
+
+    /* Partial — validate amount */
+    const rawVal = amtInp.value.trim();
+
+    if (rawVal === "" || rawVal === null) {
+      toast("Please enter an amount.");
+      return;
+    }
+
+    const amount = parseFloat(rawVal);
+
+    if (isNaN(amount)) {
+      toast("Invalid amount. Please enter a number.");
+      return;
+    }
+
+    if (amount === 0) {
+      toast("Amount must be greater than or less than 0.");
+      return;
+    }
+
+    closeAllOverlays();
+    await applyPayment(feeType, identifier, amount, false);
   };
 }
 
@@ -1428,7 +1492,7 @@ function openPay() {
     <div class="wa-note">Share payment screenshot to <span class="wa-link" id="waLink">Office WhatsApp</span></div>`);
 
   m.querySelector("#copyUpi").onclick = function() {
-    navigator.clipboard.writeText(UPI_ID).catch(()=>{});
+    navigator.clipboard.writeText(UPI_ID).catch(() => {});
     this.textContent = "✔ Copied";
     setTimeout(() => { this.textContent = "📋 Copy"; }, 1400);
   };
@@ -1467,8 +1531,12 @@ function toast(msg) {
    HIDDEN ADMIN TRIGGER
 ═══════════════════════════════════════════ */
 document.addEventListener("keydown", e => {
-  if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "a") { e.preventDefault(); adminEntry(); }
+  if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "a") {
+    e.preventDefault();
+    adminEntry();
+  }
 });
+
 let pressTimer = null, moved = false;
 document.addEventListener("DOMContentLoaded", () => {
   const nm = el("studentName");
