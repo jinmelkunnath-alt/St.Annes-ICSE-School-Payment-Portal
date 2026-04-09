@@ -110,10 +110,10 @@
             color: #1e4a76;
         }
 
-        /* ── PROGRESS BAR — ISSUE 1 FIX ── */
+        /* ── PROGRESS BAR ── */
         .progress-wrapper {
             min-width: 200px;
-            flex: 1;          /* FIX: fills space properly */
+            flex: 1;
         }
         .progress-label {
             font-size: 0.75rem;
@@ -127,11 +127,11 @@
             border-radius: 40px;
             height: 9px;
             overflow: hidden;
-            width: 100%;      /* FIX: always full width */
+            width: 100%;
             position: relative;
         }
         .progress-fill {
-            display: block;   /* FIX: block so width renders */
+            display: block;
             background: linear-gradient(90deg, #2c6e9e, #60a5fa);
             width: 0%;
             height: 100%;
@@ -444,14 +444,13 @@
         .modal-btn.primary { background: #1e4a76; color: white; }
         .modal-btn.primary:hover { background: #0f3a5c; transform: translateY(-1px); }
 
-        /* ── PREMIUM EXPANDABLE SECTIONS — ISSUES 2,3 FIX ── */
+        /* ── PREMIUM EXPANDABLE ── */
         .other-sections-wrapper {
             display: flex;
             flex-direction: column;
             gap: 0.75rem;
             padding: 0.2rem 0;
         }
-
         .expandable-section {
             border-radius: 16px;
             overflow: hidden;
@@ -461,7 +460,6 @@
             transition: box-shadow 0.25s ease;
         }
         .expandable-section:hover { box-shadow: 0 5px 18px rgba(0,0,0,0.08); }
-
         .expandable-header {
             display: flex;
             justify-content: space-between;
@@ -477,12 +475,9 @@
             transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
         }
         .expandable-header:hover  { background: #f0f5fc; }
-        .expandable-header:active { transform: scale(0.985); }   /* ISSUE 3 */
+        .expandable-header:active { transform: scale(0.985); }
         .expandable-header.open   { border-bottom-color: #e4eaf4; background: #edf3fc; }
-
         .expandable-title { font-size: 0.95rem; font-weight: 600; color: #1e4a76; letter-spacing: -0.01em; }
-
-        /* ISSUE 3: smooth arrow */
         .expandable-arrow {
             font-size: 0.65rem;
             color: #6c86a3;
@@ -493,16 +488,12 @@
             margin-left: 0.5rem;
         }
         .expandable-arrow.open { transform: rotate(90deg); }
-
-        /* ISSUE 3: smooth expand */
         .expandable-content {
             max-height: 0;
             overflow: hidden;
             transition: max-height 0.45s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
         .expandable-inner { padding: 0.75rem 0.9rem 1rem; }
-
-        /* ISSUE 2: horizontal scroll */
         .expandable-scroll {
             overflow-x: auto;
             width: 100%;
@@ -582,7 +573,7 @@
             <h1>St. Annes ICSE School Kottody</h1>
         </div>
         <div class="header-actions">
-            <button id="logoutBtn" class="btn btn-secondary">&#x1F6AA; Logout</button>
+            <button id="logoutBtn" class="btn btn-secondary">🚪 Logout</button>
         </div>
     </div>
 
@@ -590,11 +581,10 @@
         <div class="student-info">
             <h2 id="studentNameDisplay">Loading...</h2>
             <div class="student-meta">
-                <span id="studentClassSpan">&#x1F4D6; Class: --</span>
+                <span id="studentClassSpan">📖 Class: --</span>
             </div>
         </div>
 
-        <!-- Term progress -->
         <div class="progress-wrapper" id="termProgress">
             <div class="progress-label">TERM FEES PAYMENT</div>
             <div class="progress-bar-bg">
@@ -603,7 +593,6 @@
             <div class="progress-percent" id="progressPercent">0%</div>
         </div>
 
-        <!-- Other progress -->
         <div class="progress-wrapper" id="otherProgress" style="display:none;">
             <div class="progress-label">OTHER FEES PAYMENT</div>
             <div class="progress-bar-bg">
@@ -613,7 +602,7 @@
         </div>
     </div>
 
-    <!-- ✅ NAVIGATION TABS — KEEP BOTH -->
+    <!-- ✅ NAVIGATION TABS -->
     <div class="fee-switch">
         <button id="showTerm"  class="active">Term Fees</button>
         <button id="showOther">Other Fees</button>
@@ -622,16 +611,16 @@
     <div class="table-wrapper" id="tableWrapper"></div>
 
     <div class="action-buttons">
-        <button id="payFeesBtn" class="btn btn-primary">&#x1F4B3; Pay Fees</button>
-        <button id="helpBtn"    class="btn btn-secondary">&#x2753; Help</button>
+        <button id="payFeesBtn" class="btn btn-primary">💳 Pay Fees</button>
+        <button id="helpBtn"    class="btn btn-secondary">❓ Help</button>
     </div>
     <div class="payment-note">
-        &#x1F4A1; The fee paid will be updated within 36 working hours.
+        💡 The fee paid will be updated within 36 working hours.
     </div>
 
     <div id="overallSummaryCard" class="total-card"></div>
 
-    <footer>Official fee record &bull; Authorized personnel only</footer>
+    <footer>Official fee record • Authorized personnel only</footer>
 </div>
 
 <!-- HIDDEN RECEIPT -->
@@ -654,10 +643,10 @@
         </div>
         <div class="amount-section">
             <span>Amount Paid</span>
-            <h1><span>&#8377;</span><span id="r_amount"></span></h1>
+            <h1><span>₹</span><span id="r_amount"></span></h1>
         </div>
         <div class="receipt-details">
-            <div><span>Term</span><strong id="r_term"></strong></div>
+            <div><span>Fee</span><strong id="r_term"></strong></div>
             <div><span>Date</span><strong id="r_date"></strong></div>
         </div>
         <div class="receipt-code">
@@ -692,12 +681,32 @@ const ADMIN_PASSWORD = "ADMIN123";
 const UPI_ID         = "jinmelkunnath@oksbi";
 const WHATSAPP_URL   = "https://wa.me/917012808911";
 const QR_URL         = "https://i.ibb.co/8RSZRz0/IMG-20260329-160905.png";
-const MONTHS         = ["june","july","august","september","october","november","december","january","february","march"];
+
+/* ISSUE 3: ordered month list — used everywhere */
+const MONTH_ORDER = [
+    "june","july","august",
+    "september","october","november",
+    "december","january","february","march"
+];
+
+/* ISSUE 4: canonical term names */
+const TERM_NAMES = [
+    "Term 1 (June – August)",
+    "Term 2 (September – November)",
+    "Term 3 (December – February)"
+];
 
 /* ─── HELPERS ─── */
 function safeNumber(v) { const n = Number(v); return isNaN(n) ? 0 : n; }
 function getEl(id)     { return document.getElementById(id); }
 function capFirst(s)   { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+
+/* ISSUE 3: returns entries in correct month order, skipping missing months */
+function orderedMonthEntries(monthlyObj) {
+    return MONTH_ORDER
+        .map(m => [m, (monthlyObj || {})[m]])
+        .filter(([, v]) => v !== undefined);
+}
 
 /* ─── URL PARAM ─── */
 const studentIdRaw = new URLSearchParams(window.location.search).get("id");
@@ -720,17 +729,19 @@ function hideLoader() {
 /* ══════════════════════════════════════════
    NORMALISATION
 ══════════════════════════════════════════ */
+
+/* ISSUE 4: correct term names + structure */
 function normalizeTerms(raw) {
     const arr = Array.isArray(raw) ? raw : [];
     if (!arr.length) return [
-        { name:"Term 1", total:5000, paid:0 },
-        { name:"Term 2", total:5000, paid:0 },
-        { name:"Term 3", total:5000, paid:0 }
+        { name: TERM_NAMES[0], total: 0, paid: 0 },
+        { name: TERM_NAMES[1], total: 0, paid: 0 },
+        { name: TERM_NAMES[2], total: 0, paid: 0 }
     ];
     return arr.map((t, i) => ({
-        name:  t.name  || t.term    || `Term ${i + 1}`,
-        total: safeNumber(t.total   ?? t.amount     ?? 0),
-        paid:  safeNumber(t.paid    ?? t.paidAmount ?? 0)
+        name:  TERM_NAMES[i] || `Term ${i + 1}`,
+        total: safeNumber(t.total ?? 0),
+        paid:  safeNumber(t.paid  ?? 0)
     }));
 }
 
@@ -748,31 +759,38 @@ function normalizeBusFee(raw) {
     return result;
 }
 
+/* ISSUE 5: ECA is now a single one-time fee object { total, paid }
+   Supports old monthly structure by summing it up */
 function normalizeEcaFee(raw) {
-    const result = { monthly: {} };
-    if (!raw || typeof raw !== "object") {
-        MONTHS.forEach(m => { result.monthly[m] = { total: 1250, paid: 0 }; });
-        return result;
+    /* Old structure: { monthly: { june: {total,paid}, ... } } */
+    if (raw && raw.monthly && typeof raw.monthly === "object") {
+        let total = 0, paid = 0;
+        Object.values(raw.monthly).forEach(m => {
+            total += safeNumber(m.total ?? 0);
+            paid  += safeNumber(m.paid  ?? 0);
+        });
+        return { total, paid };
     }
-    const src = (raw.monthly && typeof raw.monthly === "object") ? raw.monthly : null;
-    MONTHS.forEach(m => {
-        const item = src ? src[m] : null;
-        result.monthly[m] = item
-            ? { total: safeNumber(item.total ?? 1250), paid: safeNumber(item.paid ?? 0) }
-            : raw.monthlyAmount !== undefined
-                ? { total: safeNumber(raw.monthlyAmount), paid: 0 }
-                : { total: 1250, paid: 0 };
-    });
-    return result;
+    /* New structure: { total, paid } */
+    if (!raw || typeof raw !== "object") return { total: 1250, paid: 0 };
+    return {
+        total: safeNumber(raw.total ?? 1250),
+        paid:  safeNumber(raw.paid  ?? 0)
+    };
 }
 
+/* ISSUE 2: skip "eca" key to avoid duplication in otherFees */
 function normalizeAnnualAndOtherFees(rawOther, rawAnnual) {
     let otherFees = [];
     let annualFee = { total: 0, paid: 0 };
 
     if (rawAnnual && typeof rawAnnual === "object") {
-        annualFee = { total: safeNumber(rawAnnual.total ?? 0), paid: safeNumber(rawAnnual.paid ?? 0) };
+        annualFee = {
+            total: safeNumber(rawAnnual.total ?? 0),
+            paid:  safeNumber(rawAnnual.paid  ?? 0)
+        };
     }
+
     if (rawOther && typeof rawOther === "object") {
         if (Array.isArray(rawOther)) {
             otherFees = rawOther.map(f => ({
@@ -782,11 +800,21 @@ function normalizeAnnualAndOtherFees(rawOther, rawAnnual) {
             }));
         } else {
             Object.keys(rawOther).forEach(key => {
+                /* ISSUE 2: skip eca key entirely */
+                if (key.toLowerCase() === "eca") return;
+
                 const val = rawOther[key];
                 if (key === "annualDay" && val && typeof val === "object") {
-                    annualFee = { total: safeNumber(val.total ?? 0), paid: safeNumber(val.paid ?? 0) };
+                    annualFee = {
+                        total: safeNumber(val.total ?? 0),
+                        paid:  safeNumber(val.paid  ?? 0)
+                    };
                 } else if (val && typeof val === "object") {
-                    otherFees.push({ name: capFirst(key), total: safeNumber(val.total ?? 0), paid: safeNumber(val.paid ?? 0) });
+                    otherFees.push({
+                        name:  capFirst(key),
+                        total: safeNumber(val.total ?? 0),
+                        paid:  safeNumber(val.paid  ?? 0)
+                    });
                 } else {
                     otherFees.push({ name: key, total: safeNumber(val), paid: 0 });
                 }
@@ -796,15 +824,23 @@ function normalizeAnnualAndOtherFees(rawOther, rawAnnual) {
     return { otherFees, annualFee };
 }
 
-/* ── ISSUE 5: centralised defaults ── */
+/* ── ISSUE 5: centralised safety defaults ── */
 function enforceDefaults() {
-    if (!studentData.busFee    || typeof studentData.busFee !== "object")    studentData.busFee    = { enabled: false, monthly: {} };
-    if (!studentData.busFee.monthly)                                          studentData.busFee.monthly = {};
-    if (!studentData.ecaFee    || typeof studentData.ecaFee !== "object")    studentData.ecaFee    = { monthly: {} };
-    if (!studentData.ecaFee.monthly)                                          studentData.ecaFee.monthly = {};
-    if (!studentData.annualFee || typeof studentData.annualFee !== "object") studentData.annualFee = { total: 0, paid: 0 };
-    if (!Array.isArray(studentData.otherFees))                               studentData.otherFees = [];
-    if (!Array.isArray(TERMS))                                                TERMS = [];
+    if (!studentData.busFee    || typeof studentData.busFee !== "object")
+        studentData.busFee = { enabled: false, monthly: {} };
+    if (!studentData.busFee.monthly)
+        studentData.busFee.monthly = {};
+    /* ECA is now a flat object */
+    if (!studentData.ecaFee    || typeof studentData.ecaFee !== "object")
+        studentData.ecaFee = { total: 1250, paid: 0 };
+    if (studentData.ecaFee.total === undefined) studentData.ecaFee.total = 1250;
+    if (studentData.ecaFee.paid  === undefined) studentData.ecaFee.paid  = 0;
+    if (!studentData.annualFee || typeof studentData.annualFee !== "object")
+        studentData.annualFee = { total: 0, paid: 0 };
+    if (!Array.isArray(studentData.otherFees))
+        studentData.otherFees = [];
+    if (!Array.isArray(TERMS))
+        TERMS = [];
 }
 
 /* ══════════════════════════════════════════
@@ -856,7 +892,7 @@ async function loadStudent() {
 }
 
 /* ══════════════════════════════════════════
-   TOTALS — single source of truth (ISSUE 4)
+   TOTALS — single source of truth
 ══════════════════════════════════════════ */
 function calcTermTotals() {
     let total = 0, paid = 0;
@@ -866,21 +902,34 @@ function calcTermTotals() {
 
 function calcOtherTotals() {
     let total = 0, paid = 0;
+
+    /* Bus */
     if (studentData.busFee && studentData.busFee.enabled) {
-        Object.values(studentData.busFee.monthly || {}).forEach(i => { total += safeNumber(i.total); paid += safeNumber(i.paid); });
+        Object.values(studentData.busFee.monthly || {}).forEach(i => {
+            total += safeNumber(i.total); paid += safeNumber(i.paid);
+        });
     }
-    Object.values((studentData.ecaFee && studentData.ecaFee.monthly) || {}).forEach(i => { total += safeNumber(i.total); paid += safeNumber(i.paid); });
+
+    /* ISSUE 5: ECA is now a single object */
+    total += safeNumber(studentData.ecaFee.total);
+    paid  += safeNumber(studentData.ecaFee.paid);
+
+    /* Annual */
     total += safeNumber((studentData.annualFee || {}).total);
     paid  += safeNumber((studentData.annualFee || {}).paid);
-    (studentData.otherFees || []).forEach(f => { total += safeNumber(f.total); paid += safeNumber(f.paid); });
+
+    /* Custom fees */
+    (studentData.otherFees || []).forEach(f => {
+        total += safeNumber(f.total); paid += safeNumber(f.paid);
+    });
+
     return { total, paid, remaining: total - paid };
 }
 
 /* ══════════════════════════════════════════
-   PROGRESS BARS — ISSUE 1 FIX
+   PROGRESS BARS
 ══════════════════════════════════════════ */
 function applyProgress(fillId, textId, total, paid) {
-    /* ISSUE 1: safeNumber both sides — NaN impossible */
     const pct = (safeNumber(total) > 0)
         ? Math.min(100, (safeNumber(paid) / safeNumber(total)) * 100)
         : 0;
@@ -891,7 +940,6 @@ function applyProgress(fillId, textId, total, paid) {
         fill.style.minWidth = pct > 0 ? "6px" : "0";
     }
     if (text) text.innerText = Math.round(pct) + "%";
-    console.log(`📊 ${fillId} → ${Math.round(pct)}%  (total:${total} paid:${paid})`);
 }
 
 function updateProgressBar()      { const { total, paid } = calcTermTotals();  applyProgress("progressFill",      "progressPercent",      total, paid); }
@@ -904,22 +952,22 @@ function updateOverallSummary() {
     const { total, paid, remaining } = calcTermTotals();
     const c = getEl("overallSummaryCard");
     if (c) c.innerHTML = `
-        <div><strong>Total:</strong> &#8377;${total.toLocaleString()}</div>
-        <div><strong>Paid:</strong> &#8377;${paid.toLocaleString()}</div>
-        <div><strong>Remaining:</strong> &#8377;${remaining.toLocaleString()}</div>`;
+        <div><strong>Total:</strong> ₹${total.toLocaleString()}</div>
+        <div><strong>Paid:</strong> ₹${paid.toLocaleString()}</div>
+        <div><strong>Remaining:</strong> ₹${remaining.toLocaleString()}</div>`;
 }
 
 function updateOtherFeesSummary() {
     const { total, paid, remaining } = calcOtherTotals();
     const c = getEl("overallSummaryCard");
     if (c) c.innerHTML = `
-        <div><strong>Total Other Fees:</strong> &#8377;${total.toLocaleString()}</div>
-        <div><strong>Paid:</strong> &#8377;${paid.toLocaleString()}</div>
-        <div><strong>Remaining:</strong> &#8377;${remaining.toLocaleString()}</div>`;
+        <div><strong>Total Other Fees:</strong> ₹${total.toLocaleString()}</div>
+        <div><strong>Paid:</strong> ₹${paid.toLocaleString()}</div>
+        <div><strong>Remaining:</strong> ₹${remaining.toLocaleString()}</div>`;
 }
 
 /* ══════════════════════════════════════════
-   RENDER — unconditional (ISSUE 4)
+   RENDER
 ══════════════════════════════════════════ */
 function render() {
     enforceDefaults();
@@ -932,7 +980,6 @@ function render() {
     const op = getEl("otherProgress");
 
     if (currentView === "term") {
-        /* Restore card styling */
         wrapper.style.cssText = "";
 
         const table = document.createElement("table");
@@ -941,9 +988,9 @@ function render() {
             <thead>
                 <tr>
                     <th>Fee Item</th>
-                    <th>Total Fee (&#8377;)</th>
-                    <th>Paid (&#8377;)</th>
-                    <th>Remaining (&#8377;)</th>
+                    <th>Total Fee (₹)</th>
+                    <th>Paid (₹)</th>
+                    <th>Remaining (₹)</th>
                     <th>Status</th>
                 </tr>
             </thead>
@@ -956,7 +1003,6 @@ function render() {
         if (op) op.style.display = "none";
 
     } else {
-        /* Strip card styling for expandable list */
         wrapper.style.background = "transparent";
         wrapper.style.boxShadow  = "none";
         wrapper.style.border     = "none";
@@ -986,22 +1032,21 @@ function renderTermFees(tbody) {
         const row = document.createElement("tr");
         row.innerHTML = `
             <td>${t.name}</td>
-            <td>&#8377;${safeNumber(t.total).toLocaleString()}</td>
-            <td>&#8377;${safeNumber(t.paid).toLocaleString()}</td>
-            <td>&#8377;${remaining.toLocaleString()}</td>
+            <td>₹${safeNumber(t.total).toLocaleString()}</td>
+            <td>₹${safeNumber(t.paid).toLocaleString()}</td>
+            <td>₹${remaining.toLocaleString()}</td>
             <td><span class="status-badge ${isPaid ? "status-paid" : "status-pending"}">${isPaid ? "Paid" : "Pending"}</span></td>`;
         tbody.appendChild(row);
     });
 }
 
 /* ══════════════════════════════════════════
-   PREMIUM EXPANDABLE SECTION — ISSUES 2,3
+   PREMIUM EXPANDABLE SECTION
 ══════════════════════════════════════════ */
 function createExpandableSection(title, entries, isMonthly) {
     const wrapper = document.createElement("div");
     wrapper.className = "expandable-section";
 
-    /* Header */
     const header = document.createElement("div");
     header.className = "expandable-header";
 
@@ -1016,28 +1061,24 @@ function createExpandableSection(title, entries, isMonthly) {
     header.appendChild(titleSpan);
     header.appendChild(arrow);
 
-    /* Animated shell */
     const contentDiv = document.createElement("div");
     contentDiv.className = "expandable-content";
 
-    /* Inner padding wrapper (scrollHeight target) */
     const innerDiv = document.createElement("div");
     innerDiv.className = "expandable-inner";
 
-    /* ISSUE 2: scroll wrapper for tables */
     const scrollWrapper = document.createElement("div");
     scrollWrapper.className = "expandable-scroll";
 
-    /* Table */
     const table = document.createElement("table");
     table.className = "fee-table";
     table.innerHTML = `
         <thead>
             <tr>
                 <th>Fee Item</th>
-                <th>Total (&#8377;)</th>
-                <th>Paid (&#8377;)</th>
-                <th>Remaining (&#8377;)</th>
+                <th>Total (₹)</th>
+                <th>Paid (₹)</th>
+                <th>Remaining (₹)</th>
                 <th>Status</th>
             </tr>
         </thead>
@@ -1054,9 +1095,9 @@ function createExpandableSection(title, entries, isMonthly) {
         const row = document.createElement("tr");
         row.innerHTML = `
             <td>${name}</td>
-            <td>&#8377;${total.toLocaleString()}</td>
-            <td>&#8377;${paid.toLocaleString()}</td>
-            <td>&#8377;${remaining.toLocaleString()}</td>
+            <td>₹${total.toLocaleString()}</td>
+            <td>₹${paid.toLocaleString()}</td>
+            <td>₹${remaining.toLocaleString()}</td>
             <td><span class="status-badge ${isPaid ? "status-paid" : "status-pending"}">${isPaid ? "Paid" : "Pending"}</span></td>`;
         tbody.appendChild(row);
     });
@@ -1071,7 +1112,6 @@ function createExpandableSection(title, entries, isMonthly) {
     wrapper.appendChild(header);
     wrapper.appendChild(contentDiv);
 
-    /* ── ISSUE 3: toggle with rAF + scrollHeight ── */
     let expanded = false;
     header.addEventListener("click", () => {
         expanded = !expanded;
@@ -1093,37 +1133,40 @@ function createExpandableSection(title, entries, isMonthly) {
 
 /* ══════════════════════════════════════════
    RENDER OTHER SECTIONS
-   ✅ Bus  — conditional
-   ✅ ECA  — always
-   ✅ Annual — conditional
-   ✅ Custom fees — EACH as own section (NOT grouped)
+   ISSUE 1: real emojis (not HTML entities)
+   ISSUE 3: ordered months via orderedMonthEntries()
+   ISSUE 5: ECA as single entry
+   ISSUE 8: correct structure, no grouping
 ══════════════════════════════════════════ */
 function renderOtherSections(container) {
     let hasAny = false;
 
-    /* 1. BUS FEE — only if enabled / has months */
+    /* 1. BUS — conditional */
     const busHasMonths = Object.keys(studentData.busFee.monthly || {}).length > 0;
     if (studentData.busFee.enabled || busHasMonths) {
+        /* ISSUE 3: ordered month entries */
+        const busEntries = orderedMonthEntries(studentData.busFee.monthly);
         container.appendChild(
-            createExpandableSection("&#x1F68C;  Bus Fees", Object.entries(studentData.busFee.monthly), true)
+            createExpandableSection("🚌 Bus Fees", busEntries, true)
         );
         hasAny = true;
     }
 
-    /* 2. ECA FEE — ALWAYS show (mandatory for all students) */
-    /* If monthly is empty after normalization, seed defaults */
-    if (!studentData.ecaFee.monthly || !Object.keys(studentData.ecaFee.monthly).length) {
-        MONTHS.forEach(m => { studentData.ecaFee.monthly[m] = { total: 1250, paid: 0 }; });
-    }
+    /* 2. ECA — ALWAYS visible, single one-time fee (ISSUE 5) */
     container.appendChild(
-        createExpandableSection("&#x1F3A8;  ECA Fees", Object.entries(studentData.ecaFee.monthly), true)
+        createExpandableSection("🎨 ECA Fees", [
+            ["ECA Fee", {
+                total: safeNumber(studentData.ecaFee.total),
+                paid:  safeNumber(studentData.ecaFee.paid)
+            }]
+        ], false)
     );
     hasAny = true;
 
-    /* 3. ANNUAL DAY FEE — only if total > 0 */
+    /* 3. ANNUAL DAY — conditional */
     if (safeNumber(studentData.annualFee.total) > 0) {
         container.appendChild(
-            createExpandableSection("&#x1F3AD;  Annual Day Fee", [
+            createExpandableSection("🎭 Annual Day Fee", [
                 ["Annual Day Fee", {
                     total: safeNumber(studentData.annualFee.total),
                     paid:  safeNumber(studentData.annualFee.paid)
@@ -1133,21 +1176,19 @@ function renderOtherSections(container) {
         hasAny = true;
     }
 
-    /* 4. CUSTOM FEES — each fee as its OWN separate section
-       ❌ NO grouping under "Other Fees"
-       ✅ Each rendered independently                          */
+    /* 4. CUSTOM FEES — each as its OWN separate section (ISSUE 8) */
     (studentData.otherFees || []).forEach(fee => {
-        const entries = [[fee.name, {
-            total: safeNumber(fee.total),
-            paid:  safeNumber(fee.paid)
-        }]];
-        /* Use the fee name as the section title directly */
-        const section = createExpandableSection(fee.name, entries, false);
-        container.appendChild(section);
+        container.appendChild(
+            createExpandableSection(fee.name, [
+                [fee.name, {
+                    total: safeNumber(fee.total),
+                    paid:  safeNumber(fee.paid)
+                }]
+            ], false)
+        );
         hasAny = true;
     });
 
-    /* Empty state — only when truly nothing */
     if (!hasAny) {
         const msg = document.createElement("p");
         msg.textContent = "No other fees configured for this student.";
@@ -1158,13 +1199,21 @@ function renderOtherSections(container) {
 
 /* ══════════════════════════════════════════
    FIRESTORE SAVE HELPERS
+   ISSUE 7: ECA saves as flat object
 ══════════════════════════════════════════ */
 const dbDoc = () => doc(db, "students", studentId);
 const saveTermFees  = () => updateDoc(dbDoc(), { terms:     TERMS                 });
 const saveBusFee    = () => updateDoc(dbDoc(), { busFee:    studentData.busFee    });
-const saveEcaFee    = () => updateDoc(dbDoc(), { ecaFee:    studentData.ecaFee    });
 const saveAnnualFee = () => updateDoc(dbDoc(), { annualFee: studentData.annualFee });
 const saveOtherFees = () => updateDoc(dbDoc(), { otherFees: studentData.otherFees });
+
+/* ISSUE 7: ECA saved as flat { total, paid } */
+const saveEcaFee = () => updateDoc(dbDoc(), {
+    ecaFee: {
+        total: safeNumber(studentData.ecaFee.total),
+        paid:  safeNumber(studentData.ecaFee.paid)
+    }
+});
 
 /* ══════════════════════════════════════════
    RECEIPT
@@ -1223,7 +1272,7 @@ async function showReceiptSuccess(feeType, subType, amountPaid, receiptCode) {
     overlay.className = "popup-overlay";
     overlay.innerHTML = `
         <div class="popup-card" style="max-width:360px;">
-            <div class="popup-close" id="closeSuccess">&#10006;</div>
+            <div class="popup-close" id="closeSuccess">✖</div>
             <h3>Payment Successful</h3>
             <div class="tick-container">
                 <svg class="tick-svg" viewBox="0 0 52 52">
@@ -1231,11 +1280,11 @@ async function showReceiptSuccess(feeType, subType, amountPaid, receiptCode) {
                     <path   class="tick-check"  fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
                 </svg>
             </div>
-            <p style="font-weight:500;margin-bottom:10px;">${subType} &middot; &#8377;${amountPaid}</p>
+            <p style="font-weight:500;margin-bottom:10px;">${subType} · ₹${amountPaid}</p>
             <img src="${imgUrl}" alt="Receipt" style="width:100%;border-radius:12px;">
             <div style="display:flex;gap:0.5rem;margin-top:12px;">
-                <button id="dlBtn" class="btn btn-primary"   style="flex:1;">&#8659; Download</button>
-                <button id="waBtn" class="btn btn-secondary" style="flex:1;">&#128172; WhatsApp</button>
+                <button id="dlBtn" class="btn btn-primary"   style="flex:1;">⬇ Download</button>
+                <button id="waBtn" class="btn btn-secondary" style="flex:1;">💬 WhatsApp</button>
             </div>
             <p class="whatsapp-note" style="margin-top:10px;">Code: <strong>${receiptCode}</strong></p>
         </div>`;
@@ -1249,7 +1298,8 @@ async function showReceiptSuccess(feeType, subType, amountPaid, receiptCode) {
 }
 
 /* ══════════════════════════════════════════
-   PAYMENT HANDLER — ISSUE 4: always render()
+   PAYMENT HANDLER — unconditional render()
+   ISSUE 6: ECA no longer uses months
 ══════════════════════════════════════════ */
 async function handlePaymentUpdate(feeType, identifier, amount, isFull) {
     enforceDefaults();
@@ -1268,10 +1318,9 @@ async function handlePaymentUpdate(feeType, identifier, amount, isFull) {
         subType = `Bus Fee - ${capFirst(m)}`;
 
     } else if (feeType === "eca") {
-        const m = identifier;
-        if (!studentData.ecaFee.monthly[m]) studentData.ecaFee.monthly[m] = { total: 1250, paid: 0 };
-        item = studentData.ecaFee.monthly[m];
-        subType = `ECA Fee - ${capFirst(m)}`;
+        /* ISSUE 6: ECA is a single object, no month needed */
+        item    = studentData.ecaFee;
+        subType = "ECA Fee";
 
     } else if (feeType === "annual") {
         item = studentData.annualFee; subType = "Annual Day Fee";
@@ -1292,7 +1341,10 @@ async function handlePaymentUpdate(feeType, identifier, amount, isFull) {
     } else {
         const newPaid = Math.max(0, Math.min(safeNumber(item.total), safeNumber(item.paid) + safeNumber(amount)));
         addedAmount   = newPaid - safeNumber(item.paid);
-        if (addedAmount === 0 && amount !== 0) { alert("Amount would not change paid value (already at limit)."); return false; }
+        if (addedAmount === 0 && amount !== 0) {
+            alert("Amount would not change paid value (already at limit).");
+            return false;
+        }
         item.paid = newPaid;
     }
     if (addedAmount <= 0) { alert("Invalid payment amount"); return false; }
@@ -1300,11 +1352,11 @@ async function handlePaymentUpdate(feeType, identifier, amount, isFull) {
     /* Save */
     if      (feeType === "term")   await saveTermFees();
     else if (feeType === "bus")    await saveBusFee();
-    else if (feeType === "eca")    await saveEcaFee();
+    else if (feeType === "eca")    await saveEcaFee();   /* ISSUE 7: flat save */
     else if (feeType === "annual") await saveAnnualFee();
     else if (feeType === "other")  await saveOtherFees();
 
-    render(); /* ISSUE 4: always unconditional */
+    render(); /* unconditional */
 
     const code = generateReceiptCode(studentData.name, studentData.class, subType, addedAmount);
     await storeReceipt({ code, amount: addedAmount, type: feeType, subType, date: new Date().toISOString().slice(0, 10) });
@@ -1313,7 +1365,8 @@ async function handlePaymentUpdate(feeType, identifier, amount, isFull) {
 }
 
 /* ══════════════════════════════════════════
-   ADMIN MODAL FLOW
+   ADMIN MODAL
+   ISSUE 6: ECA has NO month selection step
 ══════════════════════════════════════════ */
 function createModal(title, contentHtml, onConfirm, onCancel) {
     document.querySelectorAll(".popup-overlay").forEach(e => e.remove());
@@ -1321,7 +1374,7 @@ function createModal(title, contentHtml, onConfirm, onCancel) {
     overlay.className = "popup-overlay";
     overlay.innerHTML = `
         <div class="popup-card">
-            <div class="popup-close" id="modalClose">&#10006;</div>
+            <div class="popup-close" id="modalClose">✖</div>
             <h3>${title}</h3>
             ${contentHtml}
             <div style="margin-top:1rem;display:flex;gap:0.5rem;justify-content:flex-end;">
@@ -1357,6 +1410,7 @@ function adminLogin() {
                 </select>`,
                 ([feeType]) => {
 
+                    /* ── TERM ── */
                     if (feeType === "term") {
                         createModal("Select Action",
                             `<select class="admin-select">
@@ -1383,13 +1437,14 @@ function adminLogin() {
                                     }, () => {});
                             }, () => {});
 
-                    } else if (feeType === "bus" || feeType === "eca") {
-                        if (feeType === "bus" && !studentData.busFee.enabled) {
+                    /* ── BUS — still uses months ── */
+                    } else if (feeType === "bus") {
+                        if (!studentData.busFee.enabled) {
                             alert("Bus fee not enabled for this student"); return;
                         }
                         createModal("Select Month",
                             `<select class="admin-select">
-                                ${MONTHS.map(m => `<option value="${m}">${capFirst(m)}</option>`).join("")}
+                                ${MONTH_ORDER.map(m => `<option value="${m}">${capFirst(m)}</option>`).join("")}
                             </select>`,
                             ([month]) => {
                                 createModal("Select Action",
@@ -1399,19 +1454,41 @@ function adminLogin() {
                                     </select>`,
                                     ([action]) => {
                                         if (action === "full") {
-                                            handlePaymentUpdate(feeType, month, 0, true);
+                                            handlePaymentUpdate("bus", month, 0, true);
                                         } else {
                                             createModal("Enter Amount",
                                                 `<input type="number" class="admin-modal-input" placeholder="Amount (positive or negative)">`,
                                                 async ([amt]) => {
                                                     const n = parseFloat(amt);
                                                     if (isNaN(n)) { alert("Invalid amount"); return; }
-                                                    await handlePaymentUpdate(feeType, month, n, false);
+                                                    await handlePaymentUpdate("bus", month, n, false);
                                                 }, () => {});
                                         }
                                     }, () => {});
                             }, () => {});
 
+                    /* ── ECA — NO month selection (ISSUE 6) ── */
+                    } else if (feeType === "eca") {
+                        createModal("Select Action",
+                            `<select class="admin-select">
+                                <option value="full">Full Payment</option>
+                                <option value="partial">Partial Payment</option>
+                            </select>`,
+                            ([action]) => {
+                                if (action === "full") {
+                                    handlePaymentUpdate("eca", null, 0, true);
+                                } else {
+                                    createModal("Enter Amount",
+                                        `<input type="number" class="admin-modal-input" placeholder="Amount">`,
+                                        async ([amt]) => {
+                                            const n = parseFloat(amt);
+                                            if (isNaN(n)) { alert("Invalid amount"); return; }
+                                            await handlePaymentUpdate("eca", null, n, false);
+                                        }, () => {});
+                                }
+                            }, () => {});
+
+                    /* ── ANNUAL ── */
                     } else if (feeType === "annual") {
                         createModal("Select Action",
                             `<select class="admin-select">
@@ -1432,6 +1509,7 @@ function adminLogin() {
                                 }
                             }, () => {});
 
+                    /* ── OTHER ── */
                     } else if (feeType === "other") {
                         if (!studentData.otherFees || !studentData.otherFees.length) {
                             alert("No other fees configured for this student"); return;
@@ -1461,6 +1539,7 @@ function adminLogin() {
                                     }, () => {});
                             }, () => {});
                     }
+
                 }, () => {});
         }, () => {});
 }
@@ -1490,12 +1569,12 @@ function openPay() {
     overlay.className = "popup-overlay";
     overlay.innerHTML = `
         <div class="popup-card">
-            <div class="popup-close" id="closePay">&#10006;</div>
+            <div class="popup-close" id="closePay">✖</div>
             <h3>Pay Fees</h3>
             <img src="${QR_URL}" alt="UPI QR Code" class="qr-image">
             <div class="upi-copy-area">
                 <span class="upi-id">${UPI_ID}</span>
-                <button id="copyBtn" class="copy-btn">&#128203; Copy</button>
+                <button id="copyBtn" class="copy-btn">📋 Copy</button>
             </div>
             <button id="upiBtn" class="upi-pay-btn">Pay via UPI</button>
             <p class="whatsapp-note">Send screenshot to <span id="waLink" class="whatsapp-link">Office WhatsApp</span></p>
@@ -1507,7 +1586,7 @@ function openPay() {
     cb.onclick = () => {
         navigator.clipboard.writeText(UPI_ID).catch(() => {});
         cb.textContent = "✔ Copied";
-        setTimeout(() => { cb.innerHTML = "&#128203; Copy"; }, 1400);
+        setTimeout(() => { cb.textContent = "📋 Copy"; }, 1400);
     };
     overlay.querySelector("#upiBtn").onclick = () => { window.location.href = `upi://pay?pa=${UPI_ID}`; };
     overlay.querySelector("#waLink").onclick  = () => window.open(WHATSAPP_URL);
@@ -1522,15 +1601,15 @@ function openHelp() {
     overlay.className = "popup-overlay";
     overlay.innerHTML = `
         <div class="popup-card">
-            <div class="popup-close" id="closeHelp">&#10006;</div>
-            <h3>Help &amp; Support</h3>
+            <div class="popup-close" id="closeHelp">✖</div>
+            <h3>Help & Support</h3>
             <div class="help-content">
-                <p>&#128222; For assistance, please contact the school office:</p>
+                <p>📞 For assistance, please contact the school office:</p>
                 <p><strong>Phone:</strong> +91 12345 67890</p>
                 <p><strong>Email:</strong> office@stannes.edu</p>
-                <p><strong>Office Hours:</strong> Mon&ndash;Fri, 9:00 AM &ndash; 4:00 PM</p>
+                <p><strong>Office Hours:</strong> Mon–Fri, 9:00 AM – 4:00 PM</p>
             </div>
-            <button id="chatBtn" class="whatsapp-chat-btn">&#128172; Chat on WhatsApp</button>
+            <button id="chatBtn" class="whatsapp-chat-btn">💬 Chat on WhatsApp</button>
         </div>`;
     document.body.appendChild(overlay);
 
