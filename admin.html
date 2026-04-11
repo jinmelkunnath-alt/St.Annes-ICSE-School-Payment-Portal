@@ -1024,7 +1024,14 @@ body {
                 <select id="universalAction">
                     <option value="updateEca">Update ECA Fee (All / Class)</option>
                     <option value="updateAnnual">Update Annual Day Fee (All / Class)</option>
+                    <option value="addNewFee">➕ Add New Fee</option>
+                    <option value="updateCustomFee">✏️ Update Existing Fee</option>
                 </select>
+            </div>
+            <!-- Shown only for addNewFee / updateCustomFee -->
+            <div class="form-group" id="feeNameGroup" style="display:none;">
+                <label>Fee Name *</label>
+                <input type="text" id="feeNameInput" placeholder="e.g., Exam Fee, Sports Fee…">
             </div>
             <div class="form-group">
                 <label>Scope</label>
@@ -1044,12 +1051,12 @@ body {
                 </select>
             </div>
             <div class="form-group">
-                <label>New Amount (₹)</label>
+                <label>Amount (₹)</label>
                 <input type="number" id="universalAmount" placeholder="Enter amount" min="0">
             </div>
             <div class="modal-actions">
                 <button class="modal-btn" id="cancelUniversalBtn">Cancel</button>
-                <button class="modal-btn primary" id="applyUniversalBtn">Apply to All</button>
+                <button class="modal-btn primary" id="applyUniversalBtn">Apply</button>
             </div>
         </div>
     </div>
@@ -1120,7 +1127,7 @@ body {
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import {
-    getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc
+    getFirestore, collection, getDocs, doc, setDoc, updateDoc
 } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -1134,10 +1141,14 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
 
-const PASSWORDS = { ADD: "ADD@123", EDIT: "EDIT@123", UNIVERSAL: "UNIVERSE@123", EXCEL: "ADMIN123" };
+const PASSWORDS  = { ADD: "ADD@123", EDIT: "EDIT@123", UNIVERSAL: "UNIVERSE@123", EXCEL: "ADMIN123" };
 const BASE_URL   = "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=";
 const BUS_MONTHS = ["june","july","august","september","october","november","december","january","february","march"];
 
+// ── GLOBAL CACHE ──
+// studentCache: full Firestore documents → { id, name, class, phone, terms, ecaFee, ... }
+// studentData:  lightweight class → [{ name, id }] map (grid + search only)
+let studentCache = [];
 let studentData  = {};
 let currentClass = null;
 
@@ -1217,20 +1228,24 @@ function promptModal(title, placeholder, type = 'text') {
     });
 }
 
-// ── Fetch all students ──
+// ── FETCH ALL STUDENTS — SINGLE FIRESTORE READ ──
+// Fills: studentCache (full data) + studentData (lightweight, for grid/search)
 async function fetchAllStudents() {
     try {
         const snap = await getDocs(collection(db, "students"));
-        studentData = {};
+        studentCache = [];
+        studentData  = {};
         snap.forEach(d => {
             const data = d.data();
-            const cls  = mapClass(data.class || '');
+            studentCache.push({ id: d.id, ...data });          // full document in cache
+            const cls = mapClass(data.class || '');
             if (!studentData[cls]) studentData[cls] = [];
             studentData[cls].push({ name: data.name || '', id: d.id });
         });
     } catch (err) {
         console.error("fetchAllStudents:", err);
-        studentData = {};
+        studentCache = [];
+        studentData  = {};
     }
 }
 
@@ -1330,10 +1345,7 @@ async function createStudent({ id, name, cls, phone, term1, term2, term3, busEna
             { name: "Term 2 (September – November)",  total: safeFloat(term2), paid: 0 },
             { name: "Term 3 (December – February)",   total: safeFloat(term3), paid: 0 }
         ],
-        ecaFee: {
-            total: safeFloat(ecaTotal) || 1250,
-            paid: 0
-        },
+        ecaFee:    { total: safeFloat(ecaTotal) || 1250, paid: 0 },
         otherFees: []
     };
     if (safeFloat(annualTotal) > 0) {
@@ -1343,6 +1355,8 @@ async function createStudent({ id, name, cls, phone, term1, term2, term3, busEna
         data.busFee = { monthly: busMonths, paidMonths: [], partialPayments: [] };
     }
     await setDoc(doc(db, "students", id), data);
+    // Keep cache in sync without an extra read
+    studentCache.push({ id, ...data });
 }
 
 // ── ADD STUDENT FORM ──
@@ -1387,9 +1401,8 @@ document.getElementById('addStudentForm').addEventListener('submit', async e => 
     }
 
     try {
-        const docRef  = doc(db, "students", studentId);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) { toast("Student ID already exists!", true); return; }
+        // Duplicate check from cache — no extra Firestore read
+        if (studentCache.some(s => s.id === studentId)) { toast("Student ID already exists!", true); return; }
         await createStudent({ id: studentId, name, cls, phone, term1, term2, term3, busEnabled, busMonths, ecaTotal, annualTotal });
         if (!studentData[cls]) studentData[cls] = [];
         studentData[cls].push({ name, id: studentId });
@@ -1402,16 +1415,17 @@ document.getElementById('addStudentForm').addEventListener('submit', async e => 
     }
 });
 
-// ── EDIT STUDENT ──
+// ── EDIT STUDENT — reads from cache, no extra Firestore read ──
 async function openEditStudent() {
     const studentId = await promptModal("Edit Student", "Enter Student ID");
     if (!studentId) return;
-    const docRef = doc(db, "students", studentId);
-    const snap   = await getDoc(docRef);
-    if (!snap.exists()) { toast("Student not found", true); return; }
-    const data   = snap.data();
-    if (!data.ecaFee) data.ecaFee = { total: 1250, paid: 0 };
-    if (!data.otherFees || !Array.isArray(data.otherFees)) data.otherFees = [];
+
+    const cached = studentCache.find(s => s.id === studentId);
+    if (!cached) { toast("Student not found", true); return; }
+    const data = JSON.parse(JSON.stringify(cached)); // deep clone
+
+    if (!data.ecaFee)   data.ecaFee   = { total: 1250, paid: 0 };
+    if (!Array.isArray(data.otherFees)) data.otherFees = [];
 
     document.getElementById('editStudentId').value    = studentId;
     document.getElementById('editStudentName').value  = data.name || '';
@@ -1419,18 +1433,19 @@ async function openEditStudent() {
     document.getElementById('editStudentPhone').value = data.phone || '';
 
     const terms = data.terms || [];
-    document.getElementById('editTerm1Total').value    = safeFloat(terms[0]?.total);
-    document.getElementById('editTerm2Total').value    = safeFloat(terms[1]?.total);
-    document.getElementById('editTerm3Total').value    = safeFloat(terms[2]?.total);
-    document.getElementById('editEcaFee').value        = safeFloat(data.ecaFee?.total) || 1250;
-    document.getElementById('editAnnualDayTotal').value= safeFloat(data.annualFee?.total);
+    document.getElementById('editTerm1Total').value     = safeFloat(terms[0]?.total);
+    document.getElementById('editTerm2Total').value     = safeFloat(terms[1]?.total);
+    document.getElementById('editTerm3Total').value     = safeFloat(terms[2]?.total);
+    document.getElementById('editEcaFee').value         = safeFloat(data.ecaFee?.total) || 1250;
+    document.getElementById('editAnnualDayTotal').value = safeFloat(data.annualFee?.total);
 
     const busSection = document.getElementById('editBusFeeSection');
     const busFee     = data.busFee;
     if (busFee && busFee.monthly) {
         busSection.style.display = 'block';
         const m   = busFee.monthly;
-        const ids = ['editBusJune','editBusJuly','editBusAug','editBusSep','editBusOct','editBusNov','editBusDec','editBusJan','editBusFeb','editBusMar'];
+        const ids = ['editBusJune','editBusJuly','editBusAug','editBusSep','editBusOct',
+                     'editBusNov','editBusDec','editBusJan','editBusFeb','editBusMar'];
         BUS_MONTHS.forEach((month, i) => { document.getElementById(ids[i]).value = safeFloat(m[month]); });
     } else {
         busSection.style.display = 'none';
@@ -1442,6 +1457,7 @@ async function openEditStudent() {
     const handler  = async e => {
         e.preventDefault();
         editForm.removeEventListener('submit', handler);
+
         const updatedName  = document.getElementById('editStudentName').value.trim();
         const updatedClass = document.getElementById('editStudentClass').value;
         const updatedPhone = document.getElementById('editStudentPhone').value.trim();
@@ -1467,13 +1483,19 @@ async function openEditStudent() {
             updatePayload.annualFee = { total: newAnnual, paid: safeFloat(data.annualFee?.paid) };
         }
         if (busFee && busFee.monthly) {
-            const ids = ['editBusJune','editBusJuly','editBusAug','editBusSep','editBusOct','editBusNov','editBusDec','editBusJan','editBusFeb','editBusMar'];
+            const ids = ['editBusJune','editBusJuly','editBusAug','editBusSep','editBusOct',
+                         'editBusNov','editBusDec','editBusJan','editBusFeb','editBusMar'];
             const newMonthly = {};
             BUS_MONTHS.forEach((month, i) => { newMonthly[month] = safeFloat(document.getElementById(ids[i]).value); });
             updatePayload.busFee = { ...busFee, monthly: newMonthly };
         }
         try {
-            await updateDoc(docRef, updatePayload);
+            await updateDoc(doc(db, "students", studentId), updatePayload);
+
+            // Sync cache
+            const cIdx = studentCache.findIndex(s => s.id === studentId);
+            if (cIdx !== -1) studentCache[cIdx] = { id: studentId, ...updatePayload };
+
             const oldClass = mapClass(data.class || '');
             if (oldClass !== updatedClass) {
                 if (studentData[oldClass]) studentData[oldClass] = studentData[oldClass].filter(s => s.id !== studentId);
@@ -1500,50 +1522,101 @@ document.getElementById('closeEditModal').onclick = () => hideModal(document.get
 document.getElementById('cancelEditBtn').onclick  = () => hideModal(document.getElementById('editStudentModal'));
 
 // ── UNIVERSAL EDIT ──
-const universalModal = document.getElementById('universalModal');
-const universalScope = document.getElementById('universalScope');
-const classSelectDiv = document.getElementById('universalClassSelect');
+const universalModal  = document.getElementById('universalModal');
+const universalAction = document.getElementById('universalAction');
+const universalScope  = document.getElementById('universalScope');
+const classSelectDiv  = document.getElementById('universalClassSelect');
+const feeNameGroup    = document.getElementById('feeNameGroup');
+const feeNameInput    = document.getElementById('feeNameInput');
 
-universalScope.addEventListener('change', () => {
+function syncUniversalUI() {
+    const action    = universalAction.value;
+    const needsName = action === 'addNewFee' || action === 'updateCustomFee';
+    feeNameGroup.style.display  = needsName ? 'block' : 'none';
     classSelectDiv.style.display = universalScope.value === 'class' ? 'block' : 'none';
-});
+}
+universalAction.addEventListener('change', syncUniversalUI);
+universalScope.addEventListener('change', syncUniversalUI);
 
 document.getElementById('applyUniversalBtn').addEventListener('click', async () => {
-    const action      = document.getElementById('universalAction').value;
+    const action      = universalAction.value;
     const scope       = universalScope.value;
     const targetClass = document.getElementById('universalTargetClass').value;
     const newAmount   = safeFloat(document.getElementById('universalAmount').value);
-    if (!newAmount) { toast("Enter a valid amount", true); return; }
+    const feeName     = feeNameInput.value.trim();
 
-    let studentsToUpdate = [];
+    // ── Validations ──
+    if (newAmount <= 0) { toast("Enter a valid amount greater than 0", true); return; }
+    if ((action === 'addNewFee' || action === 'updateCustomFee') && !feeName) {
+        toast("Fee name is required", true); return;
+    }
+
+    // ── Build target list from cache — zero Firestore reads ──
+    let targets = [];
+    if (scope === 'all') {
+        targets = studentCache;
+    } else {
+        const classIds = new Set((studentData[targetClass] || []).map(s => s.id));
+        targets = studentCache.filter(s => classIds.has(s.id));
+    }
+    if (targets.length === 0) { toast("No students found", true); return; }
+
+    const scopeLabel = scope === 'all' ? 'ALL students' : `${targetClass} students`;
+
+    // ── Confirmation ──
+    let confirmMsg = '';
+    if      (action === 'updateEca')       confirmMsg = `Apply ECA fee ₹${newAmount} to ${scopeLabel}?`;
+    else if (action === 'updateAnnual')    confirmMsg = `Apply Annual Day fee ₹${newAmount} to ${scopeLabel}?`;
+    else if (action === 'addNewFee')       confirmMsg = `Apply ₹${newAmount} "${feeName}" to ${scopeLabel}?`;
+    else if (action === 'updateCustomFee') confirmMsg = `Update "${feeName}" total to ₹${newAmount} for ${scopeLabel}?`;
+    if (!confirm(confirmMsg)) return;
+
+    let updated = 0, skipped = 0;
+
     try {
-        if (scope === 'all') {
-            const snapshot = await getDocs(collection(db, "students"));
-            snapshot.forEach(d => studentsToUpdate.push({ id: d.id, data: d.data() }));
-        } else {
-            const classStudents = studentData[targetClass] || [];
-            for (const s of classStudents) {
-                const snap = await getDoc(doc(db, "students", s.id));
-                if (snap.exists()) studentsToUpdate.push({ id: s.id, data: snap.data() });
-            }
-        }
-        let updated = 0;
-        for (const student of studentsToUpdate) {
-            const sData = student.data;
-            if (!sData.ecaFee) sData.ecaFee = { total: 1250, paid: 0 };
+        for (const student of targets) {
+            const sData  = student;
+            const docRef = doc(db, "students", sData.id);
+            let payload  = null;
+
             if (action === 'updateEca') {
-                await updateDoc(doc(db, "students", student.id), {
-                    ecaFee: { total: newAmount, paid: safeFloat(sData.ecaFee?.paid) }
-                });
+                const ecaFee = sData.ecaFee || { total: 1250, paid: 0 };
+                payload = { ecaFee: { total: newAmount, paid: safeFloat(ecaFee.paid) } };
+
             } else if (action === 'updateAnnual') {
-                await updateDoc(doc(db, "students", student.id), {
-                    annualFee: { total: newAmount, paid: safeFloat(sData.annualFee?.paid) }
-                });
+                const annualFee = sData.annualFee || { total: 0, paid: 0 };
+                payload = { annualFee: { total: newAmount, paid: safeFloat(annualFee.paid) } };
+
+            } else if (action === 'addNewFee') {
+                const currentOther = Array.isArray(sData.otherFees) ? [...sData.otherFees] : [];
+                currentOther.push({ name: feeName, total: newAmount, paid: 0 });
+                payload = { otherFees: currentOther };
+
+            } else if (action === 'updateCustomFee') {
+                const currentOther = Array.isArray(sData.otherFees) ? [...sData.otherFees] : [];
+                const feeIdx = currentOther.findIndex(f => f.name.toLowerCase() === feeName.toLowerCase());
+                if (feeIdx === -1) { skipped++; continue; }
+                currentOther[feeIdx] = { ...currentOther[feeIdx], total: newAmount };
+                payload = { otherFees: currentOther };
             }
-            updated++;
+
+            if (payload) {
+                await updateDoc(docRef, payload);
+                // Keep cache in sync
+                const cIdx = studentCache.findIndex(s => s.id === sData.id);
+                if (cIdx !== -1) studentCache[cIdx] = { ...studentCache[cIdx], ...payload };
+                updated++;
+            }
         }
+
         hideModal(universalModal);
-        toast(`Updated ${updated} student${updated !== 1 ? 's' : ''} successfully`);
+        if (action === 'updateCustomFee' && skipped > 0) {
+            toast(`Updated ${updated} student${updated !== 1 ? 's' : ''} (${skipped} skipped — fee not found)`);
+        } else {
+            toast(`Updated ${updated} student${updated !== 1 ? 's' : ''} successfully`);
+        }
+        setTimeout(() => location.reload(), 1200);
+
     } catch (err) {
         console.error("universalEdit:", err);
         toast("Error during universal update", true);
@@ -1589,15 +1662,17 @@ async function openUnifiedAdminAccess() {
         openEditStudent();
     } else if (pass === PASSWORDS.UNIVERSAL) {
         document.getElementById('universalAmount').value = '';
-        universalScope.value = 'all';
-        classSelectDiv.style.display = 'none';
+        feeNameInput.value = '';
+        universalAction.value = 'updateEca';
+        universalScope.value  = 'all';
+        syncUniversalUI();
         showModal(universalModal);
     } else {
         toast("Wrong password", true);
     }
 }
 
-// ── EXCEL DOWNLOAD ──
+// ── EXCEL DOWNLOAD — reads from cache, zero extra Firestore reads ──
 async function verifyExcelAccess() {
     const pass = await promptModal("Excel Download", "Enter admin password:", "password");
     return pass === PASSWORDS.EXCEL;
@@ -1608,99 +1683,80 @@ async function exportClassExcel() {
 
     const btn = document.getElementById('downloadExcelBtn');
     btn.innerHTML = '<span class="excel-spinner"></span> Generating…';
-    btn.disabled = true;
+    btn.disabled  = true;
 
     try {
-        const snapshot = await getDocs(collection(db, "students"));
+        // Filter from cache — no Firestore call
+        const classStudents = studentCache.filter(data => {
+            return mapClass(data.class || '').toUpperCase() === currentClass.toUpperCase();
+        });
+
+        if (classStudents.length === 0) { toast("No students found for this class", true); return; }
+
         const rows = [];
 
-        snapshot.forEach(docSnap => {
-            const data = docSnap.data();
-            const docClass = mapClass(data.class || '');
-            if (docClass.toUpperCase() !== currentClass.toUpperCase()) return;
+        classStudents.forEach(data => {
+            const terms     = data.terms     || [];
+            const eca       = data.ecaFee    || { total: 1250, paid: 0 };
+            const annual    = data.annualFee || { total: 0,    paid: 0 };
+            const otherFees = Array.isArray(data.otherFees) ? data.otherFees : [];
 
-            const terms      = data.terms || [];
-            const eca        = data.ecaFee    || { total: 1250, paid: 0 };
-            const annual     = data.annualFee || { total: 0,    paid: 0 };
-            const otherFees  = Array.isArray(data.otherFees) ? data.otherFees : [];
-
-            // Term totals
             let termTotal = 0, termPaid = 0;
-            terms.forEach(t => {
-                termTotal += safeFloat(t.total);
-                termPaid  += safeFloat(t.paid);
-            });
+            terms.forEach(t => { termTotal += safeFloat(t.total); termPaid += safeFloat(t.paid); });
             const termRemaining = termTotal - termPaid;
 
-            // Bus fee totals
             let busTotal = 0, busPaid = 0;
             if (data.busFee && data.busFee.monthly) {
                 const monthly = data.busFee.monthly;
                 BUS_MONTHS.forEach(m => { busTotal += safeFloat(monthly[m]); });
                 const paidMonths = Array.isArray(data.busFee.paidMonths) ? data.busFee.paidMonths : [];
                 paidMonths.forEach(m => { busPaid += safeFloat(monthly[m]); });
-                // Add partial payments
                 const partial = Array.isArray(data.busFee.partialPayments) ? data.busFee.partialPayments : [];
                 partial.forEach(p => { busPaid += safeFloat(p.amount); });
             }
             const busRemaining = busTotal - busPaid;
 
-            // Other fee totals (ECA + Annual + custom)
             let otherTotal = 0, otherPaid = 0;
-            otherTotal += safeFloat(eca.total);
-            otherPaid  += safeFloat(eca.paid);
-            otherTotal += safeFloat(annual.total);
-            otherPaid  += safeFloat(annual.paid);
-            otherFees.forEach(f => {
-                otherTotal += safeFloat(f.total);
-                otherPaid  += safeFloat(f.paid);
-            });
+            otherTotal += safeFloat(eca.total);    otherPaid += safeFloat(eca.paid);
+            otherTotal += safeFloat(annual.total); otherPaid += safeFloat(annual.paid);
+            otherFees.forEach(f => { otherTotal += safeFloat(f.total); otherPaid += safeFloat(f.paid); });
             const otherRemaining = otherTotal - otherPaid;
 
-            // Grand totals
             const grandTotal     = termTotal + busTotal + otherTotal;
             const grandPaid      = termPaid  + busPaid  + otherPaid;
             const grandRemaining = grandTotal - grandPaid;
 
             rows.push({
-                "Student Name"     : data.name  || "",
-                "Class"            : docClass,
-                "Phone"            : data.phone || "",
-                ""                 : "",                          // spacer column
-                "Term Total (₹)"   : termTotal,
-                "Term Paid (₹)"    : termPaid,
-                "Term Remaining (₹)": termRemaining,
-                "Term Status"      : termRemaining <= 0 ? "✅ Paid" : "⏳ Pending",
-                " "                : "",                          // spacer column
-                "Bus Total (₹)"    : busTotal,
-                "Bus Paid (₹)"     : busPaid,
-                "Bus Remaining (₹)": busRemaining,
-                "Bus Status"       : busTotal === 0 ? "N/A" : (busRemaining <= 0 ? "✅ Paid" : "⏳ Pending"),
-                "  "               : "",                          // spacer column
-                "Other Total (₹)"  : otherTotal,
-                "Other Paid (₹)"   : otherPaid,
-                "Other Remaining (₹)": otherRemaining,
-                "Other Status"     : otherRemaining <= 0 ? "✅ Paid" : "⏳ Pending",
-                "   "              : "",                          // spacer column
-                "Grand Total (₹)"  : grandTotal,
-                "Grand Paid (₹)"   : grandPaid,
-                "Grand Remaining (₹)": grandRemaining,
-                "Overall Status"   : grandRemaining <= 0 ? "✅ Cleared" : "⏳ Due"
+                "Student Name"        : data.name  || "",
+                "Class"               : mapClass(data.class || ''),
+                "Phone"               : data.phone || "",
+                ""                    : "",
+                "Term Total (₹)"      : termTotal,
+                "Term Paid (₹)"       : termPaid,
+                "Term Remaining (₹)"  : termRemaining,
+                "Term Status"         : termRemaining <= 0 ? "✅ Paid" : "⏳ Pending",
+                " "                   : "",
+                "Bus Total (₹)"       : busTotal,
+                "Bus Paid (₹)"        : busPaid,
+                "Bus Remaining (₹)"   : busRemaining,
+                "Bus Status"          : busTotal === 0 ? "N/A" : (busRemaining <= 0 ? "✅ Paid" : "⏳ Pending"),
+                "  "                  : "",
+                "Other Total (₹)"     : otherTotal,
+                "Other Paid (₹)"      : otherPaid,
+                "Other Remaining (₹)" : otherRemaining,
+                "Other Status"        : otherRemaining <= 0 ? "✅ Paid" : "⏳ Pending",
+                "   "                 : "",
+                "Grand Total (₹)"     : grandTotal,
+                "Grand Paid (₹)"      : grandPaid,
+                "Grand Remaining (₹)" : grandRemaining,
+                "Overall Status"      : grandRemaining <= 0 ? "✅ Cleared" : "⏳ Due"
             });
         });
 
-        if (rows.length === 0) {
-            toast("No students found for this class", true);
-            return;
-        }
-
-        // Sort alphabetically
         rows.sort((a, b) => a["Student Name"].localeCompare(b["Student Name"]));
 
         const worksheet = XLSX.utils.json_to_sheet(rows);
-
-        // Auto column widths
-        const colWidths = Object.keys(rows[0]).map(key => ({
+        const colWidths  = Object.keys(rows[0]).map(key => ({
             wch: Math.max(key.length + 2, ...rows.map(r => String(r[key] || '').length + 2))
         }));
         worksheet['!cols'] = colWidths;
@@ -1751,7 +1807,7 @@ document.getElementById('closeSuccessBtn').onclick = () => {
     document.getElementById('successPopup').classList.remove('active');
 };
 
-// ── VERIFY RECEIPT ──
+// ── VERIFY RECEIPT — reads from cache, zero Firestore reads ──
 const verifyModal      = document.getElementById('verifyModal');
 const receiptCodeInput = document.getElementById('receiptCodeInput');
 const verifyResult     = document.getElementById('verifyResult');
@@ -1764,36 +1820,38 @@ document.getElementById('verifyReceiptBtn').addEventListener('click', () => {
 document.getElementById('closeVerifyModal').onclick = () => hideModal(verifyModal);
 document.getElementById('cancelVerifyBtn').onclick  = () => hideModal(verifyModal);
 
-document.getElementById('verifyBtn').addEventListener('click', async () => {
+document.getElementById('verifyBtn').addEventListener('click', () => {
     const code = receiptCodeInput.value.trim().toUpperCase();
-    if (!code) { verifyResult.innerHTML = '<p style="color:#bc4e2c;margin-top:0.5rem;">Please enter a receipt code.</p>'; return; }
+    if (!code) {
+        verifyResult.innerHTML = '<p style="color:#bc4e2c;margin-top:0.5rem;">Please enter a receipt code.</p>';
+        return;
+    }
     verifyResult.innerHTML = '<p style="color:#5b6e8c;margin-top:0.5rem;">Searching…</p>';
-    try {
-        const snapshot = await getDocs(collection(db, "students"));
-        let found = null;
-        for (const d of snapshot.docs) {
-            const data = d.data();
-            if (!Array.isArray(data.receipts)) continue;
-            const match = data.receipts.find(r => r.code === code);
-            if (match) { found = { studentName: data.name, className: data.class, ...match }; break; }
-        }
-        if (found) {
-            verifyResult.innerHTML = `
-                <div style="background:#e1f7ea;padding:1rem;border-radius:1rem;border-left:4px solid #4CAF50;margin-top:0.5rem;">
-                    <strong>Verified ✅</strong><br><br>
-                    <b>Name:</b> ${escapeHtml(found.studentName)}<br>
-                    <b>Class:</b> ${escapeHtml(found.className)}<br>
-                    <b>Amount:</b> ₹${found.amount || 0}<br>
-                    <b>Term:</b> ${escapeHtml(found.term || '')}<br>
-                    <b>Date:</b> ${escapeHtml(found.date || '')}<br>
-                    <b>Code:</b> ${escapeHtml(found.code)}
-                </div>`;
-        } else {
-            verifyResult.innerHTML = `<div style="background:#ffe6e5;padding:1rem;border-radius:1rem;border-left:4px solid #bc4e2c;margin-top:0.5rem;">❌ Invalid receipt code. Not found.</div>`;
-        }
-    } catch (err) {
-        console.error("verifyReceipt:", err);
-        verifyResult.innerHTML = '<p style="color:#bc4e2c;margin-top:0.5rem;">Error verifying receipt.</p>';
+
+    // Search cache — no Firestore call
+    let found = null;
+    for (const student of studentCache) {
+        if (!Array.isArray(student.receipts)) continue;
+        const match = student.receipts.find(r => r.code === code);
+        if (match) { found = { studentName: student.name, className: student.class, ...match }; break; }
+    }
+
+    if (found) {
+        verifyResult.innerHTML = `
+            <div style="background:#e1f7ea;padding:1rem;border-radius:1rem;border-left:4px solid #4CAF50;margin-top:0.5rem;">
+                <strong>Verified ✅</strong><br><br>
+                <b>Name:</b> ${escapeHtml(found.studentName)}<br>
+                <b>Class:</b> ${escapeHtml(found.className)}<br>
+                <b>Amount:</b> ₹${found.amount || 0}<br>
+                <b>Term:</b> ${escapeHtml(found.term || '')}<br>
+                <b>Date:</b> ${escapeHtml(found.date || '')}<br>
+                <b>Code:</b> ${escapeHtml(found.code)}
+            </div>`;
+    } else {
+        verifyResult.innerHTML = `
+            <div style="background:#ffe6e5;padding:1rem;border-radius:1rem;border-left:4px solid #bc4e2c;margin-top:0.5rem;">
+                ❌ Invalid receipt code. Not found.
+            </div>`;
     }
 });
 
@@ -1819,7 +1877,7 @@ document.getElementById('whatsappBtn').addEventListener('click', () => {
 document.getElementById('closeAddModal').onclick = () => hideModal(addStudentModal);
 document.getElementById('cancelAddBtn').onclick  = () => hideModal(addStudentModal);
 
-// ── INIT ──
+// ── INIT — single Firestore read fills cache + grid ──
 async function init() {
     await fetchAllStudents();
     renderClassGrid();
