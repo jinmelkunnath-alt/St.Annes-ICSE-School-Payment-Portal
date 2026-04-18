@@ -538,6 +538,103 @@ body {
 .rt-footer { text-align: center; margin-top: 14px; font-size: 10px; color: #aab6c4; }
 
 /* ═══════════════════════════════════════════
+   HISTORY VIEW – NEW STYLES
+═══════════════════════════════════════════ */
+
+/* Filter bar */
+.filter-bar {
+  display: flex; align-items: center; gap: 0.75rem;
+  margin-bottom: 1rem; flex-wrap: wrap;
+}
+.filter-label {
+  font-size: 0.72rem; font-weight: 700;
+  color: var(--muted); text-transform: uppercase;
+  letter-spacing: 0.05em; white-space: nowrap;
+}
+.filter-select {
+  border: 1.5px solid var(--border); border-radius: 2rem;
+  padding: 0.4rem 1.1rem; font-size: 0.82rem;
+  font-family: inherit; background: var(--surface);
+  color: var(--text); outline: none; cursor: pointer;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  -webkit-appearance: none; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%235a7080' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  padding-right: 2rem;
+}
+.filter-select:focus {
+  border-color: var(--brand-light);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+}
+
+/* History count badge */
+.hist-count {
+  margin-left: auto;
+  font-size: 0.72rem; font-weight: 700;
+  color: var(--muted);
+  background: var(--brand-pale);
+  padding: 0.25rem 0.8rem; border-radius: 2rem;
+  border: 1px solid #c7d9f5;
+  white-space: nowrap;
+}
+
+/* History table: code cell */
+.hist-code-cell .hist-label { font-weight: 600; font-size: 0.86rem; }
+.hist-code-cell .hist-code-text {
+  font-family: monospace; font-size: 0.68rem;
+  color: var(--brand-light); margin-top: 1px;
+}
+
+/* Edit button */
+.btn-edit {
+  background: var(--brand-pale); color: var(--brand);
+  border: 1px solid #c7d9f5;
+  padding: 0.28rem 0.8rem; border-radius: 2rem;
+  font-size: 0.72rem; font-weight: 700;
+  cursor: pointer; transition: var(--transition);
+  font-family: inherit; white-space: nowrap;
+  display: inline-flex; align-items: center; gap: 0.25rem;
+}
+.btn-edit:hover {
+  background: var(--brand); color: #fff;
+  border-color: var(--brand);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(30,74,118,0.2);
+}
+.btn-edit:active { transform: scale(0.97); }
+
+/* History empty state */
+.hist-empty {
+  padding: 3rem 1.5rem; text-align: center; color: #8a9bb0;
+}
+.hist-empty-icon { font-size: 2.2rem; margin-bottom: 0.6rem; line-height: 1; }
+.hist-empty-title { font-size: 0.92rem; font-weight: 700; margin-bottom: 0.25rem; }
+.hist-empty-sub   { font-size: 0.8rem; }
+
+/* Edit payment modal – info box */
+.edit-info-box {
+  background: var(--brand-pale);
+  border: 1px solid #c7d9f5;
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+  margin: 0.5rem 0 0.25rem;
+}
+.edit-info-fee  { font-weight: 700; color: var(--brand); font-size: 0.9rem; }
+.edit-info-meta { font-size: 0.74rem; color: var(--muted); margin-top: 3px; }
+.edit-info-code {
+  font-family: monospace; font-size: 0.68rem;
+  color: var(--brand-light); margin-top: 2px;
+  word-break: break-all;
+}
+.edit-max-hint {
+  font-size: 0.72rem; color: var(--muted);
+  margin-top: 0.3rem;
+  display: flex; align-items: center; gap: 0.3rem;
+}
+.edit-max-hint strong { color: var(--brand); }
+
+/* ═══════════════════════════════════════════
    RESPONSIVE
 ═══════════════════════════════════════════ */
 @media (max-width: 600px) {
@@ -545,6 +642,8 @@ body {
   .progress-block { min-width: unset; width: 100%; }
   .summary-bar { gap: 0.75rem; }
   .app-header { margin: 0 -1rem 1.25rem; border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
+  .filter-bar { gap: 0.5rem; }
+  .view-tab { padding: 0.5rem 0.9rem; font-size: 0.78rem; }
 }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
@@ -583,6 +682,7 @@ body {
   <div class="view-tabs">
     <button class="view-tab active" id="tabTerm">Term Fees</button>
     <button class="view-tab"        id="tabOther">Other Fees</button>
+    <button class="view-tab"        id="tabHistory">📋 History</button>
   </div>
 
   <!-- dynamic content -->
@@ -623,7 +723,13 @@ body {
 
 <script type="module">
 import { initializeApp }                        from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  updateDoc,
+  enableIndexedDbPersistence
+} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 
 /* ═══════════════════════════════════════════
    FIREBASE
@@ -636,7 +742,17 @@ const fbApp = initializeApp({
   messagingSenderId: "1036013822615",
   appId:             "1:1036013822615:web:6c4159f84bae9882963fd2"
 });
+
 const db = getFirestore(fbApp);
+
+/* ── Enable offline caching (IndexedDB persistence) ── */
+enableIndexedDbPersistence(db).catch(err => {
+  if (err.code === "failed-precondition") {
+    console.warn("Offline persistence: multiple tabs open.");
+  } else if (err.code === "unimplemented") {
+    console.warn("Offline persistence: not supported in this browser.");
+  }
+});
 
 /* ═══════════════════════════════════════════
    CONSTANTS
@@ -645,6 +761,7 @@ const ADMIN_PASS    = "ADMIN123";
 const UPI_ID        = "jinmelkunnath@oksbi";
 const WHATSAPP_URL  = "https://wa.me/917012808911";
 const QR_URL        = "https://i.ibb.co/8RSZRz0/IMG-20260329-160905.png";
+const MAX_RECEIPTS  = 100;
 
 const MONTH_ORDER = ["june","july","august","september","october","november","december","january","february","march"];
 
@@ -782,6 +899,7 @@ function enforceDefaults() {
   if (!SD.terms)     SD.terms     = normalizeTerms([]);
   if (!SD.ecaFee)    SD.ecaFee    = { total: 1250, paid: 0 };
   if (!SD.otherFees) SD.otherFees = [];
+  if (!SD.receipts)  SD.receipts  = [];
   if (!Array.isArray(TERMS)) TERMS = [];
 }
 
@@ -998,11 +1116,22 @@ function render() {
     const { total, paid, remaining } = calcTermTotals();
     renderSummary(total, paid, remaining);
     updateProgress(total, paid);
-  } else {
+  } else if (VIEW === "other") {
     renderOtherView(container);
     const { total, paid, remaining } = calcOtherTotals();
     renderSummary(total, paid, remaining);
     updateProgress(total, paid);
+  } else {
+    /* history view */
+    renderHistoryView(container);
+    const t = calcTermTotals();
+    const o = calcOtherTotals();
+    renderSummary(
+      t.total + o.total,
+      t.paid  + o.paid,
+      t.remaining + o.remaining
+    );
+    el("progressBlock").style.display = "none";
   }
 }
 
@@ -1079,6 +1208,119 @@ function renderOtherView(container) {
 }
 
 /* ═══════════════════════════════════════════
+   HISTORY VIEW
+═══════════════════════════════════════════ */
+function renderHistoryView(container) {
+  /* Only show active receipts, newest first */
+  const activeReceipts = (SD.receipts || [])
+    .filter(r => !r.status || r.status === "active")
+    .slice()
+    .reverse();
+
+  /* Empty state – no receipts at all */
+  if (!activeReceipts.length) {
+    const wrap = document.createElement("div");
+    wrap.className = "term-table-wrap";
+    wrap.innerHTML = `
+      <div class="hist-empty">
+        <div class="hist-empty-icon">📋</div>
+        <div class="hist-empty-title">No payment history yet</div>
+        <div class="hist-empty-sub">Payments will appear here after recording</div>
+      </div>`;
+    container.appendChild(wrap);
+    return;
+  }
+
+  /* Filter bar */
+  const filterBar = document.createElement("div");
+  filterBar.className = "filter-bar";
+  filterBar.innerHTML = `
+    <span class="filter-label">Filter:</span>
+    <select class="filter-select" id="hist-filter">
+      <option value="all">All Types</option>
+      <option value="term">Term</option>
+      <option value="bus">Bus</option>
+      <option value="eca">ECA</option>
+      <option value="annual">Annual</option>
+      <option value="other">Other</option>
+    </select>
+    <span class="hist-count" id="hist-count">${activeReceipts.length} record${activeReceipts.length !== 1 ? "s" : ""}</span>`;
+  container.appendChild(filterBar);
+
+  /* Table wrapper */
+  const tableWrap = document.createElement("div");
+  tableWrap.className = "term-table-wrap";
+  tableWrap.id = "hist-table-wrap";
+  container.appendChild(tableWrap);
+
+  /* Inner render function – called on filter change too */
+  function renderTable(filterType) {
+    const filtered = filterType === "all"
+      ? activeReceipts
+      : activeReceipts.filter(r => r.type === filterType);
+
+    /* Update count */
+    const countEl = document.getElementById("hist-count");
+    if (countEl) countEl.textContent = `${filtered.length} record${filtered.length !== 1 ? "s" : ""}`;
+
+    /* No results for filter */
+    if (!filtered.length) {
+      tableWrap.innerHTML = `
+        <div class="hist-empty">
+          <div class="hist-empty-icon">🔍</div>
+          <div class="hist-empty-title">No records for this filter</div>
+          <div class="hist-empty-sub">Try selecting "All Types"</div>
+        </div>`;
+      return;
+    }
+
+    /* Build rows */
+    const rows = filtered.map(r => {
+      const amt    = safe(r.amount);
+      const isNeg  = amt < 0;
+      const amtCls = isNeg ? "color:var(--red)" : "color:var(--green)";
+      /* Escape code for data attribute */
+      const safeCode = (r.code || "").replace(/"/g, "&quot;");
+      return `<tr>
+        <td style="text-align:left">
+          <div class="hist-code-cell">
+            <div class="hist-label">${r.subType || "—"}</div>
+            <div class="hist-code-text">${r.code || "—"}</div>
+          </div>
+        </td>
+        <td style="${amtCls};font-weight:700">${fmtRs(amt)}</td>
+        <td style="font-size:0.8rem;white-space:nowrap">${r.date || "—"}</td>
+        <td><button class="btn-edit" data-code="${safeCode}">✏ Edit</button></td>
+      </tr>`;
+    }).join("");
+
+    tableWrap.innerHTML = `
+      <div class="fee-table-scroll">
+        <table class="fee-table">
+          <thead><tr>
+            <th style="text-align:left">Fee / Receipt Code</th>
+            <th>Amount</th>
+            <th>Date</th>
+            <th>Action</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+
+    /* Attach edit handlers via delegation */
+    tableWrap.querySelectorAll(".btn-edit").forEach(btn => {
+      btn.addEventListener("click", () => editPayment(btn.dataset.code));
+    });
+  }
+
+  renderTable("all");
+
+  filterBar.querySelector("#hist-filter").addEventListener("change", function () {
+    renderTable(this.value);
+  });
+}
+
+/* ═══════════════════════════════════════════
    FIRESTORE SAVES
 ═══════════════════════════════════════════ */
 const dbRef      = () => doc(db, "students", studentId);
@@ -1087,6 +1329,22 @@ const saveBus    = () => updateDoc(dbRef(), { busFee:    SD.busFee });
 const saveEca    = () => updateDoc(dbRef(), { ecaFee:    { total: safe(SD.ecaFee.total), paid: safe(SD.ecaFee.paid) } });
 const saveAnnual = () => updateDoc(dbRef(), { annualFee: SD.annualFee });
 const saveOthers = () => updateDoc(dbRef(), { otherFees: SD.otherFees });
+
+/**
+ * Atomic save — writes all fee fields + receipts in ONE updateDoc call.
+ * Used by applyEdit to guarantee consistency.
+ */
+async function saveAll() {
+  const data = {
+    receipts: SD.receipts,
+    terms:    TERMS,
+    ecaFee:   { total: safe(SD.ecaFee.total), paid: safe(SD.ecaFee.paid) },
+    otherFees: SD.otherFees
+  };
+  if (SD.busFee)    data.busFee    = SD.busFee;
+  if (SD.annualFee) data.annualFee = SD.annualFee;
+  await updateDoc(dbRef(), data);
+}
 
 /* ═══════════════════════════════════════════
    RECEIPT
@@ -1120,9 +1378,19 @@ function dlReceipt(url, code) {
   const a = document.createElement("a"); a.href = url; a.download = `${code}.png`; a.click();
 }
 
+/**
+ * Store receipt in SD.receipts and persist.
+ * - Adds status: "active" if not set.
+ * - Trims to MAX_RECEIPTS if exceeded.
+ */
 async function storeReceipt(obj) {
   if (!Array.isArray(SD.receipts)) SD.receipts = [];
-  SD.receipts.push(obj);
+  const receipt = { ...obj, status: obj.status || "active" };
+  SD.receipts.push(receipt);
+  /* Keep only the most recent MAX_RECEIPTS entries */
+  if (SD.receipts.length > MAX_RECEIPTS) {
+    SD.receipts = SD.receipts.slice(-MAX_RECEIPTS);
+  }
   await updateDoc(dbRef(), { receipts: SD.receipts });
 }
 
@@ -1186,7 +1454,6 @@ async function applyPayment(feeType, identifier, amount, isFull) {
   } else if (feeType === "other") {
     const parts = String(identifier).split(":");
     if (parts.length === 2) {
-      /* monthly other fee: identifier = "feeIndex:month" */
       const fIdx  = parseInt(parts[0]);
       const month = parts[1];
       const fee   = SD.otherFees[fIdx];
@@ -1195,7 +1462,6 @@ async function applyPayment(feeType, identifier, amount, isFull) {
       item    = fee.monthly[month];
       subType = `${fee.name} – ${capF(month)}`;
     } else {
-      /* one-time other fee */
       const idx = parseInt(identifier);
       if (isNaN(idx) || !SD.otherFees[idx]) { alert("Fee not found"); return false; }
       item    = SD.otherFees[idx];
@@ -1213,16 +1479,13 @@ async function applyPayment(feeType, identifier, amount, isFull) {
   let newPaid;
 
   if (isFull) {
-    /* Full payment: set paid = total */
     newPaid = totalAmt;
   } else {
-    /* Partial payment: add amount (positive or negative), then clamp */
     newPaid = Math.max(0, Math.min(totalAmt, currentPaid + safe(amount)));
   }
 
   const delta = newPaid - currentPaid;
 
-  /* delta of 0 means nothing changed */
   if (delta === 0) {
     toast("No change — paid amount is already at this value.");
     return false;
@@ -1230,7 +1493,6 @@ async function applyPayment(feeType, identifier, amount, isFull) {
 
   item.paid = newPaid;
 
-  /* Persist to Firestore */
   if      (feeType === "term")   await saveTerms();
   else if (feeType === "bus")    await saveBus();
   else if (feeType === "eca")    await saveEca();
@@ -1239,12 +1501,205 @@ async function applyPayment(feeType, identifier, amount, isFull) {
 
   render();
 
-  /* Receipt uses absolute delta so it always shows a positive amount */
   const absAmount = Math.abs(delta);
   const code = receiptCode(SD.name, SD.class, subType, absAmount);
-  await storeReceipt({ code, amount: delta, type: feeType, subType, date: today() });
+  await storeReceipt({ code, amount: delta, type: feeType, subType, date: today(), status: "active" });
   await showSuccess(subType, absAmount, code);
   return true;
+}
+
+/* ═══════════════════════════════════════════
+   EDIT PAYMENT SYSTEM
+═══════════════════════════════════════════ */
+
+/**
+ * Resolve a receipt back to its live fee object by (type, subType).
+ * Returns { item } where item is the live object reference in SD/TERMS,
+ * or null if the fee cannot be found.
+ */
+function getFeeItemByReceipt(receipt) {
+  const { type, subType } = receipt;
+
+  if (type === "term") {
+    const term = TERMS.find(t => t.name === subType);
+    return term ? { item: term } : null;
+  }
+
+  if (type === "bus") {
+    /* subType: "Bus Fee – June"  (en-dash U+2013) */
+    const dashIdx = subType.indexOf("–");
+    const month   = dashIdx !== -1
+      ? subType.slice(dashIdx + 1).trim().toLowerCase()
+      : "";
+    if (!month || !SD.busFee?.monthly[month]) return null;
+    return { item: SD.busFee.monthly[month] };
+  }
+
+  if (type === "eca") {
+    return SD.ecaFee ? { item: SD.ecaFee } : null;
+  }
+
+  if (type === "annual") {
+    return SD.annualFee ? { item: SD.annualFee } : null;
+  }
+
+  if (type === "other") {
+    const dashIdx = subType.indexOf("–");
+    if (dashIdx !== -1) {
+      /* Monthly other fee: "Fee Name – Month" */
+      const feeName = subType.slice(0, dashIdx).trim();
+      const month   = subType.slice(dashIdx + 1).trim().toLowerCase();
+      const fee     = SD.otherFees.find(f => f.name === feeName);
+      if (!fee || !fee.monthly?.[month]) return null;
+      return { item: fee.monthly[month] };
+    } else {
+      /* One-time other fee: subType === fee name */
+      const fee = SD.otherFees.find(f => f.name === subType);
+      return fee ? { item: fee } : null;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Open the Edit Payment modal for a given receipt code.
+ * Only active receipts can be edited.
+ */
+function editPayment(code) {
+  if (!code) { toast("Invalid receipt code."); return; }
+
+  /* Find active receipt */
+  const receipt = (SD.receipts || []).find(
+    r => r.code === code && (!r.status || r.status === "active")
+  );
+  if (!receipt) {
+    toast("Receipt not found or already cancelled.");
+    return;
+  }
+
+  /* Locate the live fee item */
+  const feeRef = getFeeItemByReceipt(receipt);
+  if (!feeRef) {
+    toast("Cannot locate fee record. Contact admin.");
+    return;
+  }
+
+  const { item }      = feeRef;
+  const oldAmt        = safe(receipt.amount);
+  const currentPaid   = safe(item.paid);
+  const total         = safe(item.total);
+
+  /* After reverting old amount, how much capacity remains? */
+  const revertedPaid  = Math.max(0, currentPaid - oldAmt);
+  const maxAllowed    = Math.max(0, total - revertedPaid);
+
+  const m = overlay(`
+    <button class="modal-close">✕</button>
+    <h3>✏ Edit Payment</h3>
+    <div class="edit-info-box">
+      <div class="edit-info-fee">${receipt.subType || "—"}</div>
+      <div class="edit-info-meta">Recorded: ${fmtRs(oldAmt)} &nbsp;·&nbsp; Date: ${receipt.date || "—"}</div>
+      <div class="edit-info-code">${receipt.code}</div>
+    </div>
+    <label>New Amount (₹)</label>
+    <input
+      type="number"
+      id="edit-amt"
+      placeholder="Enter amount"
+      min="1"
+      max="${maxAllowed}"
+      value="${oldAmt > 0 ? oldAmt : ""}">
+    <div class="edit-max-hint">
+      <span>Max allowed:</span>
+      <strong>${fmtRs(maxAllowed)}</strong>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
+      <button class="btn-modal btn-modal-ok"     id="m-ok">✓ Update</button>
+    </div>`);
+
+  const amtInput = m.querySelector("#edit-amt");
+  amtInput.focus();
+
+  m.querySelector("#m-cancel").onclick = closeAllOverlays;
+
+  m.querySelector("#m-ok").onclick = async () => {
+    const raw = amtInput.value.trim();
+    if (raw === "") { toast("Please enter an amount."); return; }
+
+    const val = parseFloat(raw);
+    if (isNaN(val))  { toast("Invalid amount. Enter a number."); return; }
+    if (val <= 0)    { toast("Amount must be greater than 0."); return; }
+    if (val > maxAllowed) {
+      toast(`Cannot exceed max allowed: ${fmtRs(maxAllowed)}`);
+      return;
+    }
+
+    /* Same amount as before — no change needed */
+    if (val === oldAmt) {
+      toast("No change — amount is the same as before.");
+      return;
+    }
+
+    closeAllOverlays();
+    await applyEdit(receipt, val);
+  };
+}
+
+/**
+ * Apply an edit to an existing active receipt:
+ * 1. Revert the old amount from the fee's paid field.
+ * 2. Add the new amount and clamp.
+ * 3. Mark old receipt as cancelled.
+ * 4. Create a new active receipt.
+ * 5. Atomically save everything in ONE updateDoc call.
+ * 6. Re-render UI and show success popup.
+ */
+async function applyEdit(oldReceipt, newAmount) {
+  enforceDefaults();
+
+  const feeRef = getFeeItemByReceipt(oldReceipt);
+  if (!feeRef) {
+    toast("Fee item not found — edit aborted.");
+    return;
+  }
+
+  const { item } = feeRef;
+  const oldAmt   = safe(oldReceipt.amount);
+  const total    = safe(item.total);
+
+  /* Step 1 & 2: revert old, apply new, clamp */
+  const revertedPaid = safe(item.paid) - oldAmt;
+  item.paid = Math.max(0, Math.min(total, revertedPaid + newAmount));
+
+  /* Step 3: cancel old receipt */
+  oldReceipt.status = "cancelled";
+
+  /* Step 4: build new receipt */
+  const newCode = receiptCode(SD.name, SD.class, oldReceipt.subType, newAmount);
+  const newReceipt = {
+    code:    newCode,
+    amount:  newAmount,
+    type:    oldReceipt.type,
+    subType: oldReceipt.subType,
+    date:    today(),
+    status:  "active"
+  };
+
+  /* Step 4 cont: push and trim */
+  if (!Array.isArray(SD.receipts)) SD.receipts = [];
+  SD.receipts.push(newReceipt);
+  if (SD.receipts.length > MAX_RECEIPTS) {
+    SD.receipts = SD.receipts.slice(-MAX_RECEIPTS);
+  }
+
+  /* Step 5: single atomic write */
+  await saveAll();
+
+  /* Step 6: update UI */
+  render();
+  await showSuccess(oldReceipt.subType, newAmount, newCode);
 }
 
 /* ═══════════════════════════════════════════
@@ -1449,7 +1904,6 @@ function adminActionFlow(feeType, identifier, label) {
       return;
     }
 
-    /* Partial — validate amount */
     const rawVal = amtInp.value.trim();
 
     if (rawVal === "" || rawVal === null) {
@@ -1552,8 +2006,9 @@ document.addEventListener("DOMContentLoaded", () => {
 ═══════════════════════════════════════════ */
 function setView(v) {
   VIEW = v;
-  el("tabTerm").classList.toggle("active",  v === "term");
-  el("tabOther").classList.toggle("active", v === "other");
+  el("tabTerm").classList.toggle("active",    v === "term");
+  el("tabOther").classList.toggle("active",   v === "other");
+  el("tabHistory").classList.toggle("active", v === "history");
   render();
 }
 
@@ -1561,11 +2016,12 @@ function setView(v) {
    INIT
 ═══════════════════════════════════════════ */
 window.addEventListener("DOMContentLoaded", () => {
-  el("logoutBtn").onclick = () => { location.href = "../index.html"; };
-  el("tabTerm").onclick   = () => setView("term");
-  el("tabOther").onclick  = () => setView("other");
-  el("payBtn").onclick    = openPay;
-  el("helpBtn").onclick   = openHelp;
+  el("logoutBtn").onclick   = () => { location.href = "../index.html"; };
+  el("tabTerm").onclick     = () => setView("term");
+  el("tabOther").onclick    = () => setView("other");
+  el("tabHistory").onclick  = () => setView("history");
+  el("payBtn").onclick      = openPay;
+  el("helpBtn").onclick     = openHelp;
   loadStudent();
 });
 </script>
