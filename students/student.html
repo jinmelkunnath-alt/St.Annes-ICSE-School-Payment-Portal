@@ -496,17 +496,30 @@ body {
    RECEIPT TEMPLATE (off-screen render)
 ═══════════════════════════════════════════ */
 #receipt-tpl {
-  position: absolute; left: -9999px; top: 0;
-  width: 360px; background: #fff; padding: 24px;
-  border-radius: 24px; font-family: -apple-system, sans-serif;
-  box-shadow: none;
+  position: relative;
 }
+
 .rt-watermark {
-  position: absolute; top: 50%; left: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
   transform: translate(-50%,-50%) rotate(-20deg);
-  font-size: 44px; font-weight: 800;
-  color: rgba(30,74,118,0.01); pointer-events: none;
+  font-size: 44px;
+  font-weight: 800;
+
+  color: #1e4a76;
+  opacity: 0.02;
+
+  pointer-events: none;
   white-space: nowrap;
+
+  z-index: 0;
+}
+
+/* Ensure all receipt content stays above watermark */
+#receipt-tpl > *:not(.rt-watermark) {
+  position: relative;
+  z-index: 1;
 }
 .rt-header { text-align: center; margin-bottom: 18px; }
 .rt-header h2 { color: var(--brand); font-size: 18px; margin-bottom: 2px; }
