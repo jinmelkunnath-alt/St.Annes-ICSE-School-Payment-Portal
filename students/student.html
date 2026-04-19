@@ -796,7 +796,7 @@ enableIndexedDbPersistence(db).catch(err => {
 /* ═══════════════════════════════════════════
    CONSTANTS
 ═══════════════════════════════════════════ */
-const ADMIN_PASS    = "ADMIN123";
+const ADMIN_PASS    = "ADMIN124";
 const UPI_ID        = "jinmelkunnath@oksbi";
 const WHATSAPP_URL  = "https://wa.me/917012808911";
 const QR_URL        = "https://i.ibb.co/8RSZRz0/IMG-20260329-160905.png";
@@ -1251,11 +1251,13 @@ function renderOtherView(container) {
    HISTORY VIEW
 ═══════════════════════════════════════════ */
 function renderHistoryView(container) {
+  /* Only show active receipts, newest first */
   const activeReceipts = (SD.receipts || [])
     .filter(r => !r.status || r.status === "active")
     .slice()
     .reverse();
 
+  /* Empty state – no receipts at all */
   if (!activeReceipts.length) {
     const wrap = document.createElement("div");
     wrap.className = "term-table-wrap";
@@ -1269,6 +1271,7 @@ function renderHistoryView(container) {
     return;
   }
 
+  /* Filter bar */
   const filterBar = document.createElement("div");
   filterBar.className = "filter-bar";
   filterBar.innerHTML = `
@@ -1284,20 +1287,23 @@ function renderHistoryView(container) {
     <span class="hist-count" id="hist-count">${activeReceipts.length} record${activeReceipts.length !== 1 ? "s" : ""}</span>`;
   container.appendChild(filterBar);
 
+  /* Table wrapper */
   const tableWrap = document.createElement("div");
   tableWrap.className = "term-table-wrap";
+  tableWrap.id = "hist-table-wrap";
   container.appendChild(tableWrap);
 
+  /* Inner render function – called on filter change too */
   function renderTable(filterType) {
     const filtered = filterType === "all"
       ? activeReceipts
       : activeReceipts.filter(r => r.type === filterType);
 
+    /* Update count */
     const countEl = document.getElementById("hist-count");
-    if (countEl) {
-      countEl.textContent = `${filtered.length} record${filtered.length !== 1 ? "s" : ""}`;
-    }
+    if (countEl) countEl.textContent = `${filtered.length} record${filtered.length !== 1 ? "s" : ""}`;
 
+    /* No results for filter */
     if (!filtered.length) {
       tableWrap.innerHTML = `
         <div class="hist-empty">
@@ -1308,11 +1314,11 @@ function renderHistoryView(container) {
       return;
     }
 
+    /* Build rows */
     const rows = filtered.map(r => {
-      const amt = safe(r.amount);
-      const isNeg = amt < 0;
+      const amt    = safe(r.amount);
+      const isNeg  = amt < 0;
       const amtCls = isNeg ? "color:var(--red)" : "color:var(--green)";
-
       return `<tr>
         <td style="text-align:left">
           <div class="hist-code-cell">
@@ -1322,6 +1328,7 @@ function renderHistoryView(container) {
         </td>
         <td style="${amtCls};font-weight:700">${fmtRs(amt)}</td>
         <td style="font-size:0.8rem;white-space:nowrap">${r.date || "—"}</td>
+        <td style="font-size:0.75rem;white-space:nowrap">${(r.mode || "upi") === "cash" ? "💵 Cash" : "📲 UPI"}</td>
       </tr>`;
     }).join("");
 
@@ -1332,20 +1339,17 @@ function renderHistoryView(container) {
             <th style="text-align:left">Fee / Receipt Code</th>
             <th>Amount</th>
             <th>Date</th>
+            <th>Mode</th>
           </tr></thead>
           <tbody>${rows}</tbody>
         </table>
       </div>`;
-  }
-
+}
   renderTable("all");
 
-  const filterSelect = filterBar.querySelector("#hist-filter");
-  if (filterSelect) {
-    filterSelect.addEventListener("change", function () {
-      renderTable(this.value);
-    });
-  }
+  filterBar.querySelector("#hist-filter").addEventListener("change", function () {
+    renderTable(this.value);
+  });
 }
 
 /* ═══════════════════════════════════════════
@@ -1456,7 +1460,7 @@ async function showSuccess(subType, amount, code) {
 /* ═══════════════════════════════════════════
    PAYMENT HANDLER
 ═══════════════════════════════════════════ */
-async function applyPayment(feeType, identifier, amount, isFull) {
+async function applyPayment(feeType, identifier, amount, isFull, mode = "upi") {
   enforceDefaults();
   let item = null, subType = "";
 
@@ -1531,7 +1535,7 @@ async function applyPayment(feeType, identifier, amount, isFull) {
 
   const absAmount = Math.abs(delta);
   const code = receiptCode(SD.name, SD.class, subType, absAmount);
-  await storeReceipt({ code, amount: delta, type: feeType, subType, date: today(), status: "active" });
+  await storeReceipt({ code, amount: delta, type: feeType, subType, date: today(), status: "active", mode });
   await showSuccess(subType, absAmount, code);
   return true;
 }
@@ -1643,12 +1647,21 @@ function editPayment(code) {
       <span>Max allowed:</span>
       <strong>${fmtRs(maxAllowed)}</strong>
     </div>
+    <label>Payment Mode</label>
+    <select id="edit-mode">
+      <option value="upi">📲 UPI (Online)</option>
+      <option value="cash">💵 Cash</option>
+    </select>
     <div class="modal-actions">
       <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
       <button class="btn-modal btn-modal-ok"     id="m-ok">✓ Update</button>
     </div>`);
 
-  const amtInput = m.querySelector("#edit-amt");
+  const amtInput  = m.querySelector("#edit-amt");
+  const modeInput = m.querySelector("#edit-mode");
+
+  /* Pre-fill mode from existing receipt (backward-compat: default "upi") */
+  modeInput.value = receipt.mode || "upi";
   amtInput.focus();
 
   m.querySelector("#m-cancel").onclick = closeAllOverlays;
@@ -1665,14 +1678,15 @@ function editPayment(code) {
       return;
     }
 
-    /* Same amount as before — no change needed */
-    if (val === oldAmt) {
-      toast("No change — amount is the same as before.");
+    /* Same amount and same mode — truly no change */
+    if (val === oldAmt && modeInput.value === (receipt.mode || "upi")) {
+      toast("No change — amount and mode are the same.");
       return;
     }
 
+    const newMode = modeInput.value;
     closeAllOverlays();
-    await applyEdit(receipt, val);
+    await applyEdit(receipt, val, newMode);
   };
 }
 
@@ -1685,7 +1699,7 @@ function editPayment(code) {
  * 5. Atomically save everything in ONE updateDoc call.
  * 6. Re-render UI and show success popup.
  */
-async function applyEdit(oldReceipt, newAmount) {
+async function applyEdit(oldReceipt, newAmount, newMode = "upi") {
   if (!isAdminMode) { toast("Unauthorized access."); return; }
   enforceDefaults();
 
@@ -1714,7 +1728,8 @@ async function applyEdit(oldReceipt, newAmount) {
     type:    oldReceipt.type,
     subType: oldReceipt.subType,
     date:    today(),
-    status:  "active"
+    status:  "active",
+    mode:    newMode
   };
 
   /* Step 4 cont: push and trim */
@@ -1906,6 +1921,11 @@ function adminActionFlow(feeType, identifier, label) {
       <option value="full">Full Payment</option>
       <option value="partial">Partial Payment</option>
     </select>
+    <label>Payment Mode</label>
+    <select id="mode-sel">
+      <option value="upi">📲 UPI (Online)</option>
+      <option value="cash">💵 Cash</option>
+    </select>
     <div id="amt-row" style="display:none;margin-top:0.6rem">
       <label>Amount (₹) — use negative to reduce</label>
       <input type="number" id="amt-inp" placeholder="e.g. 500 or -200">
@@ -1927,10 +1947,11 @@ function adminActionFlow(feeType, identifier, label) {
 
   m.querySelector("#m-ok").onclick = async () => {
     const action = sel.value;
+    const mode   = m.querySelector("#mode-sel").value;
 
     if (action === "full") {
       closeAllOverlays();
-      await applyPayment(feeType, identifier, 0, true);
+      await applyPayment(feeType, identifier, 0, true, mode);
       return;
     }
 
@@ -1954,7 +1975,7 @@ function adminActionFlow(feeType, identifier, label) {
     }
 
     closeAllOverlays();
-    await applyPayment(feeType, identifier, amount, false);
+    await applyPayment(feeType, identifier, amount, false, mode);
   };
 }
 
