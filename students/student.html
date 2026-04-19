@@ -321,6 +321,7 @@ body {
 }
 .btn-pay  { background: var(--brand); color: #fff; box-shadow: 0 3px 10px rgba(30,74,118,0.25); }
 .btn-pay:hover  { background: var(--brand-dark); transform: translateY(-1px); }
+.btn-pay:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 .btn-help { background: var(--brand-pale); color: var(--brand); border: 1px solid #c7d9f5; }
 .btn-help:hover { background: #dce9fb; }
 
@@ -401,6 +402,7 @@ body {
 .btn-modal-cancel:hover { background: #e5e9f0; }
 .btn-modal-ok { background: var(--brand); color: #fff; }
 .btn-modal-ok:hover { background: var(--brand-dark); transform: translateY(-1px); }
+.btn-modal-ok:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
 /* ── QR / Pay popup ── */
 .qr-wrap { text-align: center; }
@@ -538,10 +540,8 @@ body {
 .rt-footer { text-align: center; margin-top: 14px; font-size: 10px; color: #aab6c4; }
 
 /* ═══════════════════════════════════════════
-   HISTORY VIEW – NEW STYLES
+   HISTORY VIEW STYLES
 ═══════════════════════════════════════════ */
-
-/* Filter bar */
 .filter-bar {
   display: flex; align-items: center; gap: 0.75rem;
   margin-bottom: 1rem; flex-wrap: wrap;
@@ -567,8 +567,6 @@ body {
   border-color: var(--brand-light);
   box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
 }
-
-/* History count badge */
 .hist-count {
   margin-left: auto;
   font-size: 0.72rem; font-weight: 700;
@@ -578,41 +576,19 @@ body {
   border: 1px solid #c7d9f5;
   white-space: nowrap;
 }
-
-/* History table: code cell */
 .hist-code-cell .hist-label { font-weight: 600; font-size: 0.86rem; }
 .hist-code-cell .hist-code-text {
   font-family: monospace; font-size: 0.68rem;
   color: var(--brand-light); margin-top: 1px;
 }
-
-/* Edit button */
-.btn-edit {
-  background: var(--brand-pale); color: var(--brand);
-  border: 1px solid #c7d9f5;
-  padding: 0.28rem 0.8rem; border-radius: 2rem;
-  font-size: 0.72rem; font-weight: 700;
-  cursor: pointer; transition: var(--transition);
-  font-family: inherit; white-space: nowrap;
-  display: inline-flex; align-items: center; gap: 0.25rem;
-}
-.btn-edit:hover {
-  background: var(--brand); color: #fff;
-  border-color: var(--brand);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(30,74,118,0.2);
-}
-.btn-edit:active { transform: scale(0.97); }
-
-/* History empty state */
 .hist-empty {
-  padding: 3rem 1.5rem; text-align: center; color: #8a9bb0;
+  padding: 3rem 1.5rem; text-align: center; color: var(--muted);
 }
 .hist-empty-icon { font-size: 2.2rem; margin-bottom: 0.6rem; line-height: 1; }
 .hist-empty-title { font-size: 0.92rem; font-weight: 700; margin-bottom: 0.25rem; }
 .hist-empty-sub   { font-size: 0.8rem; }
 
-/* Edit payment modal – info box */
+/* Edit payment modal info box */
 .edit-info-box {
   background: var(--brand-pale);
   border: 1px solid #c7d9f5;
@@ -684,6 +660,31 @@ body {
 [data-theme="dark"] .filter-select     { background: #0f1a2e; color: var(--text); }
 [data-theme="dark"] .hist-count        { background: var(--brand-pale); }
 [data-theme="dark"] .edit-info-box     { background: var(--brand-pale); }
+
+/* ── Dark mode text visibility ── */
+[data-theme="dark"] { color: var(--text); }
+
+[data-theme="dark"] p,
+[data-theme="dark"] span,
+[data-theme="dark"] div,
+[data-theme="dark"] td,
+[data-theme="dark"] th,
+[data-theme="dark"] label { color: var(--text); }
+
+[data-theme="dark"] .summary-label,
+[data-theme="dark"] .exp-subtitle,
+[data-theme="dark"] .hist-empty,
+[data-theme="dark"] .filter-label,
+[data-theme="dark"] .edit-info-meta,
+[data-theme="dark"] .edit-max-hint,
+[data-theme="dark"] .wa-note { color: var(--muted); }
+
+[data-theme="dark"] .fee-table thead th { color: var(--muted); }
+[data-theme="dark"] .fee-table tbody td { color: var(--text); }
+
+[data-theme="dark"] .modal,
+[data-theme="dark"] .modal h3,
+[data-theme="dark"] .modal label { color: var(--text); }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
@@ -702,7 +703,6 @@ body {
     <button class="btn-logout" id="logoutBtn">🚪 Logout</button>
   </header>
 
-  <!-- student info + progress -->
   <div class="student-card" id="studentCard">
     <div>
       <div class="student-name" id="studentName">—</div>
@@ -717,17 +717,14 @@ body {
     </div>
   </div>
 
-  <!-- view tabs -->
   <div class="view-tabs">
     <button class="view-tab active" id="tabTerm">Term Fees</button>
     <button class="view-tab"        id="tabOther">Other Fees</button>
     <button class="view-tab"        id="tabHistory">📋 History</button>
   </div>
 
-  <!-- dynamic content -->
   <div id="content"></div>
 
-  <!-- summary + actions -->
   <div class="summary-bar" id="summaryBar"></div>
 
   <div class="action-row">
@@ -784,23 +781,38 @@ const fbApp = initializeApp({
 
 const db = getFirestore(fbApp);
 
-/* ── Enable offline caching (IndexedDB persistence) ── */
+/*
+ * NOTE: enableIndexedDbPersistence is deprecated in Firebase 9+ in favour of
+ *   initializeFirestore(app, { localCache: persistentLocalCache() })
+ * If upgrading Firebase, switch to that API. The catch below handles the case
+ * where this export no longer exists or fails at runtime.
+ */
 enableIndexedDbPersistence(db).catch(err => {
   if (err.code === "failed-precondition") {
-    console.warn("Offline persistence: multiple tabs open.");
+    console.warn("Offline persistence unavailable: multiple tabs open.");
+    toast("Offline mode unavailable — multiple tabs detected.");
   } else if (err.code === "unimplemented") {
-    console.warn("Offline persistence: not supported in this browser.");
+    console.warn("Offline persistence not supported in this browser.");
+  } else {
+    console.warn("Offline persistence error:", err.code);
   }
 });
 
 /* ═══════════════════════════════════════════
    CONSTANTS
+   ⚠️  SECURITY WARNING: The admin password stored here is frontend-only
+   and provides NO real security. Anyone who inspects the source code can
+   read it. For production use, enforce all writes via Firestore Security
+   Rules and a server-side auth system.
+   Recommendation: Use Firebase Auth + Firestore rules like:
+     allow write: if request.auth.token.admin == true;
 ═══════════════════════════════════════════ */
-const ADMIN_PASS    = "ADMIN124";
-const UPI_ID        = "jinmelkunnath@oksbi";
-const WHATSAPP_URL  = "https://wa.me/917012808911";
-const QR_URL        = "https://i.ibb.co/8RSZRz0/IMG-20260329-160905.png";
-const MAX_RECEIPTS  = 100;
+const ADMIN_PASS   = "ADMIN@STANNES";
+const UPI_ID       = "jinmelkunnath@oksbi";
+const UPI_NAME     = "St.%20Annes%20ICSE";
+const WHATSAPP_URL = "https://wa.me/917012808911";
+const QR_URL       = "https://i.ibb.co/8RSZRz0/IMG-20260329-160905.png";
+const MAX_RECEIPTS = 100;
 
 const MONTH_ORDER = ["june","july","august","september","october","november","december","january","february","march"];
 
@@ -843,6 +855,20 @@ const capF  = s   => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 const fmtRs = n   => "₹" + safe(n).toLocaleString("en-IN");
 const today = ()  => new Date().toISOString().slice(0, 10);
 
+/*
+ * FIX (S1): HTML escape utility — applied to ALL Firestore-sourced strings
+ * before innerHTML insertion to prevent XSS injection.
+ */
+function htmlEscape(str) {
+  if (str == null) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function orderedEntries(obj) {
   return MONTH_ORDER
     .map(m => [m, (obj || {})[m]])
@@ -853,15 +879,20 @@ function orderedEntries(obj) {
    STATE
 ═══════════════════════════════════════════ */
 const studentId = (new URLSearchParams(location.search).get("id") || "").trim().toLowerCase();
-let SD   = {};
-let TERMS = [];
-let VIEW  = "term";
-let isAdminMode = false; /* ── Admin gate: must be true for editPayment / applyEdit ── */
+let SD          = {};
+let TERMS       = [];
+let VIEW        = "term";
+
+/*
+ * isAdminMode gates editPayment() and applyEdit().
+ * It must be set to true only after successful password auth
+ * and is GUARANTEED to reset to false via try/finally in applyEdit().
+ */
+let isAdminMode = false;
 
 /* ═══════════════════════════════════════════
    LOADER
 ═══════════════════════════════════════════ */
-function showLoader() { el("loader").classList.remove("hidden"); }
 function hideLoader() {
   el("loader").classList.add("hidden");
   el("app").classList.add("visible");
@@ -947,34 +978,40 @@ function enforceDefaults() {
    LOAD
 ═══════════════════════════════════════════ */
 async function loadStudent() {
-  if (!studentId) { alert("No student ID in URL.\nExample: ?id=john001"); hideLoader(); return; }
+  if (!studentId) {
+    alert("No student ID in URL.\nExample: ?id=john001");
+    hideLoader();
+    return;
+  }
   try {
     const snap = await getDoc(doc(db, "students", studentId));
-    if (!snap.exists()) { alert(`Student not found: "${studentId}"`); hideLoader(); return; }
-
+    if (!snap.exists()) {
+      alert(`Student not found: "${studentId}"`);
+      hideLoader();
+      return;
+    }
     const raw = snap.data();
-
     SD = {
-      name:       raw.name  || "Unknown",
-      class:      String(raw.class || "—").toUpperCase(),
-      phone:      raw.phone || "",
-      receipts:   Array.isArray(raw.receipts) ? raw.receipts : [],
-      terms:      normalizeTerms(raw.terms),
-      busFee:     normalizeBusFee(raw.busFee),
-      ecaFee:     normalizeEcaFee(raw.ecaFee || raw.eca),
-      annualFee:  normalizeAnnualFee(raw.annualFee),
-      otherFees:  normalizeOtherFees(raw.otherFees)
+      name:      raw.name  || "Unknown",
+      class:     String(raw.class || "—").toUpperCase(),
+      phone:     raw.phone || "",
+      receipts:  Array.isArray(raw.receipts) ? raw.receipts : [],
+      terms:     normalizeTerms(raw.terms),
+      busFee:    normalizeBusFee(raw.busFee),
+      ecaFee:    normalizeEcaFee(raw.ecaFee || raw.eca),
+      annualFee: normalizeAnnualFee(raw.annualFee),
+      otherFees: normalizeOtherFees(raw.otherFees)
     };
     enforceDefaults();
     TERMS = SD.terms;
 
     el("studentName").textContent = SD.name;
-    el("studentTags").innerHTML = `<span class="tag">📖 Class ${SD.class}</span>`;
+    el("studentTags").innerHTML   = `<span class="tag">📖 Class ${htmlEscape(SD.class)}</span>`;
 
     render();
     hideLoader();
   } catch (err) {
-    console.error("🔥", err);
+    console.error("🔥 Firestore load error:", err);
     alert("Error loading student: " + err.message);
     hideLoader();
   }
@@ -991,7 +1028,6 @@ function calcTermTotals() {
 
 function calcOtherTotals() {
   let total = 0, paid = 0;
-
   if (SD.busFee) {
     Object.values(SD.busFee.monthly).forEach(m => { total += safe(m.total); paid += safe(m.paid); });
   }
@@ -1004,7 +1040,6 @@ function calcOtherTotals() {
       total += safe(f.total); paid += safe(f.paid);
     }
   });
-
   return { total, paid, remaining: total - paid };
 }
 
@@ -1013,14 +1048,11 @@ function calcOtherTotals() {
 ═══════════════════════════════════════════ */
 function updateProgress(total, paid) {
   const pct = safe(total) > 0 ? Math.min(100, (safe(paid) / safe(total)) * 100) : 0;
-  const bar = el("progressBar");
-  const txt = el("progressPct");
-  const blk = el("progressBlock");
-  blk.style.display  = "block";
-  bar.style.width    = pct + "%";
-  bar.style.minWidth = pct > 0 ? "5px" : "0";
-  txt.textContent    = Math.round(pct) + "%";
-  el("progressLabel").textContent = VIEW === "term" ? "TERM FEES PAID" : "OTHER FEES PAID";
+  el("progressBlock").style.display = "block";
+  el("progressBar").style.width     = pct + "%";
+  el("progressBar").style.minWidth  = pct > 0 ? "5px" : "0";
+  el("progressPct").textContent     = Math.round(pct) + "%";
+  el("progressLabel").textContent   = VIEW === "term" ? "TERM FEES PAID" : "OTHER FEES PAID";
 }
 
 /* ═══════════════════════════════════════════
@@ -1044,20 +1076,20 @@ function renderSummary(total, paid, remaining) {
 
 /* ═══════════════════════════════════════════
    FEE TABLE BUILDER
+   FIX (S1): r.label escaped — fee names come from Firestore via otherFees
 ═══════════════════════════════════════════ */
 function buildFeeTable(rows) {
   const trs = rows.map(r => {
     const rem    = safe(r.total) - safe(r.paid);
     const isPaid = rem <= 0;
     return `<tr>
-      <td style="text-align:left">${r.label}</td>
+      <td style="text-align:left">${htmlEscape(r.label)}</td>
       <td>${fmtRs(r.total)}</td>
       <td>${fmtRs(r.paid)}</td>
       <td>${fmtRs(rem)}</td>
       <td><span class="badge ${isPaid ? "badge-paid" : "badge-pending"}">${isPaid ? "Paid" : "Pending"}</span></td>
     </tr>`;
   }).join("");
-
   return `<div class="fee-table-scroll"><table class="fee-table">
     <thead><tr>
       <th style="text-align:left">Fee Item</th>
@@ -1069,20 +1101,21 @@ function buildFeeTable(rows) {
 
 /* ═══════════════════════════════════════════
    EXPANDABLE CARD BUILDER
+   FIX (S1): title and subtitle escaped — can contain Firestore fee names
 ═══════════════════════════════════════════ */
 let openCard = null;
 
 function buildExpCard({ id, icon, title, subtitle, rows }) {
   const card = document.createElement("div");
-  card.className = "exp-card"; card.dataset.id = id;
+  card.className = "exp-card";
 
   card.innerHTML = `
     <div class="exp-header" id="hdr-${id}">
       <div class="exp-header-left">
         <span class="exp-icon">${icon}</span>
         <div>
-          <div class="exp-title">${title}</div>
-          ${subtitle ? `<div class="exp-subtitle">${subtitle}</div>` : ""}
+          <div class="exp-title">${htmlEscape(title)}</div>
+          ${subtitle ? `<div class="exp-subtitle">${htmlEscape(subtitle)}</div>` : ""}
         </div>
       </div>
       <div class="exp-header-right">
@@ -1102,7 +1135,6 @@ function buildExpCard({ id, icon, title, subtitle, rows }) {
 
   hdr.addEventListener("click", () => {
     const isOpen = arr.classList.contains("open");
-
     if (openCard && openCard !== card) {
       const ob = openCard.querySelector(".exp-body");
       const oa = openCard.querySelector(".exp-arrow");
@@ -1111,7 +1143,6 @@ function buildExpCard({ id, icon, title, subtitle, rows }) {
       if (oa) oa.classList.remove("open");
       if (oh) oh.classList.remove("open");
     }
-
     if (isOpen) {
       body.style.maxHeight = "0";
       arr.classList.remove("open");
@@ -1132,14 +1163,14 @@ function buildExpCard({ id, icon, title, subtitle, rows }) {
 }
 
 function updateCardSummary(card, rows, id) {
-  const sumEl = card.querySelector ? card.querySelector(`#sum-${id}`) : el(`sum-${id}`);
+  const sumEl = card.querySelector(`#sum-${id}`);
   if (!sumEl) return;
   const totalP  = rows.reduce((a, r) => a + safe(r.paid),  0);
   const totalT  = rows.reduce((a, r) => a + safe(r.total), 0);
   const allPaid = rows.every(r => safe(r.total) - safe(r.paid) <= 0);
   sumEl.innerHTML = allPaid
     ? `<span class="badge badge-paid">Paid</span>`
-    : `<span style="font-size:0.75rem;color:#5a7080">${fmtRs(totalP)} / ${fmtRs(totalT)}</span>`;
+    : `<span style="font-size:0.75rem;color:var(--muted)">${fmtRs(totalP)} / ${fmtRs(totalT)}</span>`;
 }
 
 /* ═══════════════════════════════════════════
@@ -1162,17 +1193,19 @@ function render() {
     renderSummary(total, paid, remaining);
     updateProgress(total, paid);
   } else {
-    /* history view */
     renderHistoryView(container);
     const t = calcTermTotals();
     const o = calcOtherTotals();
-    renderSummary(
-      t.total + o.total,
-      t.paid  + o.paid,
-      t.remaining + o.remaining
-    );
+    renderSummary(t.total + o.total, t.paid + o.paid, t.remaining + o.remaining);
     el("progressBlock").style.display = "none";
   }
+
+  const { remaining: totalRem } = (() => {
+    const t = calcTermTotals();
+    const o = calcOtherTotals();
+    return { remaining: t.remaining + o.remaining };
+  })();
+  el("payBtn").disabled = totalRem <= 0;
 }
 
 function renderTermView(container) {
@@ -1229,7 +1262,6 @@ function renderOtherView(container) {
       rows = [{ label: fee.name, total: safe(fee.total), paid: safe(fee.paid) }];
     }
     if (!rows.reduce((a, r) => a + r.total, 0)) return;
-
     list.appendChild(buildExpCard({
       id:       `custom-${idx}`,
       icon:     iconFor(fee.name),
@@ -1241,23 +1273,21 @@ function renderOtherView(container) {
   });
 
   if (!anySection) {
-    list.innerHTML = `<p style="padding:2.5rem;text-align:center;color:#8a9bb0;font-size:0.9rem;">No other fees configured.</p>`;
+    list.innerHTML = `<p style="padding:2.5rem;text-align:center;color:var(--muted);font-size:0.9rem;">No other fees configured.</p>`;
   }
-
   container.appendChild(list);
 }
 
 /* ═══════════════════════════════════════════
    HISTORY VIEW
+   FIX (S1): r.subType, r.code, r.date all escaped before innerHTML insertion
 ═══════════════════════════════════════════ */
 function renderHistoryView(container) {
-  /* Only show active receipts, newest first */
   const activeReceipts = (SD.receipts || [])
     .filter(r => !r.status || r.status === "active")
     .slice()
     .reverse();
 
-  /* Empty state – no receipts at all */
   if (!activeReceipts.length) {
     const wrap = document.createElement("div");
     wrap.className = "term-table-wrap";
@@ -1271,7 +1301,6 @@ function renderHistoryView(container) {
     return;
   }
 
-  /* Filter bar */
   const filterBar = document.createElement("div");
   filterBar.className = "filter-bar";
   filterBar.innerHTML = `
@@ -1287,23 +1316,18 @@ function renderHistoryView(container) {
     <span class="hist-count" id="hist-count">${activeReceipts.length} record${activeReceipts.length !== 1 ? "s" : ""}</span>`;
   container.appendChild(filterBar);
 
-  /* Table wrapper */
   const tableWrap = document.createElement("div");
   tableWrap.className = "term-table-wrap";
-  tableWrap.id = "hist-table-wrap";
   container.appendChild(tableWrap);
 
-  /* Inner render function – called on filter change too */
   function renderTable(filterType) {
     const filtered = filterType === "all"
       ? activeReceipts
       : activeReceipts.filter(r => r.type === filterType);
 
-    /* Update count */
     const countEl = document.getElementById("hist-count");
     if (countEl) countEl.textContent = `${filtered.length} record${filtered.length !== 1 ? "s" : ""}`;
 
-    /* No results for filter */
     if (!filtered.length) {
       tableWrap.innerHTML = `
         <div class="hist-empty">
@@ -1314,20 +1338,19 @@ function renderHistoryView(container) {
       return;
     }
 
-    /* Build rows */
+    /* FIX (S1): All Firestore string fields escaped before innerHTML */
     const rows = filtered.map(r => {
       const amt    = safe(r.amount);
-      const isNeg  = amt < 0;
-      const amtCls = isNeg ? "color:var(--red)" : "color:var(--green)";
+      const amtCls = amt < 0 ? "color:var(--red)" : "color:var(--green)";
       return `<tr>
         <td style="text-align:left">
           <div class="hist-code-cell">
-            <div class="hist-label">${r.subType || "—"}</div>
-            <div class="hist-code-text">${r.code || "—"}</div>
+            <div class="hist-label">${htmlEscape(r.subType || "—")}</div>
+            <div class="hist-code-text">${htmlEscape(r.code || "—")}</div>
           </div>
         </td>
         <td style="${amtCls};font-weight:700">${fmtRs(amt)}</td>
-        <td style="font-size:0.8rem;white-space:nowrap">${r.date || "—"}</td>
+        <td style="font-size:0.8rem;white-space:nowrap">${htmlEscape(r.date || "—")}</td>
         <td style="font-size:0.75rem;white-space:nowrap">${(r.mode || "upi") === "cash" ? "💵 Cash" : "📲 UPI"}</td>
       </tr>`;
     }).join("");
@@ -1344,9 +1367,9 @@ function renderHistoryView(container) {
           <tbody>${rows}</tbody>
         </table>
       </div>`;
-}
-  renderTable("all");
+  }
 
+  renderTable("all");
   filterBar.querySelector("#hist-filter").addEventListener("change", function () {
     renderTable(this.value);
   });
@@ -1354,23 +1377,16 @@ function renderHistoryView(container) {
 
 /* ═══════════════════════════════════════════
    FIRESTORE SAVES
+   saveAll() is used by applyEdit() for an atomic consistency write.
+   applyPayment() builds its own atomic updateDoc inline.
 ═══════════════════════════════════════════ */
-const dbRef      = () => doc(db, "students", studentId);
-const saveTerms  = () => updateDoc(dbRef(), { terms:     TERMS });
-const saveBus    = () => updateDoc(dbRef(), { busFee:    SD.busFee });
-const saveEca    = () => updateDoc(dbRef(), { ecaFee:    { total: safe(SD.ecaFee.total), paid: safe(SD.ecaFee.paid) } });
-const saveAnnual = () => updateDoc(dbRef(), { annualFee: SD.annualFee });
-const saveOthers = () => updateDoc(dbRef(), { otherFees: SD.otherFees });
+const dbRef = () => doc(db, "students", studentId);
 
-/**
- * Atomic save — writes all fee fields + receipts in ONE updateDoc call.
- * Used by applyEdit to guarantee consistency.
- */
 async function saveAll() {
   const data = {
-    receipts: SD.receipts,
-    terms:    TERMS,
-    ecaFee:   { total: safe(SD.ecaFee.total), paid: safe(SD.ecaFee.paid) },
+    receipts:  SD.receipts,
+    terms:     TERMS,
+    ecaFee:    { total: safe(SD.ecaFee.total), paid: safe(SD.ecaFee.paid) },
     otherFees: SD.otherFees
   };
   if (SD.busFee)    data.busFee    = SD.busFee;
@@ -1385,11 +1401,11 @@ function receiptCode(name, cls, subType, amount) {
   const words    = name.trim().split(/\s+/);
   const initials = words.length === 1
     ? words[0][0].toUpperCase() + "X"
-    : words.slice(0,2).map(w => w[0]).join("").toUpperCase();
-  const cn   = cls.replace(/\D/g, "");
-  const tn   = (subType.match(/\d+/) || ["0"])[0];
-  const ap   = String(Math.abs(amount)).slice(0, 2);
-  const seq  = Date.now().toString().slice(-4);
+    : words.slice(0, 2).map(w => w[0]).join("").toUpperCase();
+  const cn    = cls.replace(/\D/g, "");
+  const tn    = (subType.match(/\d+/) || ["0"])[0];
+  const ap    = String(Math.abs(amount)).slice(0, 2);
+  const seq   = Date.now().toString().slice(-6) + Math.random().toString(36).slice(2, 4).toUpperCase();
   const idSfx = ((studentId.match(/\d+/) || ["0"])[0]).padStart(3, "0");
   return `${initials}${cn}${tn}${ap}${seq}${idSfx}`;
 }
@@ -1402,28 +1418,14 @@ async function renderReceiptImg(data) {
   s("rt-fee",    data.fee);
   s("rt-date",   data.date);
   s("rt-code",   data.code);
-  const canvas = await html2canvas(el("receipt-tpl"), { scale: 2, backgroundColor: "#fff" });
+  const scale  = Math.min(window.devicePixelRatio || 2, 3);
+  const canvas = await html2canvas(el("receipt-tpl"), { scale, backgroundColor: "#fff" });
   return canvas.toDataURL("image/png");
 }
 
 function dlReceipt(url, code) {
-  const a = document.createElement("a"); a.href = url; a.download = `${code}.png`; a.click();
-}
-
-/**
- * Store receipt in SD.receipts and persist.
- * - Adds status: "active" if not set.
- * - Trims to MAX_RECEIPTS if exceeded.
- */
-async function storeReceipt(obj) {
-  if (!Array.isArray(SD.receipts)) SD.receipts = [];
-  const receipt = { ...obj, status: obj.status || "active" };
-  SD.receipts.push(receipt);
-  /* Keep only the most recent MAX_RECEIPTS entries */
-  if (SD.receipts.length > MAX_RECEIPTS) {
-    SD.receipts = SD.receipts.slice(-MAX_RECEIPTS);
-  }
-  await updateDoc(dbRef(), { receipts: SD.receipts });
+  const a = document.createElement("a");
+  a.href = url; a.download = `${code}.png`; a.click();
 }
 
 async function showSuccess(subType, amount, code) {
@@ -1442,9 +1444,9 @@ async function showSuccess(subType, amount, code) {
           <path   class="tick-path"   d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
         </svg>
       </div>
-      <p style="font-weight:700;margin-bottom:6px">${subType} · ${fmtRs(amount)}</p>
+      <p style="font-weight:700;margin-bottom:6px">${htmlEscape(subType)} · ${fmtRs(amount)}</p>
       <img src="${imgUrl}" alt="Receipt">
-      <div class="receipt-code">${code}</div>
+      <div class="receipt-code">${htmlEscape(code)}</div>
       <div class="receipt-btns">
         <button class="btn-action btn-pay" id="rcpt-dl">⬇ Download</button>
         <button class="btn-action btn-help" id="rcpt-wa">💬 Send</button>
@@ -1459,6 +1461,8 @@ async function showSuccess(subType, amount, code) {
 
 /* ═══════════════════════════════════════════
    PAYMENT HANDLER
+   FIX (C3): Fee data and receipt are now written in ONE atomic updateDoc call.
+   FIX (C2): In-memory state is snapshot before mutation; rolled back on error.
 ═══════════════════════════════════════════ */
 async function applyPayment(feeType, identifier, amount, isFull, mode = "upi") {
   enforceDefaults();
@@ -1499,7 +1503,6 @@ async function applyPayment(feeType, identifier, amount, isFull, mode = "upi") {
       item    = SD.otherFees[idx];
       subType = item.name;
     }
-
   } else {
     alert("Unknown fee type"); return false;
   }
@@ -1508,47 +1511,63 @@ async function applyPayment(feeType, identifier, amount, isFull, mode = "upi") {
 
   const currentPaid = safe(item.paid);
   const totalAmt    = safe(item.total);
-  let newPaid;
-
-  if (isFull) {
-    newPaid = totalAmt;
-  } else {
-    newPaid = Math.max(0, Math.min(totalAmt, currentPaid + safe(amount)));
-  }
-
-  const delta = newPaid - currentPaid;
+  const newPaid     = isFull
+    ? totalAmt
+    : Math.max(0, Math.min(totalAmt, currentPaid + safe(amount)));
+  const delta       = newPaid - currentPaid;
 
   if (delta === 0) {
     toast("No change — paid amount is already at this value.");
     return false;
   }
 
+  /* FIX (C2): Snapshot before any mutation for clean rollback */
+  const prevPaid             = safe(item.paid);
+  const prevReceiptsSnapshot = (SD.receipts || []).map(r => ({ ...r }));
+
+  /* Mutate in-memory state */
   item.paid = newPaid;
 
-  if      (feeType === "term")   await saveTerms();
-  else if (feeType === "bus")    await saveBus();
-  else if (feeType === "eca")    await saveEca();
-  else if (feeType === "annual") await saveAnnual();
-  else if (feeType === "other")  await saveOthers();
+  /* Build receipt object */
+  const absAmount = Math.abs(delta);
+  const code      = receiptCode(SD.name, SD.class, subType, absAmount);
+  const recObj    = { code, amount: delta, type: feeType, subType, date: today(), status: "active", mode };
+
+  /* Push receipt to SD */
+  if (!Array.isArray(SD.receipts)) SD.receipts = [];
+  SD.receipts.push(recObj);
+  if (SD.receipts.length > MAX_RECEIPTS) SD.receipts = SD.receipts.slice(-MAX_RECEIPTS);
+
+  /* FIX (C3): Build ONE atomic update object — fee field + receipts in a single write */
+  const updateData = { receipts: SD.receipts };
+  if      (feeType === "term")   updateData.terms     = TERMS;
+  else if (feeType === "bus")    updateData.busFee    = SD.busFee;
+  else if (feeType === "eca")    updateData.ecaFee    = { total: safe(SD.ecaFee.total), paid: safe(SD.ecaFee.paid) };
+  else if (feeType === "annual") updateData.annualFee = SD.annualFee;
+  else if (feeType === "other")  updateData.otherFees = SD.otherFees;
+
+  try {
+    await updateDoc(dbRef(), updateData);
+  } catch (err) {
+    /* FIX (C2): Rollback in-memory state so UI stays consistent with Firestore */
+    item.paid   = prevPaid;
+    SD.receipts = prevReceiptsSnapshot;
+    toast("Error saving payment: " + err.message);
+    console.error("applyPayment error:", err);
+    render();
+    return false;
+  }
 
   render();
-
-  const absAmount = Math.abs(delta);
-  const code = receiptCode(SD.name, SD.class, subType, absAmount);
-  await storeReceipt({ code, amount: delta, type: feeType, subType, date: today(), status: "active", mode });
   await showSuccess(subType, absAmount, code);
   return true;
 }
 
 /* ═══════════════════════════════════════════
    EDIT PAYMENT SYSTEM
+   Requires isAdminMode === true at every entry point.
 ═══════════════════════════════════════════ */
 
-/**
- * Resolve a receipt back to its live fee object by (type, subType).
- * Returns { item } where item is the live object reference in SD/TERMS,
- * or null if the fee cannot be found.
- */
 function getFeeItemByReceipt(receipt) {
   const { type, subType } = receipt;
 
@@ -1556,93 +1575,67 @@ function getFeeItemByReceipt(receipt) {
     const term = TERMS.find(t => t.name === subType);
     return term ? { item: term } : null;
   }
-
   if (type === "bus") {
-    /* subType: "Bus Fee – June"  (en-dash U+2013) */
     const dashIdx = subType.indexOf("–");
-    const month   = dashIdx !== -1
-      ? subType.slice(dashIdx + 1).trim().toLowerCase()
-      : "";
+    const month   = dashIdx !== -1 ? subType.slice(dashIdx + 1).trim().toLowerCase() : "";
     if (!month || !SD.busFee?.monthly[month]) return null;
     return { item: SD.busFee.monthly[month] };
   }
-
-  if (type === "eca") {
-    return SD.ecaFee ? { item: SD.ecaFee } : null;
-  }
-
-  if (type === "annual") {
-    return SD.annualFee ? { item: SD.annualFee } : null;
-  }
-
+  if (type === "eca")    return SD.ecaFee    ? { item: SD.ecaFee }    : null;
+  if (type === "annual") return SD.annualFee ? { item: SD.annualFee } : null;
   if (type === "other") {
     const dashIdx = subType.indexOf("–");
     if (dashIdx !== -1) {
-      /* Monthly other fee: "Fee Name – Month" */
       const feeName = subType.slice(0, dashIdx).trim();
       const month   = subType.slice(dashIdx + 1).trim().toLowerCase();
       const fee     = SD.otherFees.find(f => f.name === feeName);
       if (!fee || !fee.monthly?.[month]) return null;
       return { item: fee.monthly[month] };
-    } else {
-      /* One-time other fee: subType === fee name */
-      const fee = SD.otherFees.find(f => f.name === subType);
-      return fee ? { item: fee } : null;
     }
+    const fee = SD.otherFees.find(f => f.name === subType);
+    return fee ? { item: fee } : null;
   }
-
   return null;
 }
 
-/**
- * Open the Edit Payment modal for a given receipt code.
- * Only active receipts can be edited.
+/*
+ * FIX (S1): All receipt fields escaped in modal innerHTML.
+ * FIX (L2): input min changed to "0" (validation still enforces > 0 via JS);
+ *           default value shows 1 when oldAmt is non-positive to avoid blank field.
  */
 function editPayment(code) {
   if (!isAdminMode) { toast("Unauthorized access."); return; }
-  if (!code) { toast("Invalid receipt code."); return; }
+  if (!code)        { toast("Invalid receipt code."); return; }
 
-  /* Find active receipt */
   const receipt = (SD.receipts || []).find(
     r => r.code === code && (!r.status || r.status === "active")
   );
-  if (!receipt) {
-    toast("Receipt not found or already cancelled.");
-    return;
-  }
+  if (!receipt) { toast("Receipt not found or already cancelled."); return; }
 
-  /* Locate the live fee item */
   const feeRef = getFeeItemByReceipt(receipt);
-  if (!feeRef) {
-    toast("Cannot locate fee record. Contact admin.");
-    return;
-  }
+  if (!feeRef)  { toast("Cannot locate fee record. Contact admin."); return; }
 
-  const { item }      = feeRef;
-  const oldAmt        = safe(receipt.amount);
-  const currentPaid   = safe(item.paid);
-  const total         = safe(item.total);
+  const { item }     = feeRef;
+  const oldAmt       = safe(receipt.amount);
+  const currentPaid  = safe(item.paid);
+  const total        = safe(item.total);
+  const revertedPaid = Math.max(0, currentPaid - oldAmt);
+  const maxAllowed   = Math.max(0, total - revertedPaid);
 
-  /* After reverting old amount, how much capacity remains? */
-  const revertedPaid  = Math.max(0, currentPaid - oldAmt);
-  const maxAllowed    = Math.max(0, total - revertedPaid);
+  const resetAdmin = () => { isAdminMode = false; };
 
+  /* FIX (S1): receipt fields escaped; FIX (L2): min="0", sensible default value */
   const m = overlay(`
     <button class="modal-close">✕</button>
     <h3>✏ Edit Payment</h3>
     <div class="edit-info-box">
-      <div class="edit-info-fee">${receipt.subType || "—"}</div>
-      <div class="edit-info-meta">Recorded: ${fmtRs(oldAmt)} &nbsp;·&nbsp; Date: ${receipt.date || "—"}</div>
-      <div class="edit-info-code">${receipt.code}</div>
+      <div class="edit-info-fee">${htmlEscape(receipt.subType || "—")}</div>
+      <div class="edit-info-meta">Recorded: ${fmtRs(oldAmt)} &nbsp;·&nbsp; Date: ${htmlEscape(receipt.date || "—")}</div>
+      <div class="edit-info-code">${htmlEscape(receipt.code)}</div>
     </div>
     <label>New Amount (₹)</label>
-    <input
-      type="number"
-      id="edit-amt"
-      placeholder="Enter amount"
-      min="1"
-      max="${maxAllowed}"
-      value="${oldAmt > 0 ? oldAmt : ""}">
+    <input type="number" id="edit-amt" placeholder="Enter amount"
+      min="0" max="${maxAllowed}" value="${oldAmt > 0 ? oldAmt : 1}">
     <div class="edit-max-hint">
       <span>Max allowed:</span>
       <strong>${fmtRs(maxAllowed)}</strong>
@@ -1655,97 +1648,96 @@ function editPayment(code) {
     <div class="modal-actions">
       <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
       <button class="btn-modal btn-modal-ok"     id="m-ok">✓ Update</button>
-    </div>`);
+    </div>`, resetAdmin);
 
   const amtInput  = m.querySelector("#edit-amt");
   const modeInput = m.querySelector("#edit-mode");
-
-  /* Pre-fill mode from existing receipt (backward-compat: default "upi") */
   modeInput.value = receipt.mode || "upi";
   amtInput.focus();
 
-  m.querySelector("#m-cancel").onclick = closeAllOverlays;
+  m.querySelector("#m-cancel").onclick = () => { resetAdmin(); closeAllOverlays(); };
 
-  m.querySelector("#m-ok").onclick = async () => {
+  const okBtn = m.querySelector("#m-ok");
+  okBtn.onclick = async () => {
     const raw = amtInput.value.trim();
-    if (raw === "") { toast("Please enter an amount."); return; }
-
+    if (!raw)              { toast("Please enter an amount."); return; }
     const val = parseFloat(raw);
-    if (isNaN(val))  { toast("Invalid amount. Enter a number."); return; }
-    if (val <= 0)    { toast("Amount must be greater than 0."); return; }
-    if (val > maxAllowed) {
-      toast(`Cannot exceed max allowed: ${fmtRs(maxAllowed)}`);
-      return;
-    }
-
-    /* Same amount and same mode — truly no change */
+    if (isNaN(val))        { toast("Invalid amount. Enter a number."); return; }
+    if (val <= 0)          { toast("Amount must be greater than 0."); return; }
+    if (val > maxAllowed)  { toast(`Cannot exceed max allowed: ${fmtRs(maxAllowed)}`); return; }
     if (val === oldAmt && modeInput.value === (receipt.mode || "upi")) {
       toast("No change — amount and mode are the same.");
       return;
     }
-
+    okBtn.disabled = true;
     const newMode = modeInput.value;
     closeAllOverlays();
     await applyEdit(receipt, val, newMode);
   };
 }
 
-/**
- * Apply an edit to an existing active receipt:
- * 1. Revert the old amount from the fee's paid field.
- * 2. Add the new amount and clamp.
- * 3. Mark old receipt as cancelled.
- * 4. Create a new active receipt.
- * 5. Atomically save everything in ONE updateDoc call.
- * 6. Re-render UI and show success popup.
+/*
+ * FIX (C1): try/catch/finally guarantees isAdminMode = false no matter what.
+ * FIX (C2): Snapshot taken before mutations; rolled back on any Firestore error.
  */
 async function applyEdit(oldReceipt, newAmount, newMode = "upi") {
   if (!isAdminMode) { toast("Unauthorized access."); return; }
   enforceDefaults();
 
   const feeRef = getFeeItemByReceipt(oldReceipt);
-  if (!feeRef) {
-    toast("Fee item not found — edit aborted.");
-    return;
-  }
+  if (!feeRef) { toast("Fee item not found — edit aborted."); isAdminMode = false; return; }
 
   const { item } = feeRef;
   const oldAmt   = safe(oldReceipt.amount);
   const total    = safe(item.total);
 
-  /* Step 1 & 2: revert old, apply new, clamp */
-  const revertedPaid = safe(item.paid) - oldAmt;
-  item.paid = Math.max(0, Math.min(total, revertedPaid + newAmount));
+  /*
+   * FIX (C2): Deep-ish snapshot — each receipt object cloned individually so
+   * in-memory mutations to oldReceipt don't corrupt the rollback snapshot.
+   */
+  const prevItemPaid         = safe(item.paid);
+  const prevReceiptsSnapshot = (SD.receipts || []).map(r => ({ ...r }));
 
-  /* Step 3: cancel old receipt */
-  oldReceipt.status = "cancelled";
+  try {
+    /* Mutate in-memory state */
+    item.paid = Math.max(0, Math.min(total, safe(item.paid) - oldAmt + newAmount));
+    oldReceipt.status = "cancelled";
 
-  /* Step 4: build new receipt */
-  const newCode = receiptCode(SD.name, SD.class, oldReceipt.subType, newAmount);
-  const newReceipt = {
-    code:    newCode,
-    amount:  newAmount,
-    type:    oldReceipt.type,
-    subType: oldReceipt.subType,
-    date:    today(),
-    status:  "active",
-    mode:    newMode
-  };
+    const newCode    = receiptCode(SD.name, SD.class, oldReceipt.subType, newAmount);
+    const newReceipt = {
+      code:    newCode,
+      amount:  newAmount,
+      type:    oldReceipt.type,
+      subType: oldReceipt.subType,
+      date:    today(),
+      status:  "active",
+      mode:    newMode
+    };
 
-  /* Step 4 cont: push and trim */
-  if (!Array.isArray(SD.receipts)) SD.receipts = [];
-  SD.receipts.push(newReceipt);
-  if (SD.receipts.length > MAX_RECEIPTS) {
-    SD.receipts = SD.receipts.slice(-MAX_RECEIPTS);
+    if (!Array.isArray(SD.receipts)) SD.receipts = [];
+    SD.receipts.push(newReceipt);
+    if (SD.receipts.length > MAX_RECEIPTS) {
+      SD.receipts = SD.receipts.slice(-MAX_RECEIPTS);
+    }
+
+    /* Single atomic Firestore write */
+    await saveAll();
+
+    render();
+    await showSuccess(oldReceipt.subType, newAmount, newCode);
+
+  } catch (err) {
+    /* FIX (C2): Rollback in-memory state on any failure */
+    item.paid   = prevItemPaid;
+    SD.receipts = prevReceiptsSnapshot;
+    toast("Error saving edit: " + err.message);
+    console.error("applyEdit error:", err);
+    render();
+
+  } finally {
+    /* FIX (C1): ALWAYS reset admin mode — even on throw, even on success */
+    isAdminMode = false;
   }
-
-  /* Step 5: single atomic write */
-  await saveAll();
-
-  /* Step 6: update UI */
-  render();
-  await showSuccess(oldReceipt.subType, newAmount, newCode);
-  isAdminMode = false;
 }
 
 /* ═══════════════════════════════════════════
@@ -1755,7 +1747,7 @@ function closeAllOverlays() {
   document.querySelectorAll(".overlay").forEach(o => o.remove());
 }
 
-function overlay(html) {
+function overlay(html, onDismiss) {
   closeAllOverlays();
   const ov = document.createElement("div");
   ov.className = "overlay";
@@ -1764,41 +1756,29 @@ function overlay(html) {
   m.innerHTML = html;
   ov.appendChild(m);
   document.body.appendChild(ov);
-  ov.addEventListener("click", e => { if (e.target === ov) closeAllOverlays(); });
+
+  const dismiss = () => {
+    if (typeof onDismiss === "function") onDismiss();
+    closeAllOverlays();
+  };
+
+  ov.addEventListener("click", e => { if (e.target === ov) dismiss(); });
+
   const cl = m.querySelector(".modal-close");
-  if (cl) cl.onclick = closeAllOverlays;
+  if (cl) cl.onclick = dismiss;
+
   return m;
 }
 
 /* ═══════════════════════════════════════════
-   ADMIN FLOW
+   ADMIN ADD FLOW
 ═══════════════════════════════════════════ */
-function adminEntry() {
-  const m = overlay(`
-    <button class="modal-close">✕</button>
-    <h3>Admin Login</h3>
-    <label>Password</label>
-    <input type="password" id="admin-pwd" placeholder="Enter password" autocomplete="off">
-    <div class="modal-actions">
-      <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
-      <button class="btn-modal btn-modal-ok"     id="m-ok">Login</button>
-    </div>`);
-
-  m.querySelector("#m-cancel").onclick = closeAllOverlays;
-  m.querySelector("#m-ok").onclick = () => {
-    const pwd = m.querySelector("#admin-pwd").value;
-    if (pwd !== ADMIN_PASS) { toast("Wrong password"); return; }
-    closeAllOverlays();
-    adminSelectFeeType();
-  };
-}
-
 function adminSelectFeeType() {
   const opts = [`<option value="term">Term Fee</option>`];
-  if (SD.busFee)             opts.push(`<option value="bus">Bus Fee</option>`);
+  if (SD.busFee)           opts.push(`<option value="bus">Bus Fee</option>`);
   opts.push(`<option value="eca">ECA Fee</option>`);
-  if (SD.annualFee)          opts.push(`<option value="annual">Annual Day Fee</option>`);
-  if (SD.otherFees.length)   opts.push(`<option value="other">Other Fee</option>`);
+  if (SD.annualFee)        opts.push(`<option value="annual">Annual Day Fee</option>`);
+  if (SD.otherFees.length) opts.push(`<option value="other">Other Fee</option>`);
 
   const m = overlay(`
     <button class="modal-close">✕</button>
@@ -1823,7 +1803,7 @@ function adminSelectFeeType() {
 }
 
 function adminTermFlow() {
-  const opts = TERMS.map((t, i) => `<option value="${i}">${t.name}</option>`).join("");
+  const opts = TERMS.map((t, i) => `<option value="${i}">${htmlEscape(t.name)}</option>`).join("");
   const m = overlay(`
     <button class="modal-close">✕</button>
     <h3>Select Term</h3>
@@ -1867,8 +1847,7 @@ function adminMonthlyFlow(feeType, feeLabel) {
 }
 
 function adminOtherFlow() {
-  const opts = SD.otherFees.map((f, i) => `<option value="${i}">${f.name}</option>`).join("");
-
+  const opts = SD.otherFees.map((f, i) => `<option value="${i}">${htmlEscape(f.name)}</option>`).join("");
   const m = overlay(`
     <button class="modal-close">✕</button>
     <h3>Select Fee</h3>
@@ -1889,7 +1868,6 @@ function adminOtherFlow() {
     if (fee.type === "monthly") {
       const months = MONTH_ORDER.filter(mo => fee.monthly && fee.monthly[mo]);
       const mopts  = months.map(mo => `<option value="${mo}">${capF(mo)}</option>`).join("");
-
       const m2 = overlay(`
         <button class="modal-close">✕</button>
         <h3>Select Month</h3>
@@ -1899,7 +1877,6 @@ function adminOtherFlow() {
           <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
           <button class="btn-modal btn-modal-ok"     id="m-ok">Next</button>
         </div>`);
-
       m2.querySelector("#m-cancel").onclick = closeAllOverlays;
       m2.querySelector("#m-ok").onclick = () => {
         const month = m2.querySelector("#month-sel").value;
@@ -1912,11 +1889,13 @@ function adminOtherFlow() {
   };
 }
 
-/* ── adminActionFlow: single overlay, only Full + Partial ── */
+/*
+ * FIX (S1): label escaped in h3 — label is derived from Firestore fee names
+ */
 function adminActionFlow(feeType, identifier, label) {
   const m = overlay(`
     <button class="modal-close">✕</button>
-    <h3>Update: ${label}</h3>
+    <h3>Update: ${htmlEscape(label)}</h3>
     <label>Action</label>
     <select id="action-sel">
       <option value="full">Full Payment</option>
@@ -1939,6 +1918,7 @@ function adminActionFlow(feeType, identifier, label) {
   const sel    = m.querySelector("#action-sel");
   const amtRow = m.querySelector("#amt-row");
   const amtInp = m.querySelector("#amt-inp");
+  const okBtn  = m.querySelector("#m-ok");
 
   sel.onchange = () => {
     amtRow.style.display = sel.value === "partial" ? "block" : "none";
@@ -1946,35 +1926,24 @@ function adminActionFlow(feeType, identifier, label) {
 
   m.querySelector("#m-cancel").onclick = closeAllOverlays;
 
-  m.querySelector("#m-ok").onclick = async () => {
+  okBtn.onclick = async () => {
     const action = sel.value;
     const mode   = m.querySelector("#mode-sel").value;
 
     if (action === "full") {
+      okBtn.disabled = true;
       closeAllOverlays();
       await applyPayment(feeType, identifier, 0, true, mode);
       return;
     }
 
     const rawVal = amtInp.value.trim();
-
-    if (rawVal === "" || rawVal === null) {
-      toast("Please enter an amount.");
-      return;
-    }
-
+    if (!rawVal)         { toast("Please enter an amount."); return; }
     const amount = parseFloat(rawVal);
+    if (isNaN(amount))   { toast("Invalid amount. Please enter a number."); return; }
+    if (amount === 0)    { toast("Amount must be non-zero."); return; }
 
-    if (isNaN(amount)) {
-      toast("Invalid amount. Please enter a number.");
-      return;
-    }
-
-    if (amount === 0) {
-      toast("Amount must be greater than or less than 0.");
-      return;
-    }
-
+    okBtn.disabled = true;
     closeAllOverlays();
     await applyPayment(feeType, identifier, amount, false, mode);
   };
@@ -1988,21 +1957,38 @@ function openPay() {
     <button class="modal-close">✕</button>
     <h3>Pay Fees</h3>
     <div class="qr-wrap">
-      <img src="${QR_URL}" alt="QR">
+      <img src="${htmlEscape(QR_URL)}" alt="QR">
     </div>
     <div class="upi-row">
-      <span class="upi-text">${UPI_ID}</span>
+      <span class="upi-text">${htmlEscape(UPI_ID)}</span>
       <button class="btn-copy" id="copyUpi">📋 Copy</button>
     </div>
     <button class="btn-upi-pay" id="upiPay">Pay via UPI App</button>
     <div class="wa-note">Share payment screenshot to <span class="wa-link" id="waLink">Office WhatsApp</span></div>`);
 
-  m.querySelector("#copyUpi").onclick = function() {
-    navigator.clipboard.writeText(UPI_ID).catch(() => {});
-    this.textContent = "✔ Copied";
-    setTimeout(() => { this.textContent = "📋 Copy"; }, 1400);
+  m.querySelector("#copyUpi").onclick = function () {
+    const btn = this;
+    const fallback = () => {
+      const ta = document.createElement("textarea");
+      ta.value = UPI_ID;
+      ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.focus(); ta.select();
+      try { document.execCommand("copy"); } catch (_) {}
+      document.body.removeChild(ta);
+    };
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(UPI_ID).catch(fallback);
+    } else {
+      fallback();
+    }
+    btn.textContent = "✔ Copied";
+    setTimeout(() => { btn.textContent = "📋 Copy"; }, 1400);
   };
-  m.querySelector("#upiPay").onclick = () => { window.location.href = `upi://pay?pa=${UPI_ID}`; };
+
+  m.querySelector("#upiPay").onclick = () => {
+    window.location.href = `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${UPI_NAME}&cu=INR`;
+  };
   m.querySelector("#waLink").onclick = () => window.open(WHATSAPP_URL);
 }
 
@@ -2013,7 +1999,7 @@ function openHelp() {
   const m = overlay(`
     <button class="modal-close">✕</button>
     <h3>Help & Support</h3>
-    <div style="text-align:left;font-size:0.86rem;line-height:1.7;color:#4a6070;margin:0.6rem 0">
+    <div style="text-align:left;font-size:0.86rem;line-height:1.7;color:var(--muted);margin:0.6rem 0">
       <p>📞 <strong>Phone:</strong> +91 12345 67890</p>
       <p>📧 <strong>Email:</strong> office@stannes.edu</p>
       <p>🕘 <strong>Hours:</strong> Mon–Fri, 9 AM – 4 PM</p>
@@ -2041,40 +2027,59 @@ function applyTheme(theme) {
 }
 
 function detectSystemTheme() {
-  const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  applyTheme(isDark ? "dark" : "light");
+  applyTheme(window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
 }
 
 window.matchMedia("(prefers-color-scheme: dark)")
-  .addEventListener("change", e => {
-    applyTheme(e.matches ? "dark" : "light");
-  });
+  .addEventListener("change", e => { applyTheme(e.matches ? "dark" : "light"); });
 
 /* ═══════════════════════════════════════════
-   ADMIN TRIGGER — DESKTOP (E + D)
+   STEALTH KEYBOARD SHORTCUTS
+   A + D → Add Payment  |  E + D → Edit Payment
+   FIX (L4): window "blur" resets key state to prevent stuck shortcuts
+             after tab-switch or focus loss.
 ═══════════════════════════════════════════ */
-let edPressed = { e: false, d: false };
+let keys      = { a: false, d: false, e: false };
+let comboLock = false;
 
 document.addEventListener("keydown", e => {
-  if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
-  if (e.key.toLowerCase() === "e") edPressed.e = true;
-  if (e.key.toLowerCase() === "d") edPressed.d = true;
+  const tag = e.target.tagName;
+  if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
 
-  if (edPressed.e && edPressed.d) {
-    edPressed = { e: false, d: false };
-    triggerAdminEditAccess();
+  const k = e.key.toLowerCase();
+  if (k === "a") keys.a = true;
+  if (k === "d") keys.d = true;
+  if (k === "e") keys.e = true;
+
+  if (comboLock) return;
+
+  if (keys.a && keys.d) {
+    comboLock = true;
+    openAdminAuth("add");
+  } else if (keys.e && keys.d) {
+    comboLock = true;
+    openAdminAuth("edit");
   }
 });
 
 document.addEventListener("keyup", e => {
-  if (e.key.toLowerCase() === "e") edPressed.e = false;
-  if (e.key.toLowerCase() === "d") edPressed.d = false;
+  const k = e.key.toLowerCase();
+  if (k === "a") keys.a = false;
+  if (k === "d") keys.d = false;
+  if (k === "e") keys.e = false;
+  comboLock = false;
+});
+
+/* FIX (L4): Reset all key state when window loses focus */
+window.addEventListener("blur", () => {
+  keys.a = keys.d = keys.e = false;
+  comboLock = false;
 });
 
 /* ═══════════════════════════════════════════
-   ADMIN TRIGGER — AUTH MODAL
+   UNIFIED ADMIN AUTH MODAL
 ═══════════════════════════════════════════ */
-function triggerAdminEditAccess() {
+function openAdminAuth(mode) {
   const m = overlay(`
     <button class="modal-close">✕</button>
     <h3>🔐 Admin Access</h3>
@@ -2095,9 +2100,13 @@ function triggerAdminEditAccess() {
       passInput.focus();
       return;
     }
-    isAdminMode = true;
     closeAllOverlays();
-    openAdminEditSelector();
+    if (mode === "add") {
+      adminSelectFeeType();
+    } else {
+      isAdminMode = true;
+      openAdminEditSelector();
+    }
   };
 
   m.querySelector("#m-cancel").onclick = closeAllOverlays;
@@ -2107,6 +2116,7 @@ function triggerAdminEditAccess() {
 
 /* ═══════════════════════════════════════════
    ADMIN EDIT SELECTOR
+   FIX (S1): r.subType and r.date escaped in option text.
 ═══════════════════════════════════════════ */
 function openAdminEditSelector() {
   const receipts = (SD.receipts || [])
@@ -2120,10 +2130,14 @@ function openAdminEditSelector() {
     return;
   }
 
+  /* FIX (S1): Both option value and text content escaped */
   const options = receipts.map(r => {
-    const safeCode = (r.code || "").replace(/"/g, "&quot;");
-    return `<option value="${safeCode}">${r.subType || "—"} — ${fmtRs(r.amount)} (${r.date || "—"})</option>`;
+    const safeCode = htmlEscape(r.code || "");
+    const safeText = `${htmlEscape(r.subType || "—")} — ${fmtRs(r.amount)} (${htmlEscape(r.date || "—")})`;
+    return `<option value="${safeCode}">${safeText}</option>`;
   }).join("");
+
+  const resetAdmin = () => { isAdminMode = false; };
 
   const m = overlay(`
     <button class="modal-close">✕</button>
@@ -2133,24 +2147,14 @@ function openAdminEditSelector() {
     <div class="modal-actions">
       <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
       <button class="btn-modal btn-modal-ok"     id="m-ok">Edit</button>
-    </div>`);
+    </div>`, resetAdmin);
 
-  m.querySelector("#m-cancel").onclick = () => {
-    isAdminMode = false;
-    closeAllOverlays();
-  };
+  m.querySelector("#m-cancel").onclick = () => { resetAdmin(); closeAllOverlays(); };
 
   m.querySelector("#m-ok").onclick = () => {
     const code = m.querySelector("#edit-select").value;
     closeAllOverlays();
     editPayment(code);
-  };
-
-  /* Close button also resets admin mode */
-  const closeBtn = m.querySelector(".modal-close");
-  closeBtn.onclick = () => {
-    isAdminMode = false;
-    closeAllOverlays();
   };
 }
 
@@ -2171,23 +2175,35 @@ function setView(v) {
 window.addEventListener("DOMContentLoaded", () => {
   detectSystemTheme();
 
-  el("logoutBtn").onclick   = () => { location.href = "../index.html"; };
-  el("tabTerm").onclick     = () => setView("term");
-  el("tabOther").onclick    = () => setView("other");
-  el("tabHistory").onclick  = () => setView("history");
-  el("payBtn").onclick      = openPay;
-  el("helpBtn").onclick     = openHelp;
-
-  /* ── Mobile: 5 s long press on History tab triggers admin edit ── */
-  let histPressTimer = null;
-  el("tabHistory").addEventListener("touchstart", () => {
-    histPressTimer = setTimeout(() => triggerAdminEditAccess(), 5000);
-  }, { passive: true });
-  el("tabHistory").addEventListener("touchend",   () => clearTimeout(histPressTimer));
-  el("tabHistory").addEventListener("touchmove",  () => clearTimeout(histPressTimer));
-  el("tabHistory").addEventListener("touchcancel",() => clearTimeout(histPressTimer));
+  el("logoutBtn").onclick  = () => { location.href = "../index.html"; };
+  el("tabTerm").onclick    = () => setView("term");
+  el("tabOther").onclick   = () => setView("other");
+  el("tabHistory").onclick = () => setView("history");
+  el("payBtn").onclick     = openPay;
+  el("helpBtn").onclick    = openHelp;
 
   loadStudent();
+
+  /*
+   * FIX (L3): Mobile admin access via long-press (1.3 s) on student name.
+   * Cancelled on touchmove (scroll) or touchend (tap) to avoid false triggers.
+   */
+  let longPressTimer = null;
+  const nameEl = el("studentName");
+
+  nameEl.addEventListener("touchstart", () => {
+    longPressTimer = setTimeout(() => {
+      longPressTimer = null;
+      openAdminAuth("add");
+    }, 1300);
+  }, { passive: true });
+
+  const cancelLongPress = () => {
+    if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+  };
+  nameEl.addEventListener("touchend",    cancelLongPress, { passive: true });
+  nameEl.addEventListener("touchmove",   cancelLongPress, { passive: true });
+  nameEl.addEventListener("touchcancel", cancelLongPress, { passive: true });
 });
 </script>
 </body>
