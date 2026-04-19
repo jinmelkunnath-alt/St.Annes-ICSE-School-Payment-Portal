@@ -645,6 +645,45 @@ body {
   .filter-bar { gap: 0.5rem; }
   .view-tab { padding: 0.5rem 0.9rem; font-size: 0.78rem; }
 }
+
+/* ═══════════════════════════════════════════
+   DARK MODE
+═══════════════════════════════════════════ */
+[data-theme="dark"] {
+  --bg:          #0b1220;
+  --surface:     #121a2b;
+  --border:      #1f2a44;
+  --text:        #e6eefc;
+  --muted:       #8ea3c7;
+  --brand:       #3b82f6;
+  --brand-dark:  #1e40af;
+  --brand-light: #60a5fa;
+  --brand-pale:  #172554;
+  --green:       #22c55e;
+  --green-bg:    #052e16;
+  --red:         #f87171;
+  --red-bg:      #2d0a0a;
+}
+
+[data-theme="dark"] .fee-table thead th { background: #0f1a2e; }
+[data-theme="dark"] .fee-table tbody tr:hover td { background: #1a2540; }
+[data-theme="dark"] .fee-table tbody td { border-bottom-color: #1f2a44; }
+[data-theme="dark"] .exp-header        { background: #0f1a2e; }
+[data-theme="dark"] .exp-header:hover  { background: #162035; }
+[data-theme="dark"] .exp-header.open   { background: #172554; }
+[data-theme="dark"] .modal input,
+[data-theme="dark"] .modal select      { background: #0f1a2e; color: var(--text); }
+[data-theme="dark"] .modal input:focus,
+[data-theme="dark"] .modal select:focus { background: #121a2b; }
+[data-theme="dark"] .btn-modal-cancel  { background: #1f2a44; color: var(--muted); }
+[data-theme="dark"] .btn-modal-cancel:hover { background: #243050; }
+[data-theme="dark"] .upi-row           { background: #0f1a2e; }
+[data-theme="dark"] .receipt-code      { background: #0f1a2e; }
+[data-theme="dark"] .rt-student        { background: #0f1a2e; }
+[data-theme="dark"] .info-note         { background: var(--brand-pale); }
+[data-theme="dark"] .filter-select     { background: #0f1a2e; color: var(--text); }
+[data-theme="dark"] .hist-count        { background: var(--brand-pale); }
+[data-theme="dark"] .edit-info-box     { background: var(--brand-pale); }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
@@ -817,6 +856,7 @@ const studentId = (new URLSearchParams(location.search).get("id") || "").trim().
 let SD   = {};
 let TERMS = [];
 let VIEW  = "term";
+let isAdminMode = false; /* ── Admin gate: must be true for editPayment / applyEdit ── */
 
 /* ═══════════════════════════════════════════
    LOADER
@@ -1279,8 +1319,6 @@ function renderHistoryView(container) {
       const amt    = safe(r.amount);
       const isNeg  = amt < 0;
       const amtCls = isNeg ? "color:var(--red)" : "color:var(--green)";
-      /* Escape code for data attribute */
-      const safeCode = (r.code || "").replace(/"/g, "&quot;");
       return `<tr>
         <td style="text-align:left">
           <div class="hist-code-cell">
@@ -1290,7 +1328,6 @@ function renderHistoryView(container) {
         </td>
         <td style="${amtCls};font-weight:700">${fmtRs(amt)}</td>
         <td style="font-size:0.8rem;white-space:nowrap">${r.date || "—"}</td>
-        <td><button class="btn-edit" data-code="${safeCode}">✏ Edit</button></td>
       </tr>`;
     }).join("");
 
@@ -1301,17 +1338,10 @@ function renderHistoryView(container) {
             <th style="text-align:left">Fee / Receipt Code</th>
             <th>Amount</th>
             <th>Date</th>
-            <th>Action</th>
           </tr></thead>
           <tbody>${rows}</tbody>
         </table>
       </div>`;
-
-    /* Attach edit handlers via delegation */
-    tableWrap.querySelectorAll(".btn-edit").forEach(btn => {
-      btn.addEventListener("click", () => editPayment(btn.dataset.code));
-    });
-  }
 
   renderTable("all");
 
@@ -1567,6 +1597,7 @@ function getFeeItemByReceipt(receipt) {
  * Only active receipts can be edited.
  */
 function editPayment(code) {
+  if (!isAdminMode) { toast("Unauthorized access."); return; }
   if (!code) { toast("Invalid receipt code."); return; }
 
   /* Find active receipt */
@@ -1657,6 +1688,7 @@ function editPayment(code) {
  * 6. Re-render UI and show success popup.
  */
 async function applyEdit(oldReceipt, newAmount) {
+  if (!isAdminMode) { toast("Unauthorized access."); return; }
   enforceDefaults();
 
   const feeRef = getFeeItemByReceipt(oldReceipt);
@@ -1982,24 +2014,125 @@ function toast(msg) {
 }
 
 /* ═══════════════════════════════════════════
-   HIDDEN ADMIN TRIGGER
+   DARK MODE
 ═══════════════════════════════════════════ */
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+}
+
+function detectSystemTheme() {
+  const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  applyTheme(isDark ? "dark" : "light");
+}
+
+window.matchMedia("(prefers-color-scheme: dark)")
+  .addEventListener("change", e => {
+    applyTheme(e.matches ? "dark" : "light");
+  });
+
+/* ═══════════════════════════════════════════
+   ADMIN TRIGGER — DESKTOP (E + D)
+═══════════════════════════════════════════ */
+let edPressed = { e: false, d: false };
+
 document.addEventListener("keydown", e => {
-  if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "a") {
-    e.preventDefault();
-    adminEntry();
+  if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+  if (e.key.toLowerCase() === "e") edPressed.e = true;
+  if (e.key.toLowerCase() === "d") edPressed.d = true;
+
+  if (edPressed.e && edPressed.d) {
+    edPressed = { e: false, d: false };
+    triggerAdminEditAccess();
   }
 });
 
-let pressTimer = null, moved = false;
-document.addEventListener("DOMContentLoaded", () => {
-  const nm = el("studentName");
-  if (!nm) return;
-  nm.addEventListener("touchmove",   () => { moved = true; });
-  nm.addEventListener("touchstart",  () => { moved = false; pressTimer = setTimeout(() => { if (!moved) adminEntry(); }, 1300); });
-  nm.addEventListener("touchend",    () => clearTimeout(pressTimer));
-  nm.addEventListener("touchcancel", () => clearTimeout(pressTimer));
+document.addEventListener("keyup", e => {
+  if (e.key.toLowerCase() === "e") edPressed.e = false;
+  if (e.key.toLowerCase() === "d") edPressed.d = false;
 });
+
+/* ═══════════════════════════════════════════
+   ADMIN TRIGGER — AUTH MODAL
+═══════════════════════════════════════════ */
+function triggerAdminEditAccess() {
+  const m = overlay(`
+    <button class="modal-close">✕</button>
+    <h3>🔐 Admin Access</h3>
+    <label>Password</label>
+    <input type="password" id="admin-pass" placeholder="Enter admin password" autocomplete="off">
+    <div class="modal-actions">
+      <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
+      <button class="btn-modal btn-modal-ok"     id="m-ok">Enter</button>
+    </div>`);
+
+  const passInput = m.querySelector("#admin-pass");
+  passInput.focus();
+
+  const attempt = () => {
+    if (passInput.value !== ADMIN_PASS) {
+      toast("Wrong password.");
+      passInput.value = "";
+      passInput.focus();
+      return;
+    }
+    isAdminMode = true;
+    closeAllOverlays();
+    openAdminEditSelector();
+  };
+
+  m.querySelector("#m-cancel").onclick = closeAllOverlays;
+  m.querySelector("#m-ok").onclick     = attempt;
+  passInput.addEventListener("keydown", e => { if (e.key === "Enter") attempt(); });
+}
+
+/* ═══════════════════════════════════════════
+   ADMIN EDIT SELECTOR
+═══════════════════════════════════════════ */
+function openAdminEditSelector() {
+  const receipts = (SD.receipts || [])
+    .filter(r => !r.status || r.status === "active")
+    .slice()
+    .reverse();
+
+  if (!receipts.length) {
+    toast("No active records to edit.");
+    isAdminMode = false;
+    return;
+  }
+
+  const options = receipts.map(r => {
+    const safeCode = (r.code || "").replace(/"/g, "&quot;");
+    return `<option value="${safeCode}">${r.subType || "—"} — ${fmtRs(r.amount)} (${r.date || "—"})</option>`;
+  }).join("");
+
+  const m = overlay(`
+    <button class="modal-close">✕</button>
+    <h3>✏ Select Payment to Edit</h3>
+    <label>Payment Record</label>
+    <select id="edit-select">${options}</select>
+    <div class="modal-actions">
+      <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
+      <button class="btn-modal btn-modal-ok"     id="m-ok">Edit</button>
+    </div>`);
+
+  m.querySelector("#m-cancel").onclick = () => {
+    isAdminMode = false;
+    closeAllOverlays();
+  };
+
+  m.querySelector("#m-ok").onclick = () => {
+    const code = m.querySelector("#edit-select").value;
+    closeAllOverlays();
+    editPayment(code);
+  };
+
+  /* Close button also resets admin mode */
+  const closeBtn = m.querySelector(".modal-close");
+  closeBtn.onclick = () => {
+    isAdminMode = false;
+    closeAllOverlays();
+  };
+}
 
 /* ═══════════════════════════════════════════
    VIEW TABS
@@ -2016,12 +2149,24 @@ function setView(v) {
    INIT
 ═══════════════════════════════════════════ */
 window.addEventListener("DOMContentLoaded", () => {
+  detectSystemTheme();
+
   el("logoutBtn").onclick   = () => { location.href = "../index.html"; };
   el("tabTerm").onclick     = () => setView("term");
   el("tabOther").onclick    = () => setView("other");
   el("tabHistory").onclick  = () => setView("history");
   el("payBtn").onclick      = openPay;
   el("helpBtn").onclick     = openHelp;
+
+  /* ── Mobile: 5 s long press on History tab triggers admin edit ── */
+  let histPressTimer = null;
+  el("tabHistory").addEventListener("touchstart", () => {
+    histPressTimer = setTimeout(() => triggerAdminEditAccess(), 5000);
+  }, { passive: true });
+  el("tabHistory").addEventListener("touchend",   () => clearTimeout(histPressTimer));
+  el("tabHistory").addEventListener("touchmove",  () => clearTimeout(histPressTimer));
+  el("tabHistory").addEventListener("touchcancel",() => clearTimeout(histPressTimer));
+
   loadStudent();
 });
 </script>
