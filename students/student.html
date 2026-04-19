@@ -1745,6 +1745,7 @@ async function applyEdit(oldReceipt, newAmount, newMode = "upi") {
   /* Step 6: update UI */
   render();
   await showSuccess(oldReceipt.subType, newAmount, newCode);
+  isAdminMode = false;
 }
 
 /* ═══════════════════════════════════════════
