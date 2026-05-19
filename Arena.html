@@ -1,0 +1,2284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>St. Anne's ICSE | Fee Portal</title>
+<style>
+/* ═══════════════════════════════════════════
+   RESET + BASE
+═══════════════════════════════════════════ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --brand:       #1e4a76;
+  --brand-dark:  #0f3259;
+  --brand-light: #3b82f6;
+  --brand-pale:  #eef4ff;
+  --bg:          #f0f4fa;
+  --surface:     #ffffff;
+  --border:      #e2e9f4;
+  --text:        #0f2236;
+  --muted:       #5a7080;
+  --green:       #1a7a45;
+  --green-bg:    #e0f7ec;
+  --red:         #c0392b;
+  --red-bg:      #fdecea;
+  --radius-lg:   20px;
+  --radius-md:   14px;
+  --radius-sm:   10px;
+  --shadow-sm:   0 1px 4px rgba(0,0,0,0.06);
+  --shadow-md:   0 4px 16px rgba(0,0,0,0.08);
+  --shadow-lg:   0 12px 40px rgba(0,0,0,0.12);
+  --transition:  0.3s cubic-bezier(0.4,0,0.2,1);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: var(--text);
+  line-height: 1.5;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ═══════════════════════════════════════════
+   LOADER
+═══════════════════════════════════════════ */
+#loader {
+  position: fixed; inset: 0;
+  background: var(--surface);
+  z-index: 9000;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 1rem;
+  transition: opacity 0.4s, visibility 0.4s;
+}
+#loader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+.loader-ring {
+  width: 44px; height: 44px;
+  border: 3px solid var(--border);
+  border-top-color: var(--brand);
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+.loader-text { color: var(--muted); font-size: 0.85rem; font-weight: 500; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ═══════════════════════════════════════════
+   APP SHELL
+═══════════════════════════════════════════ */
+#app { display: none; max-width: 900px; margin: 0 auto; padding: 0 1rem 3rem; }
+#app.visible { display: block; animation: fadeUp 0.4s ease both; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════════════════════════════════════════
+   HEADER
+═══════════════════════════════════════════ */
+.app-header {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  padding: 0.85rem 1.25rem;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1rem;
+  box-shadow: var(--shadow-sm);
+  margin: 0 -1rem 1.5rem;
+}
+.brand-name {
+  font-size: 1rem; font-weight: 700;
+  color: var(--brand);
+  letter-spacing: -0.02em;
+  position: relative;
+}
+.brand-name::after {
+  content: '';
+  position: absolute; bottom: -3px; left: 0;
+  width: 36px; height: 2.5px;
+  background: linear-gradient(90deg, var(--brand), var(--brand-light));
+  border-radius: 2px;
+}
+.btn-logout {
+  background: var(--brand-pale); color: var(--brand);
+  border: 1px solid #c7d9f5;
+  padding: 0.45rem 1rem; border-radius: 2rem;
+  font-size: 0.8rem; font-weight: 600;
+  cursor: pointer; transition: var(--transition);
+  font-family: inherit;
+}
+.btn-logout:hover { background: #dce9fb; }
+
+/* ═══════════════════════════════════════════
+   STUDENT CARD
+═══════════════════════════════════════════ */
+.student-card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 1.4rem 1.5rem;
+  margin-bottom: 1.25rem;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--brand-light);
+  display: flex; flex-wrap: wrap;
+  justify-content: space-between; align-items: center;
+  gap: 1.2rem;
+}
+.student-name {
+  font-size: 1.45rem; font-weight: 700;
+  color: var(--brand); letter-spacing: -0.03em;
+  cursor: default;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.student-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.4rem; }
+.tag {
+  background: var(--brand-pale); color: var(--brand);
+  padding: 0.25rem 0.85rem; border-radius: 2rem;
+  font-size: 0.75rem; font-weight: 600;
+}
+
+/* ── Progress ── */
+.progress-block { min-width: 180px; flex: 1; }
+.progress-label {
+  font-size: 0.68rem; font-weight: 700;
+  color: var(--muted); letter-spacing: 0.06em;
+  text-transform: uppercase; margin-bottom: 6px;
+}
+.progress-track {
+  background: var(--border); border-radius: 40px;
+  height: 8px; width: 100%; overflow: hidden;
+}
+.progress-bar {
+  display: block; height: 100%;
+  background: linear-gradient(90deg, var(--brand), var(--brand-light));
+  border-radius: 40px; width: 0%;
+  transition: width 0.7s cubic-bezier(0.4,0,0.2,1);
+}
+.progress-pct {
+  font-size: 0.72rem; font-weight: 700;
+  color: var(--brand); text-align: right; margin-top: 4px;
+}
+
+/* ═══════════════════════════════════════════
+   VIEW TABS
+═══════════════════════════════════════════ */
+.view-tabs {
+  display: flex; gap: 0.5rem;
+  background: var(--surface);
+  border-radius: 2rem; padding: 4px;
+  border: 1px solid var(--border);
+  width: fit-content;
+  margin-bottom: 1.25rem;
+  box-shadow: var(--shadow-sm);
+}
+.view-tab {
+  border: none; background: transparent;
+  padding: 0.5rem 1.3rem; border-radius: 2rem;
+  font-size: 0.83rem; font-weight: 600;
+  cursor: pointer; transition: var(--transition);
+  font-family: inherit; color: var(--muted);
+}
+.view-tab.active {
+  background: var(--brand); color: #fff;
+  box-shadow: 0 2px 8px rgba(30,74,118,0.3);
+}
+
+/* ═══════════════════════════════════════════
+   CONTENT AREA
+═══════════════════════════════════════════ */
+#content { min-height: 200px; }
+
+/* ═══════════════════════════════════════════
+   TERM TABLE
+═══════════════════════════════════════════ */
+.term-table-wrap {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.fee-table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.fee-table {
+  width: 100%; border-collapse: collapse;
+  font-size: 0.84rem; min-width: 500px;
+}
+.fee-table thead th {
+  background: #f6f9fd; color: var(--muted);
+  font-size: 0.72rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  padding: 0.85rem 1rem; text-align: left;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.fee-table tbody td {
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid #f3f6fb;
+  color: var(--text); font-weight: 500;
+}
+.fee-table tbody tr:last-child td { border-bottom: none; }
+.fee-table tbody tr:hover td { background: #fafcff; }
+
+.badge {
+  display: inline-block;
+  padding: 0.22rem 0.8rem; border-radius: 2rem;
+  font-size: 0.68rem; font-weight: 700; white-space: nowrap;
+}
+.badge-paid    { background: var(--green-bg); color: var(--green); }
+.badge-pending { background: var(--red-bg);   color: var(--red);   }
+
+/* ═══════════════════════════════════════════
+   EXPANDABLE SECTIONS (OTHER FEES)
+═══════════════════════════════════════════ */
+.sections-list { display: flex; flex-direction: column; gap: 0.65rem; }
+
+.exp-card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: box-shadow var(--transition);
+}
+.exp-card:hover { box-shadow: var(--shadow-md); }
+
+.exp-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 1.2rem;
+  cursor: pointer;
+  background: #f8fafd;
+  border-bottom: 1px solid transparent;
+  transition: background var(--transition), border-color var(--transition);
+  user-select: none; -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.exp-header:hover  { background: #f2f6fc; }
+.exp-header:active { transform: scale(0.995); }
+.exp-header.open   { background: #eaf1fb; border-bottom-color: var(--border); }
+
+.exp-header-left { display: flex; align-items: center; gap: 0.7rem; }
+.exp-icon { font-size: 1.1rem; line-height: 1; }
+.exp-title { font-size: 0.92rem; font-weight: 700; color: var(--brand); }
+.exp-subtitle { font-size: 0.72rem; color: var(--muted); margin-top: 1px; }
+
+.exp-header-right { display: flex; align-items: center; gap: 0.75rem; }
+.exp-summary { font-size: 0.78rem; font-weight: 600; color: var(--muted); }
+.exp-arrow {
+  width: 22px; height: 22px;
+  background: var(--brand-pale); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.55rem; color: var(--brand);
+  transition: transform 0.35s cubic-bezier(0.4,0,0.2,1),
+              background var(--transition);
+  flex-shrink: 0;
+}
+.exp-arrow.open { transform: rotate(90deg); background: var(--brand); color: #fff; }
+
+.exp-body {
+  max-height: 0; overflow: hidden;
+  transition: max-height 0.42s cubic-bezier(0.4,0,0.2,1);
+}
+.exp-body-inner { padding: 0.5rem 0.75rem 0.75rem; }
+.exp-body-inner .fee-table-scroll { border-radius: var(--radius-sm); overflow: hidden; }
+
+/* ═══════════════════════════════════════════
+   SUMMARY BAR
+═══════════════════════════════════════════ */
+.summary-bar {
+  display: flex; flex-wrap: wrap; gap: 1rem;
+  background: var(--surface); border-radius: var(--radius-lg);
+  border: 1px solid var(--border); border-top: 3px solid var(--brand-light);
+  padding: 1rem 1.4rem;
+  margin-top: 1.25rem;
+  box-shadow: var(--shadow-sm);
+}
+.summary-item { display: flex; flex-direction: column; gap: 2px; }
+.summary-label { font-size: 0.68rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.summary-value { font-size: 1.05rem; font-weight: 700; color: var(--brand); }
+.summary-value.green { color: var(--green); }
+.summary-value.red   { color: var(--red); }
+
+/* ═══════════════════════════════════════════
+   ACTION ROW
+═══════════════════════════════════════════ */
+.action-row {
+  display: flex; gap: 0.75rem; flex-wrap: wrap;
+  margin-top: 1.25rem;
+}
+.btn-action {
+  border: none; border-radius: 2rem;
+  padding: 0.6rem 1.4rem;
+  font-size: 0.84rem; font-weight: 600;
+  cursor: pointer; transition: var(--transition);
+  font-family: inherit; display: flex; align-items: center; gap: 0.4rem;
+}
+.btn-pay  { background: var(--brand); color: #fff; box-shadow: 0 3px 10px rgba(30,74,118,0.25); }
+.btn-pay:hover  { background: var(--brand-dark); transform: translateY(-1px); }
+.btn-pay:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn-help { background: var(--brand-pale); color: var(--brand); border: 1px solid #c7d9f5; }
+.btn-help:hover { background: #dce9fb; }
+
+.info-note {
+  font-size: 0.76rem; color: var(--muted);
+  background: var(--brand-pale); border-left: 3px solid var(--brand-light);
+  padding: 0.55rem 1rem; border-radius: var(--radius-sm);
+  margin-top: 0.75rem; display: inline-block;
+}
+
+/* ═══════════════════════════════════════════
+   MODAL / POPUP OVERLAY
+═══════════════════════════════════════════ */
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(10,20,40,0.45);
+  backdrop-filter: blur(6px);
+  z-index: 8000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 1rem;
+  opacity: 0; animation: fadeIn 0.22s ease forwards;
+}
+@keyframes fadeIn { to { opacity: 1; } }
+
+.modal {
+  background: var(--surface); border-radius: var(--radius-lg);
+  width: 100%; max-width: 340px;
+  padding: 1.5rem; position: relative;
+  box-shadow: var(--shadow-lg);
+  transform: scale(0.93); opacity: 0;
+  animation: popIn 0.22s ease forwards;
+}
+@keyframes popIn { to { transform: scale(1); opacity: 1; } }
+
+.modal-close {
+  position: absolute; top: 14px; right: 16px;
+  background: none; border: none; font-size: 1.1rem;
+  cursor: pointer; color: var(--muted); line-height: 1;
+  transition: color var(--transition);
+}
+.modal-close:hover { color: var(--red); }
+
+.modal h3 {
+  font-size: 1.1rem; font-weight: 700; color: var(--brand);
+  border-left: 3px solid var(--brand-light); padding-left: 0.7rem;
+  margin-bottom: 1rem;
+}
+
+/* forms inside modals */
+.modal label {
+  font-size: 0.75rem; font-weight: 600; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.04em;
+  display: block; margin-top: 0.9rem; margin-bottom: 0.3rem;
+}
+.modal input, .modal select {
+  width: 100%; padding: 0.75rem 1rem;
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  font-size: 0.88rem; font-family: inherit;
+  background: #fafbfd; color: var(--text);
+  transition: border-color var(--transition), box-shadow var(--transition);
+  outline: none;
+}
+.modal input:focus, .modal select:focus {
+  border-color: var(--brand-light);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+  background: var(--surface);
+}
+.modal-actions {
+  display: flex; gap: 0.6rem; justify-content: flex-end; margin-top: 1.2rem;
+}
+.btn-modal {
+  border: none; border-radius: 2rem;
+  padding: 0.55rem 1.2rem;
+  font-size: 0.83rem; font-weight: 600;
+  cursor: pointer; transition: var(--transition); font-family: inherit;
+}
+.btn-modal-cancel { background: #f0f3f8; color: var(--muted); }
+.btn-modal-cancel:hover { background: #e5e9f0; }
+.btn-modal-ok { background: var(--brand); color: #fff; }
+.btn-modal-ok:hover { background: var(--brand-dark); transform: translateY(-1px); }
+.btn-modal-ok:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+/* ── QR / Pay popup ── */
+.qr-wrap { text-align: center; }
+.qr-wrap img {
+  width: 120px; height: 120px;
+  border-radius: var(--radius-md);
+  margin: 0.5rem auto; display: block;
+  box-shadow: var(--shadow-sm);
+}
+.upi-row {
+  display: flex; align-items: center; gap: 0.5rem;
+  background: #f4f7fc; border: 1px solid var(--border);
+  border-radius: 2rem; padding: 0.5rem 0.9rem; margin: 0.8rem 0;
+}
+.upi-text { font-family: monospace; font-size: 0.82rem; color: var(--brand); flex: 1; }
+.btn-copy {
+  background: var(--brand-pale); border: none;
+  border-radius: 2rem; padding: 0.3rem 0.75rem;
+  font-size: 0.73rem; font-weight: 600; color: var(--brand);
+  cursor: pointer; flex-shrink: 0; font-family: inherit;
+  transition: var(--transition);
+}
+.btn-copy:hover { background: #dce9fb; }
+.btn-upi-pay {
+  width: 100%; background: var(--brand); color: #fff;
+  border: none; border-radius: 2rem; padding: 0.72rem;
+  font-size: 0.88rem; font-weight: 700; cursor: pointer;
+  margin: 0.4rem 0; font-family: inherit; transition: var(--transition);
+}
+.btn-upi-pay:hover { background: var(--brand-dark); transform: translateY(-1px); }
+.wa-note { font-size: 0.74rem; color: var(--muted); text-align: center; margin-top: 0.6rem; }
+.wa-link { color: #25D366; font-weight: 700; cursor: pointer; text-decoration: underline; }
+.btn-wa {
+  width: 100%; background: #25D366; color: #fff;
+  border: none; border-radius: 2rem; padding: 0.72rem;
+  font-size: 0.88rem; font-weight: 700; cursor: pointer;
+  font-family: inherit; transition: var(--transition); margin-top: 0.4rem;
+}
+.btn-wa:hover { background: #1aad55; transform: translateY(-1px); }
+
+/* ── Receipt success ── */
+.receipt-wrap { text-align: center; }
+.receipt-wrap img {
+  width: 100%; border-radius: var(--radius-md);
+  margin: 0.6rem 0; box-shadow: var(--shadow-sm);
+}
+.receipt-code {
+  font-family: monospace; font-size: 0.82rem;
+  background: #f4f7fc; border-radius: var(--radius-sm);
+  padding: 0.5rem; margin: 0.5rem 0; color: var(--brand); font-weight: 700;
+}
+.receipt-btns { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+.receipt-btns .btn-action { flex: 1; justify-content: center; font-size: 0.8rem; }
+
+/* ── SVG tick ── */
+.tick-wrap { display: flex; justify-content: center; margin: 0.5rem 0 0.8rem; }
+.tick-svg { width: 60px; height: 60px; }
+.tick-circle {
+  stroke: #22c55e; stroke-width: 3; fill: none;
+  stroke-dasharray: 166; stroke-dashoffset: 166;
+  animation: circleDraw 0.55s ease-out forwards;
+}
+.tick-path {
+  stroke: #22c55e; stroke-width: 4; fill: none;
+  stroke-linecap: round; stroke-linejoin: round;
+  stroke-dasharray: 48; stroke-dashoffset: 48;
+  animation: tickDraw 0.35s ease-out 0.55s forwards;
+}
+@keyframes circleDraw { to { stroke-dashoffset: 0; } }
+@keyframes tickDraw   { to { stroke-dashoffset: 0; } }
+
+/* ── Toast ── */
+.toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%);
+  background: #1e2d3d; color: #fff;
+  padding: 0.6rem 1.4rem; border-radius: 2rem;
+  font-size: 0.82rem; font-weight: 500;
+  z-index: 9500; box-shadow: var(--shadow-lg);
+  animation: toastAnim 2.6s forwards;
+  white-space: nowrap;
+}
+@keyframes toastAnim {
+  0%   { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  12%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+  80%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ═══════════════════════════════════════════
+   RECEIPT TEMPLATE (off-screen render)
+═══════════════════════════════════════════ */
+#receipt-tpl {
+  position: absolute; left: -9999px; top: 0;
+  width: 360px; background: #fff; padding: 24px;
+  border-radius: 24px; font-family: -apple-system, sans-serif;
+  box-shadow: none;
+}
+.rt-header { text-align: center; margin-bottom: 18px; }
+.rt-header h2 { color: var(--brand); font-size: 18px; margin-bottom: 2px; }
+.rt-header p  { font-size: 11px; color: var(--muted); }
+.rt-student {
+  display: flex; justify-content: space-between;
+  background: #f4f8ff; padding: 11px 14px;
+  border-radius: 12px; margin-bottom: 16px;
+}
+.rt-student .lbl { font-size: 10px; color: var(--muted); }
+.rt-student .val { font-weight: 700; font-size: 13px; }
+.rt-amount {
+  text-align: center; padding: 16px;
+  background: linear-gradient(135deg, var(--brand), var(--brand-light));
+  border-radius: 14px; margin-bottom: 14px;
+  box-shadow: 0 8px 20px rgba(30,74,118,0.2);
+}
+.rt-amount .lbl { font-size: 11px; color: rgba(255,255,255,0.8); }
+.rt-amount .val { font-size: 32px; font-weight: 800; color: #fff; margin-top: 4px; }
+.rt-rows div {
+  display: flex; justify-content: space-between;
+  font-size: 12px; padding: 5px 0; border-bottom: 1px dashed #e2e8f0;
+}
+.rt-rows span { color: var(--muted); }
+.rt-code {
+  margin-top: 14px; text-align: center;
+  background: #f4f7fc; border-radius: 10px; padding: 8px;
+  font-family: monospace; font-size: 15px; letter-spacing: 2px;
+  font-weight: 700; color: var(--brand);
+}
+.rt-footer { text-align: center; margin-top: 14px; font-size: 10px; color: #aab6c4; }
+
+/* ═══════════════════════════════════════════
+   HISTORY VIEW STYLES
+═══════════════════════════════════════════ */
+.filter-bar {
+  display: flex; align-items: center; gap: 0.75rem;
+  margin-bottom: 1rem; flex-wrap: wrap;
+}
+.filter-label {
+  font-size: 0.72rem; font-weight: 700;
+  color: var(--muted); text-transform: uppercase;
+  letter-spacing: 0.05em; white-space: nowrap;
+}
+.filter-select {
+  border: 1.5px solid var(--border); border-radius: 2rem;
+  padding: 0.4rem 1.1rem; font-size: 0.82rem;
+  font-family: inherit; background: var(--surface);
+  color: var(--text); outline: none; cursor: pointer;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  -webkit-appearance: none; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%235a7080' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  padding-right: 2rem;
+}
+.filter-select:focus {
+  border-color: var(--brand-light);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+}
+.hist-count {
+  margin-left: auto;
+  font-size: 0.72rem; font-weight: 700;
+  color: var(--muted);
+  background: var(--brand-pale);
+  padding: 0.25rem 0.8rem; border-radius: 2rem;
+  border: 1px solid #c7d9f5;
+  white-space: nowrap;
+}
+.hist-code-cell .hist-label { font-weight: 600; font-size: 0.86rem; }
+.hist-code-cell .hist-code-text {
+  font-family: monospace; font-size: 0.68rem;
+  color: var(--brand-light); margin-top: 1px;
+}
+.hist-empty {
+  padding: 3rem 1.5rem; text-align: center; color: var(--muted);
+}
+.hist-empty-icon { font-size: 2.2rem; margin-bottom: 0.6rem; line-height: 1; }
+.hist-empty-title { font-size: 0.92rem; font-weight: 700; margin-bottom: 0.25rem; }
+.hist-empty-sub   { font-size: 0.8rem; }
+
+/* Edit payment modal info box */
+.edit-info-box {
+  background: var(--brand-pale);
+  border: 1px solid #c7d9f5;
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+  margin: 0.5rem 0 0.25rem;
+}
+.edit-info-fee  { font-weight: 700; color: var(--brand); font-size: 0.9rem; }
+.edit-info-meta { font-size: 0.74rem; color: var(--muted); margin-top: 3px; }
+.edit-info-code {
+  font-family: monospace; font-size: 0.68rem;
+  color: var(--brand-light); margin-top: 2px;
+  word-break: break-all;
+}
+.edit-max-hint {
+  font-size: 0.72rem; color: var(--muted);
+  margin-top: 0.3rem;
+  display: flex; align-items: center; gap: 0.3rem;
+}
+.edit-max-hint strong { color: var(--brand); }
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════ */
+@media (max-width: 600px) {
+  .student-card { flex-direction: column; align-items: stretch; }
+  .progress-block { min-width: unset; width: 100%; }
+  .summary-bar { gap: 0.75rem; }
+  .app-header { margin: 0 -1rem 1.25rem; border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
+  .filter-bar { gap: 0.5rem; }
+  .view-tab { padding: 0.5rem 0.9rem; font-size: 0.78rem; }
+}
+
+/* ═══════════════════════════════════════════
+   DARK MODE
+═══════════════════════════════════════════ */
+[data-theme="dark"] {
+  --bg:          #0b1220;
+  --surface:     #121a2b;
+  --border:      #1f2a44;
+  --text:        #e6eefc;
+  --muted:       #8ea3c7;
+  --brand:       #3b82f6;
+  --brand-dark:  #1e40af;
+  --brand-light: #60a5fa;
+  --brand-pale:  #172554;
+  --green:       #22c55e;
+  --green-bg:    #052e16;
+  --red:         #f87171;
+  --red-bg:      #2d0a0a;
+}
+
+[data-theme="dark"] .fee-table thead th { background: #0f1a2e; }
+[data-theme="dark"] .fee-table tbody tr:hover td { background: #1a2540; }
+[data-theme="dark"] .fee-table tbody td { border-bottom-color: #1f2a44; }
+[data-theme="dark"] .exp-header        { background: #0f1a2e; }
+[data-theme="dark"] .exp-header:hover  { background: #162035; }
+[data-theme="dark"] .exp-header.open   { background: #172554; }
+[data-theme="dark"] .modal input,
+[data-theme="dark"] .modal select      { background: #0f1a2e; color: var(--text); }
+[data-theme="dark"] .modal input:focus,
+[data-theme="dark"] .modal select:focus { background: #121a2b; }
+[data-theme="dark"] .btn-modal-cancel  { background: #1f2a44; color: var(--muted); }
+[data-theme="dark"] .btn-modal-cancel:hover { background: #243050; }
+[data-theme="dark"] .upi-row           { background: #0f1a2e; }
+[data-theme="dark"] .receipt-code      { background: #0f1a2e; }
+[data-theme="dark"] .rt-student        { background: #0f1a2e; }
+[data-theme="dark"] .info-note         { background: var(--brand-pale); }
+[data-theme="dark"] .filter-select     { background: #0f1a2e; color: var(--text); }
+[data-theme="dark"] .hist-count        { background: var(--brand-pale); }
+[data-theme="dark"] .edit-info-box     { background: var(--brand-pale); }
+
+/* ── Dark mode text visibility ── */
+[data-theme="dark"] { color: var(--text); }
+
+[data-theme="dark"] p,
+[data-theme="dark"] span,
+[data-theme="dark"] div,
+[data-theme="dark"] td,
+[data-theme="dark"] th,
+[data-theme="dark"] label { color: var(--text); }
+
+[data-theme="dark"] .summary-label,
+[data-theme="dark"] .exp-subtitle,
+[data-theme="dark"] .hist-empty,
+[data-theme="dark"] .filter-label,
+[data-theme="dark"] .edit-info-meta,
+[data-theme="dark"] .edit-max-hint,
+[data-theme="dark"] .wa-note { color: var(--muted); }
+
+[data-theme="dark"] .fee-table thead th { color: var(--muted); }
+[data-theme="dark"] .fee-table tbody td { color: var(--text); }
+
+[data-theme="dark"] .modal,
+[data-theme="dark"] .modal h3,
+[data-theme="dark"] .modal label { color: var(--text); }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="loader-ring"></div>
+  <div class="loader-text">Loading fee portal…</div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header class="app-header">
+    <span class="brand-name">St. Anne's ICSE</span>
+    <button class="btn-logout" id="logoutBtn">🚪 Logout</button>
+  </header>
+
+  <div class="student-card" id="studentCard">
+    <div>
+      <div class="student-name" id="studentName">—</div>
+      <div class="student-tags" id="studentTags"></div>
+    </div>
+    <div class="progress-block" id="progressBlock" style="display:none;">
+      <div class="progress-label" id="progressLabel">FEES PAID</div>
+      <div class="progress-track">
+        <span class="progress-bar" id="progressBar"></span>
+      </div>
+      <div class="progress-pct" id="progressPct">0%</div>
+    </div>
+  </div>
+
+  <div class="view-tabs">
+    <button class="view-tab active" id="tabTerm">Term Fees</button>
+    <button class="view-tab"        id="tabOther">Other Fees</button>
+    <button class="view-tab"        id="tabHistory">📋 History</button>
+  </div>
+
+  <div id="content"></div>
+
+  <div class="summary-bar" id="summaryBar"></div>
+
+  <div class="action-row">
+    <button class="btn-action btn-pay"  id="payBtn">💳 Pay Fees</button>
+    <button class="btn-action btn-help" id="helpBtn">❓ Help</button>
+  </div>
+  <div class="info-note">💡 Fee updates are reflected within 36 working hours.</div>
+</div>
+
+<!-- Receipt template (off-screen) -->
+<div id="receipt-tpl">
+  <div class="rt-header">
+    <h2>St. Anne's ICSE School</h2>
+    <p>Official Fee Receipt</p>
+  </div>
+  <div class="rt-student">
+    <div><div class="lbl">Student</div><div class="val" id="rt-name"></div></div>
+    <div style="text-align:right"><div class="lbl">Class</div><div class="val" id="rt-class"></div></div>
+  </div>
+  <div class="rt-amount">
+    <div class="lbl">Amount Paid</div>
+    <div class="val">₹<span id="rt-amount"></span></div>
+  </div>
+  <div class="rt-rows">
+    <div><span>Fee</span><strong id="rt-fee"></strong></div>
+    <div><span>Date</span><strong id="rt-date"></strong></div>
+  </div>
+  <div class="rt-code" id="rt-code"></div>
+  <div class="rt-footer">Digitally Verified · St. Anne's Secure System</div>
+</div>
+
+<script type="module">
+import { initializeApp }                        from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  updateDoc,
+  enableIndexedDbPersistence
+} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+
+/* ═══════════════════════════════════════════
+   FIREBASE
+═══════════════════════════════════════════ */
+const fbApp = initializeApp({
+  apiKey:            "AIzaSyArC1RsGTkS0cr5glTfgUdTktjcfj_Ad88",
+  authDomain:        "fee-payment-portal.firebaseapp.com",
+  projectId:         "fee-payment-portal",
+  storageBucket:     "fee-payment-portal.firebasestorage.app",
+  messagingSenderId: "1036013822615",
+  appId:             "1:1036013822615:web:6c4159f84bae9882963fd2"
+});
+
+const db = getFirestore(fbApp);
+
+/*
+ * NOTE: enableIndexedDbPersistence is deprecated in Firebase 9+ in favour of
+ *   initializeFirestore(app, { localCache: persistentLocalCache() })
+ * If upgrading Firebase, switch to that API. The catch below handles the case
+ * where this export no longer exists or fails at runtime.
+ */
+enableIndexedDbPersistence(db).catch(err => {
+  if (err.code === "failed-precondition") {
+    console.warn("Offline persistence unavailable: multiple tabs open.");
+    toast("Offline mode unavailable — multiple tabs detected.");
+  } else if (err.code === "unimplemented") {
+    console.warn("Offline persistence not supported in this browser.");
+  } else {
+    console.warn("Offline persistence error:", err.code);
+  }
+});
+
+/* ═══════════════════════════════════════════
+   CONSTANTS
+   ⚠️  SECURITY WARNING: The admin password stored here is frontend-only
+   and provides NO real security. Anyone who inspects the source code can
+   read it. For production use, enforce all writes via Firestore Security
+   Rules and a server-side auth system.
+   Recommendation: Use Firebase Auth + Firestore rules like:
+     allow write: if request.auth.token.admin == true;
+═══════════════════════════════════════════ */
+const ADMIN_PASS   = "ADMIN@STANNES";
+const UPI_ID       = "jinmelkunnath@oksbi";
+const UPI_NAME     = "St.%20Annes%20ICSE";
+const WHATSAPP_URL = "https://wa.me/917012808911";
+const QR_URL       = "https://i.ibb.co/8RSZRz0/IMG-20260329-160905.png";
+const MAX_RECEIPTS = 100;
+
+const MONTH_ORDER = ["june","july","august","september","october","november","december","january","february","march"];
+
+const TERM_NAMES = [
+  "Term 1 (June – August)",
+  "Term 2 (September – November)",
+  "Term 3 (December – February)"
+];
+
+const FEE_ICONS = {
+  bus:       "🚌", transport: "🚌",
+  eca:       "🎨", arts:      "🎨", art: "🎨",
+  annual:    "🎭", day:       "🎭",
+  sports:    "🥇", games:     "🥇",
+  lab:       "🧪", science:   "🧪",
+  computer:  "💻", it:        "💻",
+  library:   "📚", book:      "📚",
+  music:     "🎵", dance:     "💃",
+  uniform:   "👕", tuition:   "📖",
+  exam:      "📝", id:        "🪪",
+  picnic:    "🌳", trip:      "🌳",
+  default:   "📋"
+};
+
+function iconFor(name) {
+  if (!name) return FEE_ICONS.default;
+  const lower = name.toLowerCase();
+  for (const [key, icon] of Object.entries(FEE_ICONS)) {
+    if (key !== "default" && lower.includes(key)) return icon;
+  }
+  return FEE_ICONS.default;
+}
+
+/* ═══════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════ */
+const safe  = v => { const n = Number(v); return isNaN(n) ? 0 : n; };
+const el    = id  => document.getElementById(id);
+const capF  = s   => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+const fmtRs = n   => "₹" + safe(n).toLocaleString("en-IN");
+const today = ()  => new Date().toISOString().slice(0, 10);
+
+/*
+ * FIX (S1): HTML escape utility — applied to ALL Firestore-sourced strings
+ * before innerHTML insertion to prevent XSS injection.
+ */
+function htmlEscape(str) {
+  if (str == null) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function orderedEntries(obj) {
+  return MONTH_ORDER
+    .map(m => [m, (obj || {})[m]])
+    .filter(([, v]) => v !== undefined);
+}
+
+/* ═══════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════ */
+const studentId = (new URLSearchParams(location.search).get("id") || "").trim().toLowerCase();
+let SD          = {};
+let TERMS       = [];
+let VIEW        = "term";
+
+/*
+ * isAdminMode gates editPayment() and applyEdit().
+ * It must be set to true only after successful password auth
+ * and is GUARANTEED to reset to false via try/finally in applyEdit().
+ */
+let isAdminMode = false;
+
+/* ═══════════════════════════════════════════
+   LOADER
+═══════════════════════════════════════════ */
+function hideLoader() {
+  el("loader").classList.add("hidden");
+  el("app").classList.add("visible");
+}
+
+/* ═══════════════════════════════════════════
+   NORMALISATION
+═══════════════════════════════════════════ */
+function normalizeTerms(raw) {
+  const arr = Array.isArray(raw) ? raw : [];
+  if (!arr.length) return TERM_NAMES.map(name => ({ name, total: 0, paid: 0 }));
+  return arr.map((t, i) => ({
+    name:  TERM_NAMES[i] || `Term ${i + 1}`,
+    total: safe(t.total ?? 0),
+    paid:  safe(t.paid  ?? 0)
+  }));
+}
+
+function normalizeBusFee(raw) {
+  if (!raw || typeof raw !== "object") return null;
+  const src = (raw.monthly && typeof raw.monthly === "object") ? raw.monthly : raw;
+  const monthly = {};
+  Object.keys(src).forEach(k => {
+    const v = src[k];
+    monthly[k] = typeof v === "object"
+      ? { total: safe(v.total ?? 0), paid: safe(v.paid ?? 0) }
+      : { total: safe(v), paid: 0 };
+  });
+  if (!Object.keys(monthly).length) return null;
+  return { monthly };
+}
+
+function normalizeEcaFee(raw) {
+  if (raw && raw.monthly && typeof raw.monthly === "object") {
+    let total = 0, paid = 0;
+    Object.values(raw.monthly).forEach(m => { total += safe(m.total ?? 0); paid += safe(m.paid ?? 0); });
+    return { total, paid };
+  }
+  if (!raw || typeof raw !== "object") return { total: 1250, paid: 0 };
+  return { total: safe(raw.total ?? 1250), paid: safe(raw.paid ?? 0) };
+}
+
+function normalizeAnnualFee(raw) {
+  if (!raw || typeof raw !== "object") return null;
+  const total = safe(raw.total ?? 0);
+  if (!total) return null;
+  return { total, paid: safe(raw.paid ?? 0) };
+}
+
+function normalizeOtherFees(raw) {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter(f => f && f.name)
+    .filter(f => f.name.toLowerCase() !== "eca")
+    .map(f => {
+      const type = (f.type || "one-time").toLowerCase();
+      if (type === "monthly" && f.monthly && typeof f.monthly === "object") {
+        const monthly = {};
+        Object.keys(f.monthly).forEach(k => {
+          const v = f.monthly[k];
+          monthly[k] = typeof v === "object"
+            ? { total: safe(v.total ?? 0), paid: safe(v.paid ?? 0) }
+            : { total: safe(v), paid: 0 };
+        });
+        return { name: f.name, type: "monthly", monthly };
+      }
+      const total = safe(f.total ?? 0);
+      if (!total) return null;
+      return { name: f.name, type: "one-time", total, paid: safe(f.paid ?? 0) };
+    })
+    .filter(Boolean);
+}
+
+function normalizePreviousYearFees(raw) {
+  if (!raw || typeof raw !== "object") return null;
+  const out = {};
+  ["tuition","bus"].forEach(k => {
+    if (raw[k] && typeof raw[k] === "object") {
+      out[k] = {
+        total: safe(raw[k].total ?? 0),
+        paid:  safe(raw[k].paid  ?? 0)
+      };
+    }
+  });
+  return Object.keys(out).length ? out : null;
+}
+
+function enforceDefaults() {
+  if (!SD.terms)     SD.terms     = normalizeTerms([]);
+  if (!SD.ecaFee)    SD.ecaFee    = { total: 1250, paid: 0 };
+  if (!SD.otherFees) SD.otherFees = [];
+  if (!SD.receipts)  SD.receipts  = [];
+  if (SD.previousYearFees === undefined) SD.previousYearFees = null;
+  if (!Array.isArray(TERMS)) TERMS = [];
+}
+
+/* ═══════════════════════════════════════════
+   LOAD
+═══════════════════════════════════════════ */
+async function loadStudent() {
+  if (!studentId) {
+    alert("No student ID in URL.\nExample: ?id=john001");
+    hideLoader();
+    return;
+  }
+  try {
+    const snap = await getDoc(doc(db, "students", studentId));
+    if (!snap.exists()) {
+      alert(`Student not found: "${studentId}"`);
+      hideLoader();
+      return;
+    }
+    const raw = snap.data();
+    SD = {
+      name:      raw.name  || "Unknown",
+      class:     String(raw.class || "—").toUpperCase(),
+      phone:     raw.phone || "",
+      receipts:  Array.isArray(raw.receipts) ? raw.receipts : [],
+      terms:     normalizeTerms(raw.terms),
+      busFee:    normalizeBusFee(raw.busFee),
+      ecaFee:    normalizeEcaFee(raw.ecaFee || raw.eca),
+      annualFee: normalizeAnnualFee(raw.annualFee),
+      otherFees: normalizeOtherFees(raw.otherFees)
+    };
+    SD.previousYearFees = normalizePreviousYearFees(raw.previousYearFees);
+    enforceDefaults();
+    TERMS = SD.terms;
+
+    el("studentName").textContent = SD.name;
+    el("studentTags").innerHTML   = `<span class="tag">📖 Class ${htmlEscape(SD.class)}</span>`;
+
+    render();
+    hideLoader();
+  } catch (err) {
+    console.error("🔥 Firestore load error:", err);
+    alert("Error loading student: " + err.message);
+    hideLoader();
+  }
+}
+
+/* ═══════════════════════════════════════════
+   TOTALS
+═══════════════════════════════════════════ */
+function calcTermTotals() {
+  let total = 0, paid = 0;
+  TERMS.forEach(t => { total += safe(t.total); paid += safe(t.paid); });
+  return { total, paid, remaining: total - paid };
+}
+
+function calcOtherTotals() {
+  let total = 0, paid = 0;
+  if (SD.busFee) {
+    Object.values(SD.busFee.monthly).forEach(m => { total += safe(m.total); paid += safe(m.paid); });
+  }
+  total += safe(SD.ecaFee.total); paid += safe(SD.ecaFee.paid);
+  if (SD.annualFee) { total += safe(SD.annualFee.total); paid += safe(SD.annualFee.paid); }
+  SD.otherFees.forEach(f => {
+    if (f.type === "monthly") {
+      Object.values(f.monthly).forEach(m => { total += safe(m.total); paid += safe(m.paid); });
+    } else {
+      total += safe(f.total); paid += safe(f.paid);
+    }
+  });
+  return { total, paid, remaining: total - paid };
+}
+
+function calcPreviousYearTotals() {
+  let total = 0, paid = 0;
+  if (SD.previousYearFees) {
+    if (SD.previousYearFees.tuition) { total += safe(SD.previousYearFees.tuition.total); paid += safe(SD.previousYearFees.tuition.paid); }
+    if (SD.previousYearFees.bus)     { total += safe(SD.previousYearFees.bus.total);     paid += safe(SD.previousYearFees.bus.paid); }
+  }
+  return { total, paid, remaining: total - paid };
+}
+
+function getGrandTotals() {
+  const t = calcTermTotals();
+  const o = calcOtherTotals();
+  const p = calcPreviousYearTotals();
+  return {
+    total:     t.total     + o.total     + p.total,
+    paid:      t.paid      + o.paid      + p.paid,
+    remaining: t.remaining + o.remaining + p.remaining
+  };
+}
+
+/* ═══════════════════════════════════════════
+   PROGRESS
+═══════════════════════════════════════════ */
+function updateProgress(total, paid) {
+  const pct = safe(total) > 0 ? Math.min(100, (safe(paid) / safe(total)) * 100) : 0;
+  el("progressBlock").style.display = "block";
+  el("progressBar").style.width     = pct + "%";
+  el("progressBar").style.minWidth  = pct > 0 ? "5px" : "0";
+  el("progressPct").textContent     = Math.round(pct) + "%";
+  el("progressLabel").textContent   = VIEW === "term" ? "TERM FEES PAID" : "OTHER FEES PAID";
+}
+
+/* ═══════════════════════════════════════════
+   SUMMARY BAR
+═══════════════════════════════════════════ */
+function renderSummary(total, paid, remaining) {
+  el("summaryBar").innerHTML = `
+    <div class="summary-item">
+      <span class="summary-label">Total</span>
+      <span class="summary-value">${fmtRs(total)}</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">Paid</span>
+      <span class="summary-value green">${fmtRs(paid)}</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">Remaining</span>
+      <span class="summary-value ${remaining > 0 ? "red" : "green"}">${fmtRs(remaining)}</span>
+    </div>`;
+}
+
+/* ═══════════════════════════════════════════
+   FEE TABLE BUILDER
+   FIX (S1): r.label escaped — fee names come from Firestore via otherFees
+═══════════════════════════════════════════ */
+function buildFeeTable(rows) {
+  const trs = rows.map(r => {
+    const rem    = safe(r.total) - safe(r.paid);
+    const isPaid = rem <= 0;
+    return `<tr>
+      <td style="text-align:left">${htmlEscape(r.label)}</td>
+      <td>${fmtRs(r.total)}</td>
+      <td>${fmtRs(r.paid)}</td>
+      <td>${fmtRs(rem)}</td>
+      <td><span class="badge ${isPaid ? "badge-paid" : "badge-pending"}">${isPaid ? "Paid" : "Pending"}</span></td>
+    </tr>`;
+  }).join("");
+  return `<div class="fee-table-scroll"><table class="fee-table">
+    <thead><tr>
+      <th style="text-align:left">Fee Item</th>
+      <th>Total</th><th>Paid</th><th>Remaining</th><th>Status</th>
+    </tr></thead>
+    <tbody>${trs || `<tr><td colspan="5" style="text-align:center;padding:1.5rem;color:#8a9bb0">No data</td></tr>`}</tbody>
+  </table></div>`;
+}
+
+/* ═══════════════════════════════════════════
+   EXPANDABLE CARD BUILDER
+   FIX (S1): title and subtitle escaped — can contain Firestore fee names
+═══════════════════════════════════════════ */
+let openCard = null;
+
+function buildExpCard({ id, icon, title, subtitle, rows }) {
+  const card = document.createElement("div");
+  card.className = "exp-card";
+
+  card.innerHTML = `
+    <div class="exp-header" id="hdr-${id}">
+      <div class="exp-header-left">
+        <span class="exp-icon">${icon}</span>
+        <div>
+          <div class="exp-title">${htmlEscape(title)}</div>
+          ${subtitle ? `<div class="exp-subtitle">${htmlEscape(subtitle)}</div>` : ""}
+        </div>
+      </div>
+      <div class="exp-header-right">
+        <span class="exp-summary" id="sum-${id}"></span>
+        <span class="exp-arrow" id="arr-${id}">▶</span>
+      </div>
+    </div>
+    <div class="exp-body" id="body-${id}">
+      <div class="exp-body-inner">${buildFeeTable(rows)}</div>
+    </div>`;
+
+  updateCardSummary(card, rows, id);
+
+  const hdr  = card.querySelector(`#hdr-${id}`);
+  const body = card.querySelector(`#body-${id}`);
+  const arr  = card.querySelector(`#arr-${id}`);
+
+  hdr.addEventListener("click", () => {
+    const isOpen = arr.classList.contains("open");
+    if (openCard && openCard !== card) {
+      const ob = openCard.querySelector(".exp-body");
+      const oa = openCard.querySelector(".exp-arrow");
+      const oh = openCard.querySelector(".exp-header");
+      if (ob) ob.style.maxHeight = "0";
+      if (oa) oa.classList.remove("open");
+      if (oh) oh.classList.remove("open");
+    }
+    if (isOpen) {
+      body.style.maxHeight = "0";
+      arr.classList.remove("open");
+      hdr.classList.remove("open");
+      openCard = null;
+    } else {
+      requestAnimationFrame(() => {
+        const inner = body.querySelector(".exp-body-inner");
+        body.style.maxHeight = (inner ? inner.scrollHeight : 400) + "px";
+      });
+      arr.classList.add("open");
+      hdr.classList.add("open");
+      openCard = card;
+    }
+  });
+
+  return card;
+}
+
+function updateCardSummary(card, rows, id) {
+  const sumEl = card.querySelector(`#sum-${id}`);
+  if (!sumEl) return;
+  const totalP  = rows.reduce((a, r) => a + safe(r.paid),  0);
+  const totalT  = rows.reduce((a, r) => a + safe(r.total), 0);
+  const allPaid = rows.every(r => safe(r.total) - safe(r.paid) <= 0);
+  sumEl.innerHTML = allPaid
+    ? `<span class="badge badge-paid">Paid</span>`
+    : `<span style="font-size:0.75rem;color:var(--muted)">${fmtRs(totalP)} / ${fmtRs(totalT)}</span>`;
+}
+
+/* ═══════════════════════════════════════════
+   RENDER
+═══════════════════════════════════════════ */
+function render() {
+  enforceDefaults();
+  openCard = null;
+  const container = el("content");
+  container.innerHTML = "";
+
+  let termTotal=0, termPaid=0, otherTotal=0, otherPaid=0;
+  if (VIEW === "term") {
+    renderTermView(container);
+    const t = calcTermTotals();
+    termTotal = t.total; termPaid = t.paid;
+    updateProgress(t.total, t.paid);
+  } else if (VIEW === "other") {
+    renderOtherView(container);
+    const o = calcOtherTotals();
+    otherTotal = o.total; otherPaid = o.paid;
+    updateProgress(o.total, o.paid);
+  } else {
+    renderHistoryView(container);
+    const t = calcTermTotals();
+    const o = calcOtherTotals();
+    termTotal = t.total; termPaid = t.paid;
+    otherTotal = o.total; otherPaid = o.paid;
+    el("progressBlock").style.display = "none";
+  }
+  const p = calcPreviousYearTotals();
+  const g = { total: termTotal + otherTotal + p.total, paid: termPaid + otherPaid + p.paid, remaining: termTotal + otherTotal + p.total - (termPaid + otherPaid + p.paid) };
+  renderSummary(g.total, g.paid, g.remaining);
+
+  el("payBtn").disabled = g.remaining <= 0;
+}
+
+function renderTermView(container) {
+  const rows = TERMS.map(t => ({ label: t.name, total: t.total, paid: t.paid }));
+  const wrap = document.createElement("div");
+  wrap.className = "term-table-wrap";
+  wrap.innerHTML = buildFeeTable(rows);
+  container.appendChild(wrap);
+}
+
+function renderOtherView(container) {
+  const list = document.createElement("div");
+  list.className = "sections-list";
+  let anySection = false;
+
+  if (SD.busFee) {
+    const entries = orderedEntries(SD.busFee.monthly);
+    const rows    = entries.map(([m, v]) => ({ label: capF(m), total: safe(v.total), paid: safe(v.paid) }));
+    list.appendChild(buildExpCard({
+      id: "bus", icon: iconFor("bus"),
+      title: "Bus Fees",
+      subtitle: `${MONTH_ORDER.filter(m => SD.busFee.monthly[m]).length} months`,
+      rows
+    }));
+    anySection = true;
+  }
+
+  {
+    const rows = [{ label: "ECA Fee", total: safe(SD.ecaFee.total), paid: safe(SD.ecaFee.paid) }];
+    list.appendChild(buildExpCard({
+      id: "eca", icon: iconFor("eca"),
+      title: "ECA Fees",
+      subtitle: "Extra-Curricular Activities",
+      rows
+    }));
+    anySection = true;
+  }
+
+  if (SD.annualFee && safe(SD.annualFee.total) > 0) {
+    const rows = [{ label: "Annual Day Fee", total: safe(SD.annualFee.total), paid: safe(SD.annualFee.paid) }];
+    list.appendChild(buildExpCard({
+      id: "annual", icon: iconFor("annual"),
+      title: "Annual Day Fee", subtitle: "", rows
+    }));
+    anySection = true;
+  }
+
+  SD.otherFees.forEach((fee, idx) => {
+    let rows = [];
+    if (fee.type === "monthly") {
+      const entries = orderedEntries(fee.monthly);
+      rows = entries.map(([m, v]) => ({ label: capF(m), total: safe(v.total), paid: safe(v.paid) }));
+    } else {
+      rows = [{ label: fee.name, total: safe(fee.total), paid: safe(fee.paid) }];
+    }
+    if (!rows.reduce((a, r) => a + r.total, 0)) return;
+    list.appendChild(buildExpCard({
+      id:       `custom-${idx}`,
+      icon:     iconFor(fee.name),
+      title:    fee.name,
+      subtitle: fee.type === "monthly" ? "Monthly fee" : "One-time fee",
+      rows
+    }));
+    anySection = true;
+  });
+
+  if (!anySection) {
+    list.innerHTML = `<p style="padding:2.5rem;text-align:center;color:var(--muted);font-size:0.9rem;">No other fees configured.</p>`;
+  }
+  container.appendChild(list);
+
+  /* Previous Year Pending Fees box */
+  if (SD.previousYearFees && (SD.previousYearFees.tuition || SD.previousYearFees.bus)) {
+    const rows = [];
+    if (SD.previousYearFees.tuition) rows.push({
+      label: "Previous Year Tuition Fee",
+      total: safe(SD.previousYearFees.tuition.total),
+      paid:  safe(SD.previousYearFees.tuition.paid)
+    });
+    if (SD.previousYearFees.bus) rows.push({
+      label: "Previous Year Bus Fee",
+      total: safe(SD.previousYearFees.bus.total),
+      paid:  safe(SD.previousYearFees.bus.paid)
+    });
+
+    const box = document.createElement("div");
+    box.className = "term-table-wrap";
+    box.innerHTML = `
+      <div style="padding:0.85rem 1.2rem;border-bottom:1px solid var(--border);font-weight:700;color:var(--brand);font-size:0.9rem;">
+        Previous Year Pending Fees
+      </div>
+      ${buildFeeTable(rows)}`;
+    container.appendChild(box);
+  }
+}
+
+/* ═══════════════════════════════════════════
+   HISTORY VIEW
+   FIX (S1): r.subType, r.code, r.date all escaped before innerHTML insertion
+═══════════════════════════════════════════ */
+function renderHistoryView(container) {
+  const activeReceipts = (SD.receipts || [])
+    .filter(r => !r.status || r.status === "active")
+    .slice()
+    .reverse();
+
+  if (!activeReceipts.length) {
+    const wrap = document.createElement("div");
+    wrap.className = "term-table-wrap";
+    wrap.innerHTML = `
+      <div class="hist-empty">
+        <div class="hist-empty-icon">📋</div>
+        <div class="hist-empty-title">No payment history yet</div>
+        <div class="hist-empty-sub">Payments will appear here after recording</div>
+      </div>`;
+    container.appendChild(wrap);
+    return;
+  }
+
+  const filterBar = document.createElement("div");
+  filterBar.className = "filter-bar";
+  filterBar.innerHTML = `
+    <span class="filter-label">Filter:</span>
+    <select class="filter-select" id="hist-filter">
+      <option value="all">All Types</option>
+      <option value="term">Term</option>
+      <option value="bus">Bus</option>
+      <option value="eca">ECA</option>
+      <option value="annual">Annual</option>
+      <option value="other">Other</option>
+      <option value="previous">Previous Year</option>
+    </select>
+    <span class="hist-count" id="hist-count">${activeReceipts.length} record${activeReceipts.length !== 1 ? "s" : ""}</span>`;
+  container.appendChild(filterBar);
+
+  const tableWrap = document.createElement("div");
+  tableWrap.className = "term-table-wrap";
+  container.appendChild(tableWrap);
+
+  function renderTable(filterType) {
+    let filtered;
+    if (filterType === "all") {
+      filtered = activeReceipts;
+    } else if (filterType === "previous") {
+      filtered = activeReceipts.filter(r => r.type === "previous_tuition" || r.type === "previous_bus");
+    } else {
+      filtered = activeReceipts.filter(r => r.type === filterType);
+    }
+
+    const countEl = document.getElementById("hist-count");
+    if (countEl) countEl.textContent = `${filtered.length} record${filtered.length !== 1 ? "s" : ""}`;
+
+    if (!filtered.length) {
+      tableWrap.innerHTML = `
+        <div class="hist-empty">
+          <div class="hist-empty-icon">🔍</div>
+          <div class="hist-empty-title">No records for this filter</div>
+          <div class="hist-empty-sub">Try selecting "All Types"</div>
+        </div>`;
+      return;
+    }
+
+    /* FIX (S1): All Firestore string fields escaped before innerHTML */
+    const rows = filtered.map(r => {
+      const amt    = safe(r.amount);
+      const amtCls = amt < 0 ? "color:var(--red)" : "color:var(--green)";
+      return `<tr>
+        <td style="text-align:left">
+          <div class="hist-code-cell">
+            <div class="hist-label">${htmlEscape(r.subType || "—")}</div>
+            <div class="hist-code-text">${htmlEscape(r.code || "—")}</div>
+          </div>
+        </td>
+        <td style="${amtCls};font-weight:700">${fmtRs(amt)}</td>
+        <td style="font-size:0.8rem;white-space:nowrap">${htmlEscape(r.date || "—")}</td>
+        <td style="font-size:0.75rem;white-space:nowrap">${(r.mode || "upi") === "cash" ? "💵 Cash" : "📲 UPI"}</td>
+      </tr>`;
+    }).join("");
+
+    tableWrap.innerHTML = `
+      <div class="fee-table-scroll">
+        <table class="fee-table">
+          <thead><tr>
+            <th style="text-align:left">Fee / Receipt Code</th>
+            <th>Amount</th>
+            <th>Date</th>
+            <th>Mode</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+  }
+
+  renderTable("all");
+  filterBar.querySelector("#hist-filter").addEventListener("change", function () {
+    renderTable(this.value);
+  });
+}
+
+/* ═══════════════════════════════════════════
+   FIRESTORE SAVES
+   saveAll() is used by applyEdit() for an atomic consistency write.
+   applyPayment() builds its own atomic updateDoc inline.
+═══════════════════════════════════════════ */
+const dbRef = () => doc(db, "students", studentId);
+
+async function saveAll() {
+  const data = {
+    receipts:  SD.receipts,
+    terms:     TERMS,
+    ecaFee:    { total: safe(SD.ecaFee.total), paid: safe(SD.ecaFee.paid) },
+    otherFees: SD.otherFees
+  };
+  if (SD.busFee)    data.busFee    = SD.busFee;
+  if (SD.annualFee) data.annualFee = SD.annualFee;
+  if (SD.previousYearFees) data.previousYearFees = SD.previousYearFees;
+  await updateDoc(dbRef(), data);
+}
+
+/* ═══════════════════════════════════════════
+   RECEIPT
+═══════════════════════════════════════════ */
+function receiptCode(name, cls, subType, amount) {
+  const words    = name.trim().split(/\s+/);
+  const initials = words.length === 1
+    ? words[0][0].toUpperCase() + "X"
+    : words.slice(0, 2).map(w => w[0]).join("").toUpperCase();
+  const cn    = cls.replace(/\D/g, "");
+  const tn    = (subType.match(/\d+/) || ["0"])[0];
+  const ap    = String(Math.abs(amount)).slice(0, 2);
+  const seq   = Date.now().toString().slice(-6) + Math.random().toString(36).slice(2, 4).toUpperCase();
+  const idSfx = ((studentId.match(/\d+/) || ["0"])[0]).padStart(3, "0");
+  return `${initials}${cn}${tn}${ap}${seq}${idSfx}`;
+}
+
+async function renderReceiptImg(data) {
+  const s = (id, v) => { const e = el(id); if (e) e.textContent = v; };
+  s("rt-name",   data.name);
+  s("rt-class",  data.class);
+  s("rt-amount", data.amount);
+  s("rt-fee",    data.fee);
+  s("rt-date",   data.date);
+  s("rt-code",   data.code);
+  const scale  = Math.min(window.devicePixelRatio || 2, 3);
+  const canvas = await html2canvas(el("receipt-tpl"), { scale, backgroundColor: "#fff" });
+  return canvas.toDataURL("image/png");
+}
+
+function dlReceipt(url, code) {
+  const a = document.createElement("a");
+  a.href = url; a.download = `${code}.png`; a.click();
+}
+
+async function showSuccess(subType, amount, code) {
+  closeAllOverlays();
+  const imgUrl = await renderReceiptImg({
+    name: SD.name, class: SD.class,
+    amount, fee: subType, date: today(), code
+  });
+  const m = overlay(`
+    <button class="modal-close">✕</button>
+    <h3>Payment Updated ✓</h3>
+    <div class="receipt-wrap">
+      <div class="tick-wrap">
+        <svg class="tick-svg" viewBox="0 0 52 52">
+          <circle class="tick-circle" cx="26" cy="26" r="25"/>
+          <path   class="tick-path"   d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+        </svg>
+      </div>
+      <p style="font-weight:700;margin-bottom:6px">${htmlEscape(subType)} · ${fmtRs(amount)}</p>
+      <img src="${imgUrl}" alt="Receipt">
+      <div class="receipt-code">${htmlEscape(code)}</div>
+      <div class="receipt-btns">
+        <button class="btn-action btn-pay" id="rcpt-dl">⬇ Download</button>
+        <button class="btn-action btn-help" id="rcpt-wa">💬 Send</button>
+      </div>
+    </div>`);
+  m.querySelector("#rcpt-dl").onclick = () => dlReceipt(imgUrl, code);
+  m.querySelector("#rcpt-wa").onclick = () =>
+    window.open(`https://wa.me/${SD.phone}?text=${encodeURIComponent(
+      `Dear Parent,\n\nPayment of ${fmtRs(amount)} for ${subType} has been updated.\nReceipt: ${code}\n\nSt. Anne's ICSE School`
+    )}`);
+}
+
+/* ═══════════════════════════════════════════
+   PAYMENT HANDLER
+   FIX (C3): Fee data and receipt are now written in ONE atomic updateDoc call.
+   FIX (C2): In-memory state is snapshot before mutation; rolled back on error.
+═══════════════════════════════════════════ */
+async function applyPayment(feeType, identifier, amount, isFull, mode = "upi") {
+  enforceDefaults();
+  let item = null, subType = "";
+
+  if (feeType === "term") {
+    const idx = parseInt(identifier);
+    if (isNaN(idx) || !TERMS[idx]) { alert("Invalid term"); return false; }
+    item = TERMS[idx]; subType = item.name;
+
+  } else if (feeType === "bus") {
+    if (!SD.busFee) { alert("Bus fee not configured"); return false; }
+    const m = identifier;
+    if (!SD.busFee.monthly[m]) SD.busFee.monthly[m] = { total: 0, paid: 0 };
+    item = SD.busFee.monthly[m];
+    subType = `Bus Fee – ${capF(m)}`;
+
+  } else if (feeType === "eca") {
+    item = SD.ecaFee; subType = "ECA Fee";
+
+  } else if (feeType === "annual") {
+    if (!SD.annualFee) { alert("Annual fee not configured"); return false; }
+    item = SD.annualFee; subType = "Annual Day Fee";
+
+  } else if (feeType === "other") {
+    const parts = String(identifier).split(":");
+    if (parts.length === 2) {
+      const fIdx  = parseInt(parts[0]);
+      const month = parts[1];
+      const fee   = SD.otherFees[fIdx];
+      if (!fee || !month) { alert("Fee not found"); return false; }
+      if (!fee.monthly[month]) fee.monthly[month] = { total: 0, paid: 0 };
+      item    = fee.monthly[month];
+      subType = `${fee.name} – ${capF(month)}`;
+    } else {
+      const idx = parseInt(identifier);
+      if (isNaN(idx) || !SD.otherFees[idx]) { alert("Fee not found"); return false; }
+      item    = SD.otherFees[idx];
+      subType = item.name;
+    }
+
+  } else if (feeType === "previous_tuition") {
+    if (!SD.previousYearFees?.tuition) { alert("Previous year tuition not configured"); return false; }
+    item = SD.previousYearFees.tuition;
+    subType = "Previous Year Tuition Fee";
+
+  } else if (feeType === "previous_bus") {
+    if (!SD.previousYearFees?.bus) { alert("Previous year bus not configured"); return false; }
+    item = SD.previousYearFees.bus;
+    subType = "Previous Year Bus Fee";
+
+  } else {
+    alert("Unknown fee type"); return false;
+  }
+
+  if (!item || item.total === undefined) { alert("Fee has no total set"); return false; }
+
+  const currentPaid = safe(item.paid);
+  const totalAmt    = safe(item.total);
+  const newPaid     = isFull
+    ? totalAmt
+    : Math.max(0, Math.min(totalAmt, currentPaid + safe(amount)));
+  const delta       = newPaid - currentPaid;
+
+  if (delta === 0) {
+    toast("No change — paid amount is already at this value.");
+    return false;
+  }
+
+  /* FIX (C2): Snapshot before any mutation for clean rollback */
+  const prevPaid             = safe(item.paid);
+  const prevReceiptsSnapshot = (SD.receipts || []).map(r => ({ ...r }));
+
+  /* Mutate in-memory state */
+  item.paid = newPaid;
+
+  /* Build receipt object */
+  const absAmount = Math.abs(delta);
+  const code      = receiptCode(SD.name, SD.class, subType, absAmount);
+  const recObj    = { code, amount: delta, type: feeType, subType, date: today(), status: "active", mode };
+
+  /* Push receipt to SD */
+  if (!Array.isArray(SD.receipts)) SD.receipts = [];
+  SD.receipts.push(recObj);
+  if (SD.receipts.length > MAX_RECEIPTS) SD.receipts = SD.receipts.slice(-MAX_RECEIPTS);
+
+  /* FIX (C3): Build ONE atomic update object — fee field + receipts in a single write */
+  const updateData = { receipts: SD.receipts };
+  if      (feeType === "term")   updateData.terms     = TERMS;
+  else if (feeType === "bus")    updateData.busFee    = SD.busFee;
+  else if (feeType === "eca")    updateData.ecaFee    = { total: safe(SD.ecaFee.total), paid: safe(SD.ecaFee.paid) };
+  else if (feeType === "annual") updateData.annualFee = SD.annualFee;
+  else if (feeType === "other")  updateData.otherFees = SD.otherFees;
+  else if (feeType === "previous_tuition" || feeType === "previous_bus") updateData.previousYearFees = SD.previousYearFees;
+
+  try {
+    await updateDoc(dbRef(), updateData);
+  } catch (err) {
+    /* FIX (C2): Rollback in-memory state so UI stays consistent with Firestore */
+    item.paid   = prevPaid;
+    SD.receipts = prevReceiptsSnapshot;
+    toast("Error saving payment: " + err.message);
+    console.error("applyPayment error:", err);
+    render();
+    return false;
+  }
+
+  render();
+  await showSuccess(subType, absAmount, code);
+  return true;
+}
+
+/* ═══════════════════════════════════════════
+   EDIT PAYMENT SYSTEM
+   Requires isAdminMode === true at every entry point.
+═══════════════════════════════════════════ */
+
+function getFeeItemByReceipt(receipt) {
+  const { type, subType } = receipt;
+
+  if (type === "term") {
+    const term = TERMS.find(t => t.name === subType);
+    return term ? { item: term } : null;
+  }
+  if (type === "bus") {
+    const dashIdx = subType.indexOf("–");
+    const month   = dashIdx !== -1 ? subType.slice(dashIdx + 1).trim().toLowerCase() : "";
+    if (!month || !SD.busFee?.monthly[month]) return null;
+    return { item: SD.busFee.monthly[month] };
+  }
+  if (type === "eca")    return SD.ecaFee    ? { item: SD.ecaFee }    : null;
+  if (type === "annual") return SD.annualFee ? { item: SD.annualFee } : null;
+  if (type === "other") {
+    const dashIdx = subType.indexOf("–");
+    if (dashIdx !== -1) {
+      const feeName = subType.slice(0, dashIdx).trim();
+      const month   = subType.slice(dashIdx + 1).trim().toLowerCase();
+      const fee     = SD.otherFees.find(f => f.name === feeName);
+      if (!fee || !fee.monthly?.[month]) return null;
+      return { item: fee.monthly[month] };
+    }
+    const fee = SD.otherFees.find(f => f.name === subType);
+    return fee ? { item: fee } : null;
+  }
+  if (type === "previous_tuition") return SD.previousYearFees?.tuition ? { item: SD.previousYearFees.tuition } : null;
+  if (type === "previous_bus")     return SD.previousYearFees?.bus     ? { item: SD.previousYearFees.bus }     : null;
+
+  return null;
+}
+
+/*
+ * FIX (S1): All receipt fields escaped in modal innerHTML.
+ * FIX (L2): input min changed to "0" (validation still enforces > 0 via JS);
+ *           default value shows 1 when oldAmt is non-positive to avoid blank field.
+ */
+function editPayment(code) {
+  if (!isAdminMode) { toast("Unauthorized access."); return; }
+  if (!code)        { toast("Invalid receipt code."); return; }
+
+  const receipt = (SD.receipts || []).find(
+    r => r.code === code && (!r.status || r.status === "active")
+  );
+  if (!receipt) { toast("Receipt not found or already cancelled."); return; }
+
+  const feeRef = getFeeItemByReceipt(receipt);
+  if (!feeRef)  { toast("Cannot locate fee record. Contact admin."); return; }
+
+  const { item }     = feeRef;
+  const oldAmt       = safe(receipt.amount);
+  const currentPaid  = safe(item.paid);
+  const total        = safe(item.total);
+  const revertedPaid = Math.max(0, currentPaid - oldAmt);
+  const maxAllowed   = Math.max(0, total - revertedPaid);
+
+  const resetAdmin = () => { isAdminMode = false; };
+
+  /* FIX (S1): receipt fields escaped; FIX (L2): min="0", sensible default value */
+  const m = overlay(`
+    <button class="modal-close">✕</button>
+    <h3>✏ Edit Payment</h3>
+    <div class="edit-info-box">
+      <div class="edit-info-fee">${htmlEscape(receipt.subType || "—")}</div>
+      <div class="edit-info-meta">Recorded: ${fmtRs(oldAmt)} &nbsp;·&nbsp; Date: ${htmlEscape(receipt.date || "—")}</div>
+      <div class="edit-info-code">${htmlEscape(receipt.code)}</div>
+    </div>
+    <label>New Amount (₹)</label>
+    <input type="number" id="edit-amt" placeholder="Enter amount"
+      min="0" max="${maxAllowed}" value="${oldAmt > 0 ? oldAmt : 1}">
+    <div class="edit-max-hint">
+      <span>Max allowed:</span>
+      <strong>${fmtRs(maxAllowed)}</strong>
+    </div>
+    <label>Payment Mode</label>
+    <select id="edit-mode">
+      <option value="upi">📲 UPI (Online)</option>
+      <option value="cash">💵 Cash</option>
+    </select>
+    <div class="modal-actions">
+      <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
+      <button class="btn-modal btn-modal-ok"     id="m-ok">✓ Update</button>
+    </div>`, resetAdmin);
+
+  const amtInput  = m.querySelector("#edit-amt");
+  const modeInput = m.querySelector("#edit-mode");
+  modeInput.value = receipt.mode || "upi";
+  amtInput.focus();
+
+  m.querySelector("#m-cancel").onclick = () => { resetAdmin(); closeAllOverlays(); };
+
+  const okBtn = m.querySelector("#m-ok");
+  okBtn.onclick = async () => {
+    const raw = amtInput.value.trim();
+    if (!raw)              { toast("Please enter an amount."); return; }
+    const val = parseFloat(raw);
+    if (isNaN(val))        { toast("Invalid amount. Enter a number."); return; }
+    if (val <= 0)          { toast("Amount must be greater than 0."); return; }
+    if (val > maxAllowed)  { toast(`Cannot exceed max allowed: ${fmtRs(maxAllowed)}`); return; }
+    if (val === oldAmt && modeInput.value === (receipt.mode || "upi")) {
+      toast("No change — amount and mode are the same.");
+      return;
+    }
+    okBtn.disabled = true;
+    const newMode = modeInput.value;
+    closeAllOverlays();
+    await applyEdit(receipt, val, newMode);
+  };
+}
+
+/*
+ * FIX (C1): try/catch/finally guarantees isAdminMode = false no matter what.
+ * FIX (C2): Snapshot taken before mutations; rolled back on any Firestore error.
+ */
+async function applyEdit(oldReceipt, newAmount, newMode = "upi") {
+  if (!isAdminMode) { toast("Unauthorized access."); return; }
+  enforceDefaults();
+
+  const feeRef = getFeeItemByReceipt(oldReceipt);
+  if (!feeRef) { toast("Fee item not found — edit aborted."); isAdminMode = false; return; }
+
+  const { item } = feeRef;
+  const oldAmt   = safe(oldReceipt.amount);
+  const total    = safe(item.total);
+
+  /*
+   * FIX (C2): Deep-ish snapshot — each receipt object cloned individually so
+   * in-memory mutations to oldReceipt don't corrupt the rollback snapshot.
+   */
+  const prevItemPaid         = safe(item.paid);
+  const prevReceiptsSnapshot = (SD.receipts || []).map(r => ({ ...r }));
+
+  try {
+    /* Mutate in-memory state */
+    item.paid = Math.max(0, Math.min(total, safe(item.paid) - oldAmt + newAmount));
+    oldReceipt.status = "cancelled";
+
+    const newCode    = receiptCode(SD.name, SD.class, oldReceipt.subType, newAmount);
+    const newReceipt = {
+      code:    newCode,
+      amount:  newAmount,
+      type:    oldReceipt.type,
+      subType: oldReceipt.subType,
+      date:    today(),
+      status:  "active",
+      mode:    newMode
+    };
+
+    if (!Array.isArray(SD.receipts)) SD.receipts = [];
+    SD.receipts.push(newReceipt);
+    if (SD.receipts.length > MAX_RECEIPTS) {
+      SD.receipts = SD.receipts.slice(-MAX_RECEIPTS);
+    }
+
+    /* Single atomic Firestore write */
+    await saveAll();
+
+    render();
+    await showSuccess(oldReceipt.subType, newAmount, newCode);
+
+  } catch (err) {
+    /* FIX (C2): Rollback in-memory state on any failure */
+    item.paid   = prevItemPaid;
+    SD.receipts = prevReceiptsSnapshot;
+    toast("Error saving edit: " + err.message);
+    console.error("applyEdit error:", err);
+    render();
+
+  } finally {
+    /* FIX (C1): ALWAYS reset admin mode — even on throw, even on success */
+    isAdminMode = false;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   MODAL SYSTEM
+═══════════════════════════════════════════ */
+function closeAllOverlays() {
+  document.querySelectorAll(".overlay").forEach(o => o.remove());
+}
+
+function overlay(html, onDismiss) {
+  closeAllOverlays();
+  const ov = document.createElement("div");
+  ov.className = "overlay";
+  const m = document.createElement("div");
+  m.className = "modal";
+  m.innerHTML = html;
+  ov.appendChild(m);
+  document.body.appendChild(ov);
+
+  const dismiss = () => {
+    if (typeof onDismiss === "function") onDismiss();
+    closeAllOverlays();
+  };
+
+  ov.addEventListener("click", e => { if (e.target === ov) dismiss(); });
+
+  const cl = m.querySelector(".modal-close");
+  if (cl) cl.onclick = dismiss;
+
+  return m;
+}
+
+/* ═══════════════════════════════════════════
+   ADMIN ADD FLOW
+═══════════════════════════════════════════ */
+function adminSelectFeeType() {
+  const opts = [`<option value="term">Term Fee</option>`];
+  if (SD.busFee)           opts.push(`<option value="bus">Bus Fee</option>`);
+  opts.push(`<option value="eca">ECA Fee</option>`);
+  if (SD.annualFee)        opts.push(`<option value="annual">Annual Day Fee</option>`);
+  if (SD.otherFees.length) opts.push(`<option value="other">Other Fee</option>`);
+
+  const m = overlay(`
+    <button class="modal-close">✕</button>
+    <h3>Select Fee Type</h3>
+    <label>Fee Type</label>
+    <select id="fee-type-sel">${opts.join("")}</select>
+    <div class="modal-actions">
+      <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
+      <button class="btn-modal btn-modal-ok"     id="m-ok">Next</button>
+    </div>`);
+
+  m.querySelector("#m-cancel").onclick = closeAllOverlays;
+  m.querySelector("#m-ok").onclick = () => {
+    const feeType = m.querySelector("#fee-type-sel").value;
+    closeAllOverlays();
+    if      (feeType === "term")   adminTermFlow();
+    else if (feeType === "bus")    adminMonthlyFlow("bus", "Bus Fee");
+    else if (feeType === "eca")    adminActionFlow("eca", null, "ECA Fee");
+    else if (feeType === "annual") adminActionFlow("annual", null, "Annual Day Fee");
+    else if (feeType === "other")  adminOtherFlow();
+  };
+}
+
+function adminTermFlow() {
+  const opts = TERMS.map((t, i) => `<option value="${i}">${htmlEscape(t.name)}</option>`).join("");
+  const m = overlay(`
+    <button class="modal-close">✕</button>
+    <h3>Select Term</h3>
+    <label>Term</label>
+    <select id="term-sel">${opts}</select>
+    <div class="modal-actions">
+      <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
+      <button class="btn-modal btn-modal-ok"     id="m-ok">Next</button>
+    </div>`);
+
+  m.querySelector("#m-cancel").onclick = closeAllOverlays;
+  m.querySelector("#m-ok").onclick = () => {
+    const idx = m.querySelector("#term-sel").value;
+    closeAllOverlays();
+    adminActionFlow("term", idx, TERMS[parseInt(idx)]?.name || "Term");
+  };
+}
+
+function adminMonthlyFlow(feeType, feeLabel) {
+  const availMonths = feeType === "bus"
+    ? MONTH_ORDER.filter(m => SD.busFee && SD.busFee.monthly[m])
+    : MONTH_ORDER;
+  const opts = availMonths.map(m => `<option value="${m}">${capF(m)}</option>`).join("");
+
+  const modal = overlay(`
+    <button class="modal-close">✕</button>
+    <h3>Select Month</h3>
+    <label>Month</label>
+    <select id="month-sel">${opts}</select>
+    <div class="modal-actions">
+      <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
+      <button class="btn-modal btn-modal-ok"     id="m-ok">Next</button>
+    </div>`);
+
+  modal.querySelector("#m-cancel").onclick = closeAllOverlays;
+  modal.querySelector("#m-ok").onclick = () => {
+    const month = modal.querySelector("#month-sel").value;
+    closeAllOverlays();
+    adminActionFlow(feeType, month, `${feeLabel} – ${capF(month)}`);
+  };
+}
+
+function adminOtherFlow() {
+  const opts = SD.otherFees.map((f, i) => `<option value="${i}">${htmlEscape(f.name)}</option>`).join("");
+  const m = overlay(`
+    <button class="modal-close">✕</button>
+    <h3>Select Fee</h3>
+    <label>Fee</label>
+    <select id="other-sel">${opts}</select>
+    <div class="modal-actions">
+      <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
+      <button class="btn-modal btn-modal-ok"     id="m-ok">Next</button>
+    </div>`);
+
+  m.querySelector("#m-cancel").onclick = closeAllOverlays;
+  m.querySelector("#m-ok").onclick = () => {
+    const idx = parseInt(m.querySelector("#other-sel").value);
+    const fee = SD.otherFees[idx];
+    closeAllOverlays();
+    if (!fee) return;
+
+    if (fee.type === "monthly") {
+      const months = MONTH_ORDER.filter(mo => fee.monthly && fee.monthly[mo]);
+      const mopts  = months.map(mo => `<option value="${mo}">${capF(mo)}</option>`).join("");
+      const m2 = overlay(`
+        <button class="modal-close">✕</button>
+        <h3>Select Month</h3>
+        <label>Month</label>
+        <select id="month-sel">${mopts}</select>
+        <div class="modal-actions">
+          <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
+          <button class="btn-modal btn-modal-ok"     id="m-ok">Next</button>
+        </div>`);
+      m2.querySelector("#m-cancel").onclick = closeAllOverlays;
+      m2.querySelector("#m-ok").onclick = () => {
+        const month = m2.querySelector("#month-sel").value;
+        closeAllOverlays();
+        adminActionFlow("other", `${idx}:${month}`, `${fee.name} – ${capF(month)}`);
+      };
+    } else {
+      adminActionFlow("other", String(idx), fee.name);
+    }
+  };
+}
+
+/*
+ * FIX (S1): label escaped in h3 — label is derived from Firestore fee names
+ */
+function adminActionFlow(feeType, identifier, label) {
+  const m = overlay(`
+    <button class="modal-close">✕</button>
+    <h3>Update: ${htmlEscape(label)}</h3>
+    <label>Action</label>
+    <select id="action-sel">
+      <option value="full">Full Payment</option>
+      <option value="partial">Partial Payment</option>
+    </select>
+    <label>Payment Mode</label>
+    <select id="mode-sel">
+      <option value="upi">📲 UPI (Online)</option>
+      <option value="cash">💵 Cash</option>
+    </select>
+    <div id="amt-row" style="display:none;margin-top:0.6rem">
+      <label>Amount (₹) — use negative to reduce</label>
+      <input type="number" id="amt-inp" placeholder="e.g. 500 or -200">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
+      <button class="btn-modal btn-modal-ok"     id="m-ok">Confirm</button>
+    </div>`);
+
+  const sel    = m.querySelector("#action-sel");
+  const amtRow = m.querySelector("#amt-row");
+  const amtInp = m.querySelector("#amt-inp");
+  const okBtn  = m.querySelector("#m-ok");
+
+  sel.onchange = () => {
+    amtRow.style.display = sel.value === "partial" ? "block" : "none";
+  };
+
+  m.querySelector("#m-cancel").onclick = closeAllOverlays;
+
+  okBtn.onclick = async () => {
+    const action = sel.value;
+    const mode   = m.querySelector("#mode-sel").value;
+
+    if (action === "full") {
+      okBtn.disabled = true;
+      closeAllOverlays();
+      await applyPayment(feeType, identifier, 0, true, mode);
+      return;
+    }
+
+    const rawVal = amtInp.value.trim();
+    if (!rawVal)         { toast("Please enter an amount."); return; }
+    const amount = parseFloat(rawVal);
+    if (isNaN(amount))   { toast("Invalid amount. Please enter a number."); return; }
+    if (amount === 0)    { toast("Amount must be non-zero."); return; }
+
+    okBtn.disabled = true;
+    closeAllOverlays();
+    await applyPayment(feeType, identifier, amount, false, mode);
+  };
+}
+
+/* ═══════════════════════════════════════════
+   PAY POPUP
+═══════════════════════════════════════════ */
+function openPay() {
+  const m = overlay(`
+    <button class="modal-close">✕</button>
+    <h3>Pay Fees</h3>
+    <div class="qr-wrap">
+      <img src="${htmlEscape(QR_URL)}" alt="QR">
+    </div>
+    <div class="upi-row">
+      <span class="upi-text">${htmlEscape(UPI_ID)}</span>
+      <button class="btn-copy" id="copyUpi">📋 Copy</button>
+    </div>
+    <button class="btn-upi-pay" id="upiPay">Pay via UPI App</button>
+    <div class="wa-note">Share payment screenshot to <span class="wa-link" id="waLink">Office WhatsApp</span></div>`);
+
+  m.querySelector("#copyUpi").onclick = function () {
+    const btn = this;
+    const fallback = () => {
+      const ta = document.createElement("textarea");
+      ta.value = UPI_ID;
+      ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.focus(); ta.select();
+      try { document.execCommand("copy"); } catch (_) {}
+      document.body.removeChild(ta);
+    };
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(UPI_ID).catch(fallback);
+    } else {
+      fallback();
+    }
+    btn.textContent = "✔ Copied";
+    setTimeout(() => { btn.textContent = "📋 Copy"; }, 1400);
+  };
+
+  m.querySelector("#upiPay").onclick = () => {
+    window.location.href = `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${UPI_NAME}&cu=INR`;
+  };
+  m.querySelector("#waLink").onclick = () => window.open(WHATSAPP_URL);
+}
+
+/* ═══════════════════════════════════════════
+   HELP POPUP
+═══════════════════════════════════════════ */
+function openHelp() {
+  const m = overlay(`
+    <button class="modal-close">✕</button>
+    <h3>Help & Support</h3>
+    <div style="text-align:left;font-size:0.86rem;line-height:1.7;color:var(--muted);margin:0.6rem 0">
+      <p>📞 <strong>Phone:</strong> +91 12345 67890</p>
+      <p>📧 <strong>Email:</strong> office@stannes.edu</p>
+      <p>🕘 <strong>Hours:</strong> Mon–Fri, 9 AM – 4 PM</p>
+    </div>
+    <button class="btn-wa" id="wa-chat">💬 Chat on WhatsApp</button>`);
+  m.querySelector("#wa-chat").onclick = () => window.open(WHATSAPP_URL);
+}
+
+/* ═══════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════ */
+function toast(msg) {
+  document.querySelectorAll(".toast").forEach(t => t.remove());
+  const t = document.createElement("div");
+  t.className = "toast"; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2700);
+}
+
+/* ═══════════════════════════════════════════
+   DARK MODE
+═══════════════════════════════════════════ */
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+}
+
+function detectSystemTheme() {
+  applyTheme(window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+}
+
+window.matchMedia("(prefers-color-scheme: dark)")
+  .addEventListener("change", e => { applyTheme(e.matches ? "dark" : "light"); });
+
+/* ═══════════════════════════════════════════
+   STEALTH KEYBOARD SHORTCUTS
+   A + D → Add Payment  |  E + D → Edit Payment
+   FIX (L4): window "blur" resets key state to prevent stuck shortcuts
+             after tab-switch or focus loss.
+═══════════════════════════════════════════ */
+let keys      = { a: false, d: false, e: false };
+let comboLock = false;
+
+document.addEventListener("keydown", e => {
+  const tag = e.target.tagName;
+  if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+
+  const k = e.key.toLowerCase();
+  if (k === "a") keys.a = true;
+  if (k === "d") keys.d = true;
+  if (k === "e") keys.e = true;
+
+  if (comboLock) return;
+
+  if (keys.a && keys.d) {
+    comboLock = true;
+    openAdminAuth("add");
+  } else if (keys.e && keys.d) {
+    comboLock = true;
+    openAdminAuth("edit");
+  }
+});
+
+document.addEventListener("keyup", e => {
+  const k = e.key.toLowerCase();
+  if (k === "a") keys.a = false;
+  if (k === "d") keys.d = false;
+  if (k === "e") keys.e = false;
+  comboLock = false;
+});
+
+/* FIX (L4): Reset all key state when window loses focus */
+window.addEventListener("blur", () => {
+  keys.a = keys.d = keys.e = false;
+  comboLock = false;
+});
+
+/* ═══════════════════════════════════════════
+   UNIFIED ADMIN AUTH MODAL
+═══════════════════════════════════════════ */
+function openAdminAuth(mode) {
+  const m = overlay(`
+    <button class="modal-close">✕</button>
+    <h3>🔐 Admin Access</h3>
+    <label>Password</label>
+    <input type="password" id="admin-pass" placeholder="Enter admin password" autocomplete="off">
+    <div class="modal-actions">
+      <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
+      <button class="btn-modal btn-modal-ok"     id="m-ok">Enter</button>
+    </div>`);
+
+  const passInput = m.querySelector("#admin-pass");
+  passInput.focus();
+
+  const attempt = () => {
+    if (passInput.value !== ADMIN_PASS) {
+      toast("Wrong password.");
+      passInput.value = "";
+      passInput.focus();
+      return;
+    }
+    closeAllOverlays();
+    if (mode === "add") {
+      adminSelectFeeType();
+    } else {
+      isAdminMode = true;
+      openAdminEditSelector();
+    }
+  };
+
+  m.querySelector("#m-cancel").onclick = closeAllOverlays;
+  m.querySelector("#m-ok").onclick     = attempt;
+  passInput.addEventListener("keydown", e => { if (e.key === "Enter") attempt(); });
+}
+
+/* ═══════════════════════════════════════════
+   ADMIN EDIT SELECTOR
+   FIX (S1): r.subType and r.date escaped in option text.
+═══════════════════════════════════════════ */
+function openAdminEditSelector() {
+  const receipts = (SD.receipts || [])
+    .filter(r => !r.status || r.status === "active")
+    .slice()
+    .reverse();
+
+  if (!receipts.length) {
+    toast("No active records to edit.");
+    isAdminMode = false;
+    return;
+  }
+
+  /* FIX (S1): Both option value and text content escaped */
+  const options = receipts.map(r => {
+    const safeCode = htmlEscape(r.code || "");
+    const safeText = `${htmlEscape(r.subType || "—")} — ${fmtRs(r.amount)} (${htmlEscape(r.date || "—")})`;
+    return `<option value="${safeCode}">${safeText}</option>`;
+  }).join("");
+
+  const resetAdmin = () => { isAdminMode = false; };
+
+  const m = overlay(`
+    <button class="modal-close">✕</button>
+    <h3>✏ Select Payment to Edit</h3>
+    <label>Payment Record</label>
+    <select id="edit-select">${options}</select>
+    <div class="modal-actions">
+      <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
+      <button class="btn-modal btn-modal-ok"     id="m-ok">Edit</button>
+    </div>`, resetAdmin);
+
+  m.querySelector("#m-cancel").onclick = () => { resetAdmin(); closeAllOverlays(); };
+
+  m.querySelector("#m-ok").onclick = () => {
+    const code = m.querySelector("#edit-select").value;
+    closeAllOverlays();
+    editPayment(code);
+  };
+}
+
+/* ═══════════════════════════════════════════
+   VIEW TABS
+═══════════════════════════════════════════ */
+function setView(v) {
+  VIEW = v;
+  el("tabTerm").classList.toggle("active",    v === "term");
+  el("tabOther").classList.toggle("active",   v === "other");
+  el("tabHistory").classList.toggle("active", v === "history");
+  render();
+}
+
+/* ═══════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════ */
+window.addEventListener("DOMContentLoaded", () => {
+  detectSystemTheme();
+
+  el("logoutBtn").onclick  = () => { location.href = "../index.html"; };
+  el("tabTerm").onclick    = () => setView("term");
+  el("tabOther").onclick   = () => setView("other");
+  el("tabHistory").onclick = () => setView("history");
+  el("payBtn").onclick     = openPay;
+  el("helpBtn").onclick    = openHelp;
+
+  loadStudent();
+
+  /*
+   * FIX (L3): Mobile admin access via long-press (1.3 s) on student name.
+   * Cancelled on touchmove (scroll) or touchend (tap) to avoid false triggers.
+   */
+  let longPressTimer = null;
+  const nameEl = el("studentName");
+
+  nameEl.addEventListener("touchstart", () => {
+    longPressTimer = setTimeout(() => {
+      longPressTimer = null;
+      openAdminAuth("add");
+    }, 1300);
+  }, { passive: true });
+
+  const cancelLongPress = () => {
+    if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+  };
+  nameEl.addEventListener("touchend",    cancelLongPress, { passive: true });
+  nameEl.addEventListener("touchmove",   cancelLongPress, { passive: true });
+  nameEl.addEventListener("touchcancel", cancelLongPress, { passive: true });
+});
+</script>
+</body>
+</html>
