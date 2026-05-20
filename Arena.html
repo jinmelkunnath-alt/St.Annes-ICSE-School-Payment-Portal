@@ -871,7 +871,7 @@ const studentId = (new URLSearchParams(location.search).get("id") || "").trim().
 let SD          = {};
 let TERMS       = [];
 let VIEW        = "term";
-let isAdminMode = false;
+let isAdminMode = false;   // additional gate, set after auth
 
 /* ═══════════════════════════════════════════
    LOADER
@@ -1426,6 +1426,11 @@ function renderHistoryView(container) {
 const dbRef = () => doc(db, "students", studentId);
 
 async function saveAll() {
+  // Guard against unauthenticated writes (should never happen, but safety net)
+  if (!adminUser) {
+    toast("Admin login required.");
+    return;
+  }
   const data = {
     receipts:  SD.receipts,
     terms:     TERMS,
@@ -1504,9 +1509,14 @@ async function showSuccess(subType, amount, code) {
 }
 
 /* ═══════════════════════════════════════════
-   PAYMENT HANDLER
+   PAYMENT HANDLER (admin only)
 ═══════════════════════════════════════════ */
 async function applyPayment(feeType, identifier, amount, isFull, mode = "upi") {
+  // Hard security gate – must be authenticated admin
+  if (!adminUser) {
+    toast("Admin login required.");
+    return false;
+  }
   enforceDefaults();
   let item = null, subType = "";
 
@@ -1721,6 +1731,8 @@ function editPayment(code) {
 
 async function applyEdit(oldReceipt, newAmount, newMode = "upi") {
   if (!isAdminMode) { toast("Unauthorized access."); return; }
+  // double-check Firebase auth
+  if (!adminUser) { toast("Admin login required."); isAdminMode = false; return; }
   enforceDefaults();
 
   const feeRef = getFeeItemByReceipt(oldReceipt);
@@ -1811,7 +1823,7 @@ function adminSelectFeeType() {
   if (SD.annualFee)        opts.push(`<option value="annual">Annual Day Fee</option>`);
   if (SD.otherFees.length) opts.push(`<option value="other">Other Fee</option>`);
 
-  // Previous year arrears
+  // Previous year arrears (only if data exists and total > 0)
   if (SD.previousYearFees) {
     if (SD.previousYearFees.tuition && safe(SD.previousYearFees.tuition.total) > 0) {
       opts.push(`<option value="previous_tuition">Previous Year Tuition Arrear</option>`);
@@ -1991,7 +2003,7 @@ function adminActionFlow(feeType, identifier, label) {
 }
 
 /* ═══════════════════════════════════════════
-   PAY POPUP
+   PAY POPUP (for parents)
 ═══════════════════════════════════════════ */
 function openPay() {
   const m = overlay(`
@@ -2247,7 +2259,13 @@ function setView(v) {
 window.addEventListener("DOMContentLoaded", () => {
   detectSystemTheme();
 
-  el("logoutBtn").onclick  = () => { location.href = "../index.html"; };
+  el("logoutBtn").onclick = async () => {
+    if (adminUser) {
+      await signOut(auth);
+    }
+    location.href = "../index.html";
+  };
+
   el("tabTerm").onclick    = () => setView("term");
   el("tabOther").onclick   = () => setView("other");
   el("tabHistory").onclick = () => setView("history");
