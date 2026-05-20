@@ -758,6 +758,8 @@ import {
   updateDoc,
   enableIndexedDbPersistence
 } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 
 /* ═══════════════════════════════════════════
    FIREBASE
@@ -772,13 +774,13 @@ const fbApp = initializeApp({
 });
 
 const db = getFirestore(fbApp);
+const auth = getAuth(fbApp);
+let adminUser = null;
 
-/*
- * NOTE: enableIndexedDbPersistence is deprecated in Firebase 9+ in favour of
- *   initializeFirestore(app, { localCache: persistentLocalCache() })
- * If upgrading Firebase, switch to that API. The catch below handles the case
- * where this export no longer exists or fails at runtime.
- */
+onAuthStateChanged(auth, (user) => {
+  adminUser = user || null;
+});
+
 enableIndexedDbPersistence(db).catch(err => {
   if (err.code === "failed-precondition") {
     console.warn("Offline persistence unavailable: multiple tabs open.");
@@ -792,18 +794,13 @@ enableIndexedDbPersistence(db).catch(err => {
 
 /* ═══════════════════════════════════════════
    CONSTANTS
-   ⚠️  SECURITY WARNING: The admin password stored here is frontend-only
-   and provides NO real security. Anyone who inspects the source code can
-   read it. For production use, enforce all writes via Firestore Security
-   Rules and a server-side auth system.
-   Recommendation: Use Firebase Auth + Firestore rules like:
-     allow write: if request.auth.token.admin == true;
 ═══════════════════════════════════════════ */
-const ADMIN_PASS   = "ADMIN@STANNES";
+const ADMIN_EMAIL_1 = "immanuelmelbindj@gmail.com";
+const ADMIN_EMAIL_2 = "SCHOOL_OFFICE_EMAIL@gmail.com"; // PLACEHOLDER – replace with actual school email
 const UPI_ID       = "jinmelkunnath@oksbi";
 const UPI_NAME     = "St.%20Annes%20ICSE";
 const WHATSAPP_URL = "https://wa.me/917012808911";
-const QR_URL       = "https://i.ibb.co/8RSZRz0/IMG-20260329-160905.png";
+const QR_URL       = "QR_IMG_01.png";
 const MAX_RECEIPTS = 100;
 
 const MONTH_ORDER = ["june","july","august","september","october","november","december","january","february","march"];
@@ -847,10 +844,6 @@ const capF  = s   => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 const fmtRs = n   => "₹" + safe(n).toLocaleString("en-IN");
 const today = ()  => new Date().toISOString().slice(0, 10);
 
-/*
- * FIX (S1): HTML escape utility — applied to ALL Firestore-sourced strings
- * before innerHTML insertion to prevent XSS injection.
- */
 function htmlEscape(str) {
   if (str == null) return "";
   return String(str)
@@ -874,13 +867,7 @@ const studentId = (new URLSearchParams(location.search).get("id") || "").trim().
 let SD          = {};
 let TERMS       = [];
 let VIEW        = "term";
-
-/*
- * isAdminMode gates editPayment() and applyEdit().
- * It must be set to true only after successful password auth
- * and is GUARANTEED to reset to false via try/finally in applyEdit().
- */
-let isAdminMode = false;
+let isAdminMode = false;   // additional gate, set after auth
 
 /* ═══════════════════════════════════════════
    LOADER
@@ -1104,7 +1091,6 @@ function renderSummary(total, paid, remaining) {
 
 /* ═══════════════════════════════════════════
    FEE TABLE BUILDER
-   FIX (S1): r.label escaped — fee names come from Firestore via otherFees
 ═══════════════════════════════════════════ */
 function buildFeeTable(rows) {
   const trs = rows.map(r => {
@@ -1129,7 +1115,6 @@ function buildFeeTable(rows) {
 
 /* ═══════════════════════════════════════════
    EXPANDABLE CARD BUILDER
-   FIX (S1): title and subtitle escaped — can contain Firestore fee names
 ═══════════════════════════════════════════ */
 let openCard = null;
 
@@ -1332,7 +1317,6 @@ function renderOtherView(container) {
 
 /* ═══════════════════════════════════════════
    HISTORY VIEW
-   FIX (S1): r.subType, r.code, r.date all escaped before innerHTML insertion
 ═══════════════════════════════════════════ */
 function renderHistoryView(container) {
   const activeReceipts = (SD.receipts || [])
@@ -1396,7 +1380,6 @@ function renderHistoryView(container) {
       return;
     }
 
-    /* FIX (S1): All Firestore string fields escaped before innerHTML */
     const rows = filtered.map(r => {
       const amt    = safe(r.amount);
       const amtCls = amt < 0 ? "color:var(--red)" : "color:var(--green)";
@@ -1435,12 +1418,14 @@ function renderHistoryView(container) {
 
 /* ═══════════════════════════════════════════
    FIRESTORE SAVES
-   saveAll() is used by applyEdit() for an atomic consistency write.
-   applyPayment() builds its own atomic updateDoc inline.
 ═══════════════════════════════════════════ */
 const dbRef = () => doc(db, "students", studentId);
 
 async function saveAll() {
+  if (!adminUser) {
+    toast("Admin login required.");
+    return;
+  }
   const data = {
     receipts:  SD.receipts,
     terms:     TERMS,
@@ -1519,11 +1504,13 @@ async function showSuccess(subType, amount, code) {
 }
 
 /* ═══════════════════════════════════════════
-   PAYMENT HANDLER
-   FIX (C3): Fee data and receipt are now written in ONE atomic updateDoc call.
-   FIX (C2): In-memory state is snapshot before mutation; rolled back on error.
+   PAYMENT HANDLER (admin only)
 ═══════════════════════════════════════════ */
 async function applyPayment(feeType, identifier, amount, isFull, mode = "upi") {
+  if (!adminUser) {
+    toast("Admin login required.");
+    return false;
+  }
   enforceDefaults();
   let item = null, subType = "";
 
@@ -1591,24 +1578,19 @@ async function applyPayment(feeType, identifier, amount, isFull, mode = "upi") {
     return false;
   }
 
-  /* FIX (C2): Snapshot before any mutation for clean rollback */
   const prevPaid             = safe(item.paid);
   const prevReceiptsSnapshot = (SD.receipts || []).map(r => ({ ...r }));
 
-  /* Mutate in-memory state */
   item.paid = newPaid;
 
-  /* Build receipt object */
   const absAmount = Math.abs(delta);
   const code      = receiptCode(SD.name, SD.class, subType, absAmount);
   const recObj    = { code, amount: delta, type: feeType, subType, date: today(), status: "active", mode };
 
-  /* Push receipt to SD */
   if (!Array.isArray(SD.receipts)) SD.receipts = [];
   SD.receipts.push(recObj);
   if (SD.receipts.length > MAX_RECEIPTS) SD.receipts = SD.receipts.slice(-MAX_RECEIPTS);
 
-  /* FIX (C3): Build ONE atomic update object — fee field + receipts in a single write */
   const updateData = { receipts: SD.receipts };
   if      (feeType === "term")   updateData.terms     = TERMS;
   else if (feeType === "bus")    updateData.busFee    = SD.busFee;
@@ -1620,7 +1602,6 @@ async function applyPayment(feeType, identifier, amount, isFull, mode = "upi") {
   try {
     await updateDoc(dbRef(), updateData);
   } catch (err) {
-    /* FIX (C2): Rollback in-memory state so UI stays consistent with Firestore */
     item.paid   = prevPaid;
     SD.receipts = prevReceiptsSnapshot;
     toast("Error saving payment: " + err.message);
@@ -1636,9 +1617,7 @@ async function applyPayment(feeType, identifier, amount, isFull, mode = "upi") {
 
 /* ═══════════════════════════════════════════
    EDIT PAYMENT SYSTEM
-   Requires isAdminMode === true at every entry point.
 ═══════════════════════════════════════════ */
-
 function getFeeItemByReceipt(receipt) {
   const { type, subType } = receipt;
 
@@ -1672,11 +1651,6 @@ function getFeeItemByReceipt(receipt) {
   return null;
 }
 
-/*
- * FIX (S1): All receipt fields escaped in modal innerHTML.
- * FIX (L2): input min changed to "0" (validation still enforces > 0 via JS);
- *           default value shows 1 when oldAmt is non-positive to avoid blank field.
- */
 function editPayment(code) {
   if (!isAdminMode) { toast("Unauthorized access."); return; }
   if (!code)        { toast("Invalid receipt code."); return; }
@@ -1698,7 +1672,6 @@ function editPayment(code) {
 
   const resetAdmin = () => { isAdminMode = false; };
 
-  /* FIX (S1): receipt fields escaped; FIX (L2): min="0", sensible default value */
   const m = overlay(`
     <button class="modal-close">✕</button>
     <h3>✏ Edit Payment</h3>
@@ -1750,12 +1723,9 @@ function editPayment(code) {
   };
 }
 
-/*
- * FIX (C1): try/catch/finally guarantees isAdminMode = false no matter what.
- * FIX (C2): Snapshot taken before mutations; rolled back on any Firestore error.
- */
 async function applyEdit(oldReceipt, newAmount, newMode = "upi") {
   if (!isAdminMode) { toast("Unauthorized access."); return; }
+  if (!adminUser) { toast("Admin login required."); isAdminMode = false; return; }
   enforceDefaults();
 
   const feeRef = getFeeItemByReceipt(oldReceipt);
@@ -1765,15 +1735,10 @@ async function applyEdit(oldReceipt, newAmount, newMode = "upi") {
   const oldAmt   = safe(oldReceipt.amount);
   const total    = safe(item.total);
 
-  /*
-   * FIX (C2): Deep-ish snapshot — each receipt object cloned individually so
-   * in-memory mutations to oldReceipt don't corrupt the rollback snapshot.
-   */
   const prevItemPaid         = safe(item.paid);
   const prevReceiptsSnapshot = (SD.receipts || []).map(r => ({ ...r }));
 
   try {
-    /* Mutate in-memory state */
     item.paid = Math.max(0, Math.min(total, safe(item.paid) - oldAmt + newAmount));
     oldReceipt.status = "cancelled";
 
@@ -1794,14 +1759,12 @@ async function applyEdit(oldReceipt, newAmount, newMode = "upi") {
       SD.receipts = SD.receipts.slice(-MAX_RECEIPTS);
     }
 
-    /* Single atomic Firestore write */
     await saveAll();
 
     render();
     await showSuccess(oldReceipt.subType, newAmount, newCode);
 
   } catch (err) {
-    /* FIX (C2): Rollback in-memory state on any failure */
     item.paid   = prevItemPaid;
     SD.receipts = prevReceiptsSnapshot;
     toast("Error saving edit: " + err.message);
@@ -1809,7 +1772,6 @@ async function applyEdit(oldReceipt, newAmount, newMode = "upi") {
     render();
 
   } finally {
-    /* FIX (C1): ALWAYS reset admin mode — even on throw, even on success */
     isAdminMode = false;
   }
 }
@@ -1854,6 +1816,16 @@ function adminSelectFeeType() {
   if (SD.annualFee)        opts.push(`<option value="annual">Annual Day Fee</option>`);
   if (SD.otherFees.length) opts.push(`<option value="other">Other Fee</option>`);
 
+  // Previous year arrears (only if data exists and total > 0)
+  if (SD.previousYearFees) {
+    if (SD.previousYearFees.tuition && safe(SD.previousYearFees.tuition.total) > 0) {
+      opts.push(`<option value="previous_tuition">Previous Year Tuition Arrear</option>`);
+    }
+    if (SD.previousYearFees.bus && safe(SD.previousYearFees.bus.total) > 0) {
+      opts.push(`<option value="previous_bus">Previous Year Bus Arrear</option>`);
+    }
+  }
+
   const m = overlay(`
     <button class="modal-close">✕</button>
     <h3>Select Fee Type</h3>
@@ -1868,11 +1840,14 @@ function adminSelectFeeType() {
   m.querySelector("#m-ok").onclick = () => {
     const feeType = m.querySelector("#fee-type-sel").value;
     closeAllOverlays();
-    if      (feeType === "term")   adminTermFlow();
-    else if (feeType === "bus")    adminMonthlyFlow("bus", "Bus Fee");
-    else if (feeType === "eca")    adminActionFlow("eca", null, "ECA Fee");
-    else if (feeType === "annual") adminActionFlow("annual", null, "Annual Day Fee");
-    else if (feeType === "other")  adminOtherFlow();
+
+    if      (feeType === "term")             adminTermFlow();
+    else if (feeType === "bus")              adminMonthlyFlow("bus", "Bus Fee");
+    else if (feeType === "eca")              adminActionFlow("eca", null, "ECA Fee");
+    else if (feeType === "annual")           adminActionFlow("annual", null, "Annual Day Fee");
+    else if (feeType === "other")            adminOtherFlow();
+    else if (feeType === "previous_tuition") adminActionFlow("previous_tuition", null, "Previous Year Tuition Arrear");
+    else if (feeType === "previous_bus")     adminActionFlow("previous_bus", null, "Previous Year Bus Arrear");
   };
 }
 
@@ -1963,9 +1938,6 @@ function adminOtherFlow() {
   };
 }
 
-/*
- * FIX (S1): label escaped in h3 — label is derived from Firestore fee names
- */
 function adminActionFlow(feeType, identifier, label) {
   const m = overlay(`
     <button class="modal-close">✕</button>
@@ -2024,7 +1996,7 @@ function adminActionFlow(feeType, identifier, label) {
 }
 
 /* ═══════════════════════════════════════════
-   PAY POPUP
+   PAY POPUP (for parents)
 ═══════════════════════════════════════════ */
 function openPay() {
   const m = overlay(`
@@ -2109,9 +2081,6 @@ window.matchMedia("(prefers-color-scheme: dark)")
 
 /* ═══════════════════════════════════════════
    STEALTH KEYBOARD SHORTCUTS
-   A + D → Add Payment  |  E + D → Edit Payment
-   FIX (L4): window "blur" resets key state to prevent stuck shortcuts
-             after tab-switch or focus loss.
 ═══════════════════════════════════════════ */
 let keys      = { a: false, d: false, e: false };
 let comboLock = false;
@@ -2144,36 +2113,64 @@ document.addEventListener("keyup", e => {
   comboLock = false;
 });
 
-/* FIX (L4): Reset all key state when window loses focus */
 window.addEventListener("blur", () => {
   keys.a = keys.d = keys.e = false;
   comboLock = false;
 });
 
 /* ═══════════════════════════════════════════
-   UNIFIED ADMIN AUTH MODAL
+   UNIFIED ADMIN AUTH MODAL (Firebase) – PASSWORD ONLY
 ═══════════════════════════════════════════ */
 function openAdminAuth(mode) {
+  if (adminUser) {
+    // Already signed in
+    if (mode === "add") {
+      adminSelectFeeType();
+    } else {
+      isAdminMode = true;
+      openAdminEditSelector();
+    }
+    return;
+  }
+
+  // Not signed in – show password-only modal
   const m = overlay(`
     <button class="modal-close">✕</button>
-    <h3>🔐 Admin Access</h3>
+    <h3>🔐 Admin Login</h3>
     <label>Password</label>
-    <input type="password" id="admin-pass" placeholder="Enter admin password" autocomplete="off">
+    <input type="password" id="admin-pass" placeholder="Enter password" autocomplete="current-password">
     <div class="modal-actions">
       <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
-      <button class="btn-modal btn-modal-ok"     id="m-ok">Enter</button>
+      <button class="btn-modal btn-modal-ok"     id="m-ok">Login</button>
     </div>`);
 
   const passInput = m.querySelector("#admin-pass");
+  const okBtn     = m.querySelector("#m-ok");
   passInput.focus();
 
-  const attempt = () => {
-    if (passInput.value !== ADMIN_PASS) {
-      toast("Wrong password.");
-      passInput.value = "";
-      passInput.focus();
+  const attempt = async () => {
+    const password = passInput.value;
+    if (!password) {
+      toast("Please enter password.");
       return;
     }
+    okBtn.disabled = true;
+    // Try first admin email
+    try {
+      await signInWithEmailAndPassword(auth, ADMIN_EMAIL_1, password);
+    } catch (err1) {
+      // If first fails, try second admin email
+      try {
+        await signInWithEmailAndPassword(auth, ADMIN_EMAIL_2, password);
+      } catch (err2) {
+        toast("Wrong password");
+        okBtn.disabled = false;
+        passInput.value = "";
+        passInput.focus();
+        return;
+      }
+    }
+    // Success
     closeAllOverlays();
     if (mode === "add") {
       adminSelectFeeType();
@@ -2184,13 +2181,14 @@ function openAdminAuth(mode) {
   };
 
   m.querySelector("#m-cancel").onclick = closeAllOverlays;
-  m.querySelector("#m-ok").onclick     = attempt;
-  passInput.addEventListener("keydown", e => { if (e.key === "Enter") attempt(); });
+  okBtn.onclick = attempt;
+  passInput.addEventListener("keydown", e => {
+    if (e.key === "Enter") attempt();
+  });
 }
 
 /* ═══════════════════════════════════════════
    ADMIN EDIT SELECTOR
-   FIX (S1): r.subType and r.date escaped in option text.
 ═══════════════════════════════════════════ */
 function openAdminEditSelector() {
   const receipts = (SD.receipts || [])
@@ -2204,7 +2202,6 @@ function openAdminEditSelector() {
     return;
   }
 
-  /* FIX (S1): Both option value and text content escaped */
   const options = receipts.map(r => {
     const safeCode = htmlEscape(r.code || "");
     const safeText = `${htmlEscape(r.subType || "—")} — ${fmtRs(r.amount)} (${htmlEscape(r.date || "—")})`;
@@ -2218,12 +2215,22 @@ function openAdminEditSelector() {
     <h3>✏ Select Payment to Edit</h3>
     <label>Payment Record</label>
     <select id="edit-select">${options}</select>
-    <div class="modal-actions">
-      <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
-      <button class="btn-modal btn-modal-ok"     id="m-ok">Edit</button>
+    <div class="modal-actions" style="justify-content:space-between">
+      <button class="btn-modal btn-modal-cancel" style="background:transparent;color:var(--red);border:1px solid var(--red);padding:0.4rem 0.9rem;" id="m-signout">🚪 Sign Out</button>
+      <div style="display:flex;gap:0.5rem">
+        <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
+        <button class="btn-modal btn-modal-ok"     id="m-ok">Edit</button>
+      </div>
     </div>`, resetAdmin);
 
   m.querySelector("#m-cancel").onclick = () => { resetAdmin(); closeAllOverlays(); };
+
+  m.querySelector("#m-signout").onclick = async () => {
+    closeAllOverlays();
+    isAdminMode = false;
+    await signOut(auth);
+    toast("Signed out.");
+  };
 
   m.querySelector("#m-ok").onclick = () => {
     const code = m.querySelector("#edit-select").value;
@@ -2249,7 +2256,13 @@ function setView(v) {
 window.addEventListener("DOMContentLoaded", () => {
   detectSystemTheme();
 
-  el("logoutBtn").onclick  = () => { location.href = "../index.html"; };
+  el("logoutBtn").onclick = async () => {
+    if (adminUser) {
+      await signOut(auth);
+    }
+    location.href = "../index.html";
+  };
+
   el("tabTerm").onclick    = () => setView("term");
   el("tabOther").onclick   = () => setView("other");
   el("tabHistory").onclick = () => setView("history");
@@ -2258,10 +2271,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
   loadStudent();
 
-  /*
-   * FIX (L3): Mobile admin access via long-press (1.3 s) on student name.
-   * Cancelled on touchmove (scroll) or touchend (tap) to avoid false triggers.
-   */
   let longPressTimer = null;
   const nameEl = el("studentName");
 
