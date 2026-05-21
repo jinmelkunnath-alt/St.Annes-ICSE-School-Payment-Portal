@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>St. Anne's ICSE · Admin Portal</title>
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, doc, updateDoc, getDoc, getDocs, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        // 🔥 YOUR FIREBASE CONFIG (REPLACE WITH YOUR ACTUAL CONFIG)
+        const firebaseConfig = {
+            apiKey: "AIzaSyArC1RsGTkS0cr5glTfgUdTktjcfj_Ad88",
+  authDomain: "fee-payment-portal.firebaseapp.com",
+  projectId: "fee-payment-portal",
+  storageBucket: "fee-payment-portal.firebasestorage.app",
+  messagingSenderId: "1036013822615",
+  appId: "1:1036013822615:web:6c4159f84bae9882963fd2"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // Make globals available for inline scripts
+        window.db = db;
+        window.auth = auth;
+        window.collection = collection;
+        window.addDoc = addDoc;
+        window.doc = doc;
+        window.updateDoc = updateDoc;
+        window.getDoc = getDoc;
+        window.getDocs = getDocs;
+        window.query = query;
+        window.where = where;
+        window.orderBy = orderBy;
+    </script>
+    <style>
+        /* ---------- DARK MODE SUPPORT (auto detect) ---------- */
+        :root {
+            --bg-primary: #f8f9fc;
+            --bg-secondary: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #475569;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --danger: #ef4444;
+            --success: #10b981;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-primary: #0f172a;
+                --bg-secondary: #1e293b;
+                --text-primary: #f1f5f9;
+                --text-secondary: #cbd5e1;
+                --card-bg: #1e293b;
+                --border: #334155;
+                --accent: #3b82f6;
+                --accent-hover: #60a5fa;
+                --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background 0.2s, color 0.2s;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+        /* Header */
+        .admin-header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .logo {
+            width: 48px;
+            height: 48px;
+            background: var(--accent);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        .title h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        .title p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        .logout-btn {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        /* Class grid */
+        .class-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        .class-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: var(--shadow);
+        }
+        .class-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .class-card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        /* Student table */
+        .student-table {
+            width: 100%;
+            background: var(--card-bg);
+            border-radius: 16px;
+            border-collapse: collapse;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+        .student-table th, .student-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        .student-table th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+        .action-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-right: 0.5rem;
+        }
+        .action-btn.danger {
+            background: var(--danger);
+        }
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0.2s, opacity 0.2s;
+        }
+        .modal.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        .modal-content {
+            background: var(--bg-secondary);
+            border-radius: 24px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);
+        }
+        .modal-content h2 {
+            margin-bottom: 1rem;
+        }
+        .modal-content input, .modal-content select {
+            width: 100%;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+        .modal-content button {
+            margin-top: 1rem;
+        }
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .back-btn {
+            background: none;
+            border: none;
+            color: var(--accent);
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--success);
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            z-index: 1100;
+            display: none;
+        }
+        .toast.error {
+            border-left-color: var(--danger);
+        }
+        @media (max-width: 768px) {
+            .class-grid {
+                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            }
+            .student-table th, .student-table td {
+                padding: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-header">
+        <div class="logo-area">
+            <div class="logo">🏫</div>
+            <div class="title">
+                <h1>St. Anne's ICSE Admin</h1>
+                <p>Fee Management System</p>
+            </div>
+        </div>
+        <button class="logout-btn" id="logoutBtn" style="display: none;">Logout</button>
+    </div>
+    <div class="container" id="appContainer">
+        <!-- Dynamic content rendered by JS -->
+    </div>
+
+    <!-- Password modal (always shown first) -->
+    <div id="passwordModal" class="modal active">
+        <div class="modal-content">
+            <h2>🔐 Admin Access</h2>
+            <input type="password" id="adminPassword" placeholder="Enter Admin Password" autocomplete="off">
+            <button id="verifyPasswordBtn" class="action-btn" style="width:100%">Verify</button>
+            <p id="pwdError" style="color: var(--danger); margin-top: 0.5rem;"></p>
+        </div>
+    </div>
+
+    <!-- Add/Edit Student Modal -->
+    <div id="studentModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle">Add New Student</h2>
+            <input type="text" id="studentName" placeholder="Full Name">
+            <select id="studentClass">
+                <!-- populated dynamically -->
+            </select>
+            <input type="text" id="studentPhone" placeholder="Phone Number">
+            <label style="display: flex; align-items: center; gap: 0.5rem; margin: 0.5rem 0;">
+                <input type="checkbox" id="hasPrevFees"> Has Previous Year Pending Fees
+            </label>
+            <div id="prevFeesFields" style="display: none;">
+                <input type="number" id="prevTuition" placeholder="Previous Tuition Pending (₹)" step="1">
+                <input type="number" id="prevBus" placeholder="Previous Bus Pending (₹)" step="1">
+            </div>
+            <button id="saveStudentBtn" class="action-btn">Save Student</button>
+            <button id="closeModalBtn" class="action-btn danger" style="background: var(--danger);">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content">
+            <h2>Update Payment</h2>
+            <div id="paymentOptions"></div>
+            <button id="processPaymentBtn" class="action-btn">Process Payment</button>
+            <button id="closePaymentModal" class="action-btn danger">Cancel</button>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script type="module">
+        // ---------- Firebase already initialized in module ----------
+        const auth = window.auth;
+        const db = window.db;
+        const { collection, addDoc, doc, updateDoc, getDoc, getDocs, query, where, orderBy } = window;
+
+        // DOM elements
+        const passwordModal = document.getElementById('passwordModal');
+        const adminPasswordInput = document.getElementById('adminPassword');
+        const verifyBtn = document.getElementById('verifyPasswordBtn');
+        const pwdError = document.getElementById('pwdError');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const appContainer = document.getElementById('appContainer');
+        const studentModal = document.getElementById('studentModal');
+        const paymentModal = document.getElementById('paymentModal');
+        const toast = document.getElementById('toast');
+
+        let currentUser = null;
+        let currentClassView = null;
+        let selectedStudent = null;
+        let currentPaymentType = null;
+
+        // Hardcoded admin credentials
+        const ADMIN_EMAIL = "immanuelmelbindj@gmail.com";
+        const ADMIN_PASSWORD = "ADMIN@STANNES";
+
+        // ---------- Helper: Show toast ----------
+        function showToast(message, isError = false) {
+            toast.textContent = message;
+            toast.className = `toast ${isError ? 'error' : ''}`;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        }
+
+        // ---------- Firebase Authentication ----------
+        async function authenticateAdmin(enteredPwd) {
+            if (enteredPwd !== ADMIN_PASSWORD) {
+                pwdError.textContent = "Incorrect password";
+                return false;
+            }
+            try {
+                const userCred = await signInWithEmailAndPassword(auth, ADMIN_EMAIL, ADMIN_PASSWORD);
+                currentUser = userCred.user;
+                passwordModal.classList.remove('active');
+                logoutBtn.style.display = 'flex';
+                loadClassView();
+                showToast("Admin authenticated successfully");
+                return true;
+            } catch (error) {
+                console.error("Firebase auth error:", error);
+                pwdError.textContent = "Firebase login failed: " + error.message;
+                return false;
+            }
+        }
+
+        verifyBtn.addEventListener('click', () => {
+            const pwd = adminPasswordInput.value;
+            authenticateAdmin(pwd);
+        });
+
+        // Auto logout
+        logoutBtn.addEventListener('click', async () => {
+            await auth.signOut();
+            currentUser = null;
+            logoutBtn.style.display = 'none';
+            passwordModal.classList.add('active');
+            adminPasswordInput.value = '';
+            pwdError.textContent = '';
+            appContainer.innerHTML = '';
+        });
+
+        // Check existing auth state
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                passwordModal.classList.remove('active');
+                logoutBtn.style.display = 'flex';
+                loadClassView();
+            } else if (!passwordModal.classList.contains('active')) {
+                // Not logged in, show modal
+                passwordModal.classList.add('active');
+                logoutBtn.style.display = 'none';
+            }
+        });
+
+        // ---------- Class definitions (with STD 1 A and STD 1 B) ----------
+        const classList = [
+            "LKG", "UKG",
+            "STD 1 A", "STD 1 B",
+            "STD 2", "STD 3", "STD 4", "STD 5",
+            "STD 6", "STD 7", "STD 8", "STD 9", "STD 10"
+        ];
+
+        // Load class cards view
+        async function loadClassView() {
+            appContainer.innerHTML = `
+                <div class="flex-between">
+                    <h2>📚 Select Class</h2>
+                    <button id="addStudentBtn" class="action-btn">+ Add New Student</button>
+                </div>
+                <div class="class-grid" id="classGrid"></div>
+            `;
+            const grid = document.getElementById('classGrid');
+            classList.forEach(className => {
+                const card = document.createElement('div');
+                card.className = 'class-card';
+                card.innerHTML = `<h3>${className}</h3>`;
+                card.addEventListener('click', () => loadStudentsForClass(className));
+                grid.appendChild(card);
+            });
+            document.getElementById('addStudentBtn').addEventListener('click', () => openStudentModal());
+        }
+
+        // Load students for a given class
+        async function loadStudentsForClass(className) {
+            currentClassView = className;
+            appContainer.innerHTML = `
+                <button id="backToClasses" class="back-btn">← Back to Classes</button>
+                <div class="flex-between">
+                    <h2>👨‍🎓 ${className} Students</h2>
+                    <button id="addStudentInClass" class="action-btn">+ Add Student</button>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="student-table" id="studentTable">
+                        <thead>
+                            <tr><th>Name</th><th>Phone</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody id="studentTableBody"></tbody>
+                    </table>
+                </div>
+            `;
+            document.getElementById('backToClasses').addEventListener('click', loadClassView);
+            document.getElementById('addStudentInClass').addEventListener('click', () => openStudentModal(className));
+
+            // Fetch students from Firestore
+            const studentsRef = collection(db, 'students');
+            const q = query(studentsRef, where('class', '==', className), orderBy('name'));
+            const snapshot = await getDocs(q);
+            const tbody = document.getElementById('studentTableBody');
+            tbody.innerHTML = '';
+            snapshot.forEach(docSnap => {
+                const student = { id: docSnap.id, ...docSnap.data() };
+                const row = tbody.insertRow();
+                row.insertCell(0).textContent = student.name;
+                row.insertCell(1).textContent = student.phone || '—';
+                const actions = row.insertCell(2);
+                const payBtn = document.createElement('button');
+                payBtn.textContent = 'Pay';
+                payBtn.className = 'action-btn';
+                payBtn.style.marginRight = '8px';
+                payBtn.addEventListener('click', () => openPaymentModal(student));
+                const editBtn = document.createElement('button');
+                editBtn.textContent = 'Edit';
+                editBtn.className = 'action-btn';
+                editBtn.addEventListener('click', () => openStudentModal(null, student));
+                actions.appendChild(payBtn);
+                actions.appendChild(editBtn);
+            });
+            if (snapshot.empty) {
+                tbody.innerHTML = '<tr><td colspan="3">No students found. Click + Add Student.</td></tr>';
+            }
+        }
+
+        // ---------- Student Creation with Previous Year Fees ----------
+        function openStudentModal(prefillClass = null, existingStudent = null) {
+            const modal = studentModal;
+            const title = document.getElementById('modalTitle');
+            const nameInput = document.getElementById('studentName');
+            const classSelect = document.getElementById('studentClass');
+            const phoneInput = document.getElementById('studentPhone');
+            const prevCheck = document.getElementById('hasPrevFees');
+            const prevDiv = document.getElementById('prevFeesFields');
+
+            // Populate class options
+            classSelect.innerHTML = classList.map(c => `<option value="${c}">${c}</option>`).join('');
+            if (prefillClass) classSelect.value = prefillClass;
+            if (existingStudent) {
+                title.textContent = 'Edit Student';
+                nameInput.value = existingStudent.name;
+                classSelect.value = existingStudent.class;
+                phoneInput.value = existingStudent.phone || '';
+                if (existingStudent.previousYearFees) {
+                    prevCheck.checked = true;
+                    prevDiv.style.display = 'block';
+                    document.getElementById('prevTuition').value = existingStudent.previousYearFees.tuition?.total || 0;
+                    document.getElementById('prevBus').value = existingStudent.previousYearFees.bus?.total || 0;
+                } else {
+                    prevCheck.checked = false;
+                    prevDiv.style.display = 'none';
+                }
+                window._editId = existingStudent.id;
+            } else {
+                title.textContent = 'Add New Student';
+                nameInput.value = '';
+                phoneInput.value = '';
+                prevCheck.checked = false;
+                prevDiv.style.display = 'none';
+                window._editId = null;
+            }
+
+            prevCheck.addEventListener('change', (e) => {
+                prevDiv.style.display = e.target.checked ? 'block' : 'none';
+            });
+
+            modal.classList.add('active');
+            const saveBtn = document.getElementById('saveStudentBtn');
+            const closeBtn = document.getElementById('closeModalBtn');
+            const newSaveHandler = async () => {
+                const name = nameInput.value.trim();
+                const classNameVal = classSelect.value;
+                const phone = phoneInput.value.trim();
+                if (!name || !classNameVal) {
+                    showToast("Name and class are required", true);
+                    return;
+                }
+                const studentData = {
+                    name,
+                    class: classNameVal,
+                    phone,
+                    terms: { term1: 0, term2: 0, term3: 0 }, // default
+                    busFee: 0,
+                    ecaFee: 0,
+                    annualFee: 0,
+                    otherFees: [],
+                    receipts: [],
+                };
+                if (prevCheck.checked) {
+                    const tuitionTotal = parseFloat(document.getElementById('prevTuition').value) || 0;
+                    const busTotal = parseFloat(document.getElementById('prevBus').value) || 0;
+                    if (tuitionTotal > 0 || busTotal > 0) {
+                        studentData.previousYearFees = {
+                            tuition: { total: tuitionTotal, paid: 0 },
+                            bus: { total: busTotal, paid: 0 }
+                        };
+                    }
+                }
+                try {
+                    if (window._editId) {
+                        await updateDoc(doc(db, 'students', window._editId), studentData);
+                        showToast("Student updated");
+                    } else {
+                        await addDoc(collection(db, 'students'), studentData);
+                        showToast("Student added");
+                    }
+                    modal.classList.remove('active');
+                    if (currentClassView) loadStudentsForClass(currentClassView);
+                    else loadClassView();
+                } catch (err) {
+                    console.error(err);
+                    showToast("Failed to save student: " + err.message, true);
+                }
+            };
+            saveBtn.removeEventListener('click', window._oldSaveHandler);
+            window._oldSaveHandler = newSaveHandler;
+            saveBtn.addEventListener('click', newSaveHandler);
+            closeBtn.onclick = () => modal.classList.remove('active');
+        }
+
+        // ---------- Payment Modal with Previous Year Arrears ----------
+        async function openPaymentModal(student) {
+            selectedStudent = student;
+            const optionsDiv = document.getElementById('paymentOptions');
+            optionsDiv.innerHTML = '';
+            // Current year options (simplified)
+            optionsDiv.innerHTML += `<label><input type="radio" name="paymentType" value="currentTuition"> Current Year Tuition</label><br>`;
+            optionsDiv.innerHTML += `<label><input type="radio" name="paymentType" value="currentBus"> Current Year Bus Fee</label><br>`;
+            // Check for previous year fees
+            if (student.previousYearFees) {
+                const prev = student.previousYearFees;
+                if (prev.tuition && prev.tuition.total > prev.tuition.paid) {
+                    optionsDiv.innerHTML += `<label><input type="radio" name="paymentType" value="prevTuition"> Previous Year Tuition Arrear (₹${prev.tuition.total - prev.tuition.paid} pending)</label><br>`;
+                }
+                if (prev.bus && prev.bus.total > prev.bus.paid) {
+                    optionsDiv.innerHTML += `<label><input type="radio" name="paymentType" value="prevBus"> Previous Year Bus Arrear (₹${prev.bus.total - prev.bus.paid} pending)</label><br>`;
+                }
+            }
+            optionsDiv.innerHTML += `<input type="number" id="paymentAmount" placeholder="Enter amount (₹)" step="1" style="margin-top: 1rem;">`;
+            paymentModal.classList.add('active');
+            document.getElementById('processPaymentBtn').onclick = async () => {
+                const selected = document.querySelector('input[name="paymentType"]:checked');
+                if (!selected) {
+                    showToast("Select payment type", true);
+                    return;
+                }
+                const amount = parseFloat(document.getElementById('paymentAmount').value);
+                if (isNaN(amount) || amount <= 0) {
+                    showToast("Enter valid amount", true);
+                    return;
+                }
+                const type = selected.value;
+                const studentRef = doc(db, 'students', student.id);
+                try {
+                    if (type === 'prevTuition') {
+                        const newPaid = student.previousYearFees.tuition.paid + amount;
+                        const updatedPrev = { ...student.previousYearFees };
+                        updatedPrev.tuition.paid = Math.min(newPaid, updatedPrev.tuition.total);
+                        await updateDoc(studentRef, { previousYearFees: updatedPrev });
+                        showToast(`₹${amount} paid towards Previous Year Tuition`);
+                    } else if (type === 'prevBus') {
+                        const newPaid = student.previousYearFees.bus.paid + amount;
+                        const updatedPrev = { ...student.previousYearFees };
+                        updatedPrev.bus.paid = Math.min(newPaid, updatedPrev.bus.total);
+                        await updateDoc(studentRef, { previousYearFees: updatedPrev });
+                        showToast(`₹${amount} paid towards Previous Year Bus Fee`);
+                    } else {
+                        // For current year, you can implement similar logic (assuming you have terms array)
+                        showToast("Current year payment update not fully implemented in this patch, but previous year works.", true);
+                    }
+                    paymentModal.classList.remove('active');
+                    if (currentClassView) loadStudentsForClass(currentClassView);
+                } catch (err) {
+                    showToast("Payment failed: " + err.message, true);
+                }
+            };
+            document.getElementById('closePaymentModal').onclick = () => paymentModal.classList.remove('active');
+        }
+
+        // Initial load if already authenticated
+        if (auth.currentUser) {
+            loadClassView();
+        }
+    </script>
+</body>
+</html>
