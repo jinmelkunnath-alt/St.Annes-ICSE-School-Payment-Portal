@@ -604,6 +604,20 @@ body {
 .edit-max-hint strong { color: var(--brand); }
 
 /* ═══════════════════════════════════════════
+   BLINKING WARNING ICON (previous year arrears)
+═══════════════════════════════════════════ */
+.blink-warn {
+  display: inline-block;
+  animation: blinkPulse 1.8s infinite;
+  color: var(--red);
+}
+@keyframes blinkPulse {
+  0% { text-shadow: 0 0 4px var(--red); opacity: 1; }
+  50% { text-shadow: 0 0 12px var(--red), 0 0 20px var(--red); opacity: 0.7; }
+  100% { text-shadow: 0 0 4px var(--red); opacity: 1; }
+}
+
+/* ═══════════════════════════════════════════
    RESPONSIVE
 ═══════════════════════════════════════════ */
 @media (max-width: 600px) {
@@ -867,7 +881,7 @@ const studentId = (new URLSearchParams(location.search).get("id") || "").trim().
 let SD          = {};
 let TERMS       = [];
 let VIEW        = "term";
-let isAdminMode = false;   // additional gate, set after auth
+let isAdminMode = false;
 
 /* ═══════════════════════════════════════════
    LOADER
@@ -1290,7 +1304,7 @@ function renderOtherView(container) {
   }
   container.appendChild(list);
 
-  /* Previous Year Pending Fees box */
+  /* ─────────── Previous Year Pending Fees (expandable card) ─────────── */
   if (SD.previousYearFees && (SD.previousYearFees.tuition || SD.previousYearFees.bus)) {
     const rows = [];
     if (SD.previousYearFees.tuition) rows.push({
@@ -1304,14 +1318,22 @@ function renderOtherView(container) {
       paid:  safe(SD.previousYearFees.bus.paid)
     });
 
-    const box = document.createElement("div");
-    box.className = "term-table-wrap";
-    box.innerHTML = `
-      <div style="padding:0.85rem 1.2rem;border-bottom:1px solid var(--border);font-weight:700;color:var(--brand);font-size:0.9rem;">
-        Previous Year Pending Fees
-      </div>
-      ${buildFeeTable(rows)}`;
-    container.appendChild(box);
+    const totalT = rows.reduce((a, r) => a + r.total, 0);
+    const totalP = rows.reduce((a, r) => a + r.paid, 0);
+    const remaining = totalT - totalP;
+
+    const iconHtml = remaining > 0
+      ? `<span class="blink-warn">⚠️</span>`
+      : `✅`;
+
+    const card = buildExpCard({
+      id: "previous-year",
+      icon: iconHtml,
+      title: "Previous Year Pending Fees",
+      subtitle: remaining > 0 ? "Arrears pending" : "All arrears cleared",
+      rows
+    });
+    container.appendChild(card);
   }
 }
 
@@ -1816,7 +1838,7 @@ function adminSelectFeeType() {
   if (SD.annualFee)        opts.push(`<option value="annual">Annual Day Fee</option>`);
   if (SD.otherFees.length) opts.push(`<option value="other">Other Fee</option>`);
 
-  // Previous year arrears (only if data exists and total > 0)
+  // Previous year arrears
   if (SD.previousYearFees) {
     if (SD.previousYearFees.tuition && safe(SD.previousYearFees.tuition.total) > 0) {
       opts.push(`<option value="previous_tuition">Previous Year Tuition Arrear</option>`);
@@ -1996,7 +2018,7 @@ function adminActionFlow(feeType, identifier, label) {
 }
 
 /* ═══════════════════════════════════════════
-   PAY POPUP (for parents)
+   PAY POPUP
 ═══════════════════════════════════════════ */
 function openPay() {
   const m = overlay(`
@@ -2123,7 +2145,6 @@ window.addEventListener("blur", () => {
 ═══════════════════════════════════════════ */
 function openAdminAuth(mode) {
   if (adminUser) {
-    // Already signed in
     if (mode === "add") {
       adminSelectFeeType();
     } else {
@@ -2133,7 +2154,6 @@ function openAdminAuth(mode) {
     return;
   }
 
-  // Not signed in – show password-only modal
   const m = overlay(`
     <button class="modal-close">✕</button>
     <h3>🔐 Admin Login</h3>
@@ -2155,11 +2175,9 @@ function openAdminAuth(mode) {
       return;
     }
     okBtn.disabled = true;
-    // Try first admin email
     try {
       await signInWithEmailAndPassword(auth, ADMIN_EMAIL_1, password);
     } catch (err1) {
-      // If first fails, try second admin email
       try {
         await signInWithEmailAndPassword(auth, ADMIN_EMAIL_2, password);
       } catch (err2) {
@@ -2170,7 +2188,6 @@ function openAdminAuth(mode) {
         return;
       }
     }
-    // Success
     closeAllOverlays();
     if (mode === "add") {
       adminSelectFeeType();
