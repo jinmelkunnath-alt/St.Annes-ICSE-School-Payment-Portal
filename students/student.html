@@ -196,7 +196,7 @@ body {
 #content { min-height: 200px; }
 
 /* ═══════════════════════════════════════════
-   TERM TABLE
+   TERM TABLE (static wrap)
 ═══════════════════════════════════════════ */
 .term-table-wrap {
   background: var(--surface);
@@ -244,7 +244,7 @@ body {
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
-  overflow: hidden;
+  /* overflow: hidden;  REMOVED to allow horizontal scroll within body */
   transition: box-shadow var(--transition);
 }
 .exp-card:hover { box-shadow: var(--shadow-md); }
@@ -255,6 +255,7 @@ body {
   cursor: pointer;
   background: #f8fafd;
   border-bottom: 1px solid transparent;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0; /* rounded top */
   transition: background var(--transition), border-color var(--transition);
   user-select: none; -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
@@ -282,11 +283,24 @@ body {
 .exp-arrow.open { transform: rotate(90deg); background: var(--brand); color: #fff; }
 
 .exp-body {
-  max-height: 0; overflow: hidden;
+  max-height: 0;
+  overflow: hidden;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
   transition: max-height 0.42s cubic-bezier(0.4,0,0.2,1);
 }
-.exp-body-inner { padding: 0.5rem 0.75rem 0.75rem; }
-.exp-body-inner .fee-table-scroll { border-radius: var(--radius-sm); overflow: hidden; }
+
+.exp-body-inner {
+  padding: 0.5rem 0.75rem 0.75rem;
+}
+
+.exp-body-inner .fee-table-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  width: 100%;
+  border-radius: var(--radius-sm);
+}
 
 /* ═══════════════════════════════════════════
    SUMMARY BAR
@@ -814,7 +828,7 @@ const ADMIN_EMAIL_2 = "SCHOOL_OFFICE_EMAIL@gmail.com"; // PLACEHOLDER – replac
 const UPI_ID       = "jinmelkunnath@oksbi";
 const UPI_NAME     = "St.%20Annes%20ICSE";
 const WHATSAPP_URL = "https://wa.me/917012808911";
-const QR_URL       = "https://github.com/jinmelkunnath-alt/St.Annes-ICSE-School-Payment-Portal/blob/main/QR_IMG_01.png?raw=true";
+const QR_URL       = "https://raw.githubusercontent.com/jinmelkunnath-alt/St.Annes-ICSE-School-Payment-Portal/refs/heads/main/QR_IMG_01.png";
 const MAX_RECEIPTS = 100;
 
 const MONTH_ORDER = ["june","july","august","september","october","november","december","january","february","march"];
@@ -1178,7 +1192,7 @@ function buildExpCard({ id, icon, title, subtitle, rows }) {
     } else {
       requestAnimationFrame(() => {
         const inner = body.querySelector(".exp-body-inner");
-        body.style.maxHeight = (inner ? inner.scrollHeight : 400) + "px";
+        body.style.maxHeight = "900px";
       });
       arr.classList.add("open");
       hdr.classList.add("open");
