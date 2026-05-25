@@ -10,7 +10,6 @@
 ═══════════════════════════════════════════ */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-   
 :root {
   --brand:       #1e4a76;
   --brand-dark:  #0f3259;
@@ -46,38 +45,10 @@ body {
 }
 
 /* ═══════════════════════════════════════════
-   LOADER
-═══════════════════════════════════════════ */
-#loader {
-  position: fixed; inset: 0;
-  background: var(--surface);
-  z-index: 9000;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 1rem;
-  transition: opacity 0.4s, visibility 0.4s;
-}
-#loader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-
-.loader-ring {
-  width: 44px; height: 44px;
-  border: 3px solid var(--border);
-  border-top-color: var(--brand);
-  border-radius: 50%;
-  animation: spin 0.75s linear infinite;
-}
-.loader-text { color: var(--muted); font-size: 0.85rem; font-weight: 500; }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* ═══════════════════════════════════════════
    APP SHELL
 ═══════════════════════════════════════════ */
 #app { display: none; max-width: 900px; margin: 0 auto; padding: 0 1rem 3rem; }
-#app.visible { display: block; animation: fadeUp 0.4s ease both; }
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+#app.visible { display: block; }
 
 /* ═══════════════════════════════════════════
    HEADER
@@ -197,7 +168,7 @@ body {
 #content { min-height: 200px; }
 
 /* ═══════════════════════════════════════════
-   TERM TABLE
+   TERM TABLE (static wrap)
 ═══════════════════════════════════════════ */
 .term-table-wrap {
   background: var(--surface);
@@ -245,7 +216,6 @@ body {
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
-  overflow: hidden;
   transition: box-shadow var(--transition);
 }
 .exp-card:hover { box-shadow: var(--shadow-md); }
@@ -256,6 +226,7 @@ body {
   cursor: pointer;
   background: #f8fafd;
   border-bottom: 1px solid transparent;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   transition: background var(--transition), border-color var(--transition);
   user-select: none; -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
@@ -283,11 +254,25 @@ body {
 .exp-arrow.open { transform: rotate(90deg); background: var(--brand); color: #fff; }
 
 .exp-body {
-  max-height: 0; overflow: hidden;
+  max-height: 0;
+  overflow: hidden;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
   transition: max-height 0.42s cubic-bezier(0.4,0,0.2,1);
+  transform: translateZ(0);               /* GPU layer promotion */
 }
-.exp-body-inner { padding: 0.5rem 0.75rem 0.75rem; }
-.exp-body-inner .fee-table-scroll { border-radius: var(--radius-sm); overflow: hidden; }
+
+.exp-body-inner {
+  padding: 0.5rem 0.75rem 0.75rem;
+}
+
+.exp-body-inner .fee-table-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  width: 100%;
+  border-radius: var(--radius-sm);
+}
 
 /* ═══════════════════════════════════════════
    SUMMARY BAR
@@ -698,12 +683,6 @@ body {
 </head>
 <body>
 
-<!-- LOADER -->
-<div id="loader">
-  <div class="loader-ring"></div>
-  <div class="loader-text">Loading fee portal…</div>
-</div>
-
 <!-- APP -->
 <div id="app">
   <header class="app-header">
@@ -815,7 +794,7 @@ const ADMIN_EMAIL_2 = "SCHOOL_OFFICE_EMAIL@gmail.com"; // PLACEHOLDER – replac
 const UPI_ID       = "jinmelkunnath@oksbi";
 const UPI_NAME     = "St.%20Annes%20ICSE";
 const WHATSAPP_URL = "https://wa.me/917012808911";
-const QR_URL       = "https://github.com/jinmelkunnath-alt/St.Annes-ICSE-School-Payment-Portal/blob/main/QR_IMG_01.png?raw=true";
+const QR_URL       = "https://raw.githubusercontent.com/jinmelkunnath-alt/St.Annes-ICSE-School-Payment-Portal/refs/heads/main/QR_IMG_01.png";
 const MAX_RECEIPTS = 100;
 
 const MONTH_ORDER = ["june","july","august","september","october","november","december","january","february","march"];
@@ -888,7 +867,6 @@ let isAdminMode = false;
    LOADER
 ═══════════════════════════════════════════ */
 function hideLoader() {
-  el("loader").classList.add("hidden");
   el("app").classList.add("visible");
 }
 
@@ -1163,6 +1141,7 @@ function buildExpCard({ id, icon, title, subtitle, rows }) {
 
   hdr.addEventListener("click", () => {
     const isOpen = arr.classList.contains("open");
+    // Close any other open card first
     if (openCard && openCard !== card) {
       const ob = openCard.querySelector(".exp-body");
       const oa = openCard.querySelector(".exp-arrow");
@@ -1171,19 +1150,31 @@ function buildExpCard({ id, icon, title, subtitle, rows }) {
       if (oa) oa.classList.remove("open");
       if (oh) oh.classList.remove("open");
     }
+
     if (isOpen) {
+      // Collapse
       body.style.maxHeight = "0";
       arr.classList.remove("open");
       hdr.classList.remove("open");
       openCard = null;
     } else {
+      // Expand: promote layer during transition
+      body.style.willChange = "max-height";
       requestAnimationFrame(() => {
         const inner = body.querySelector(".exp-body-inner");
-        body.style.maxHeight = (inner ? inner.scrollHeight : 400) + "px";
+        const targetHeight = inner ? inner.scrollHeight : 400;
+        body.style.maxHeight = targetHeight + "px";
       });
       arr.classList.add("open");
       hdr.classList.add("open");
       openCard = card;
+
+      // Clean up after transition ends
+      const onTransitionEnd = () => {
+        body.style.willChange = "auto";
+        body.removeEventListener("transitionend", onTransitionEnd);
+      };
+      body.addEventListener("transitionend", onTransitionEnd, { once: true });
     }
   });
 
