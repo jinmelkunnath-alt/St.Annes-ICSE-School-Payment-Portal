@@ -45,38 +45,10 @@ body {
 }
 
 /* ═══════════════════════════════════════════
-   LOADER
-═══════════════════════════════════════════ */
-#loader {
-  position: fixed; inset: 0;
-  background: var(--surface);
-  z-index: 9000;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 1rem;
-  transition: opacity 0.4s, visibility 0.4s;
-}
-#loader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-
-.loader-ring {
-  width: 44px; height: 44px;
-  border: 3px solid var(--border);
-  border-top-color: var(--brand);
-  border-radius: 50%;
-  animation: spin 0.75s linear infinite;
-}
-.loader-text { color: var(--muted); font-size: 0.85rem; font-weight: 500; }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* ═══════════════════════════════════════════
    APP SHELL
 ═══════════════════════════════════════════ */
 #app { display: none; max-width: 900px; margin: 0 auto; padding: 0 1rem 3rem; }
-#app.visible { display: block; animation: fadeUp 0.4s ease both; }
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+#app.visible { display: block; }
 
 /* ═══════════════════════════════════════════
    HEADER
@@ -244,7 +216,6 @@ body {
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
-  /* overflow: hidden;  REMOVED to allow horizontal scroll within body */
   transition: box-shadow var(--transition);
 }
 .exp-card:hover { box-shadow: var(--shadow-md); }
@@ -255,7 +226,7 @@ body {
   cursor: pointer;
   background: #f8fafd;
   border-bottom: 1px solid transparent;
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0; /* rounded top */
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   transition: background var(--transition), border-color var(--transition);
   user-select: none; -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
@@ -287,6 +258,7 @@ body {
   overflow: hidden;
   border-radius: 0 0 var(--radius-lg) var(--radius-lg);
   transition: max-height 0.42s cubic-bezier(0.4,0,0.2,1);
+  transform: translateZ(0);               /* GPU layer promotion */
 }
 
 .exp-body-inner {
@@ -418,7 +390,7 @@ body {
 .btn-modal-ok:hover { background: var(--brand-dark); transform: translateY(-1px); }
 .btn-modal-ok:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
-/* ── QR / Pay popup ── */
+/* ── QR / Pay popup (old) ── */
 .qr-wrap { text-align: center; }
 .qr-wrap img {
   width: 120px; height: 120px;
@@ -457,7 +429,150 @@ body {
 }
 .btn-wa:hover { background: #1aad55; transform: translateY(-1px); }
 
-/* ── Receipt success ── */
+/* ═══════════════════════════════════════════
+   PAYMENT POPUP CARDS (new multi-account)
+═══════════════════════════════════════════ */
+.payment-popup {
+  max-width: 400px;
+  width: 100%;
+}
+
+.payment-popup .modal {
+  max-width: 400px;  /* slightly wider for three cards */
+  padding: 1.5rem 1.2rem;
+}
+
+.payment-popup h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--brand);
+  margin-bottom: 0.25rem;
+}
+
+.payment-popup .subtitle {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-bottom: 1.2rem;
+}
+
+.payment-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 0.75rem;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  overflow: hidden;
+  transform: translateZ(0);
+}
+
+.payment-card:active {
+  transform: scale(0.99);
+}
+
+.payment-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.9rem 1rem;
+  cursor: pointer;
+  background: #f8fafd;
+  border-bottom: 1px solid transparent;
+  transition: background 0.2s, border-color 0.2s;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.payment-card-header:hover {
+  background: #f2f6fc;
+}
+
+.payment-card-header.open {
+  background: #eaf1fb;
+  border-bottom-color: var(--border);
+}
+
+.payment-card-icon {
+  font-size: 1.8rem;
+  width: 2.4rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.payment-card-info {
+  flex: 1;
+  margin-left: 0.8rem;
+}
+
+.payment-card-name {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--brand);
+}
+
+.payment-card-upi {
+  font-size: 0.7rem;
+  font-family: monospace;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+.payment-card-chevron {
+  width: 22px;
+  height: 22px;
+  background: var(--brand-pale);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.55rem;
+  color: var(--brand);
+  transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), background 0.3s;
+  flex-shrink: 0;
+}
+
+.payment-card-header.open .payment-card-chevron {
+  transform: rotate(90deg);
+  background: var(--brand);
+  color: #fff;
+}
+
+.payment-card-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.45s cubic-bezier(0.4,0,0.2,1);
+  transform: translateZ(0);
+}
+
+.payment-card-body-inner {
+  padding: 0.8rem 1rem;
+  text-align: center;
+}
+
+.payment-card-body img {
+  width: 100px;
+  height: 100px;
+  border-radius: var(--radius-md);
+  margin: 0.5rem auto;
+  display: block;
+  box-shadow: var(--shadow-sm);
+}
+
+.payment-card-body .upi-row {
+  margin: 0.6rem 0;
+}
+
+.payment-card-body .btn-upi-pay {
+  width: 100%;
+  margin: 0.4rem 0;
+}
+
+/* ═══════════════════════════════════════════
+   RECEIPT SUCCESS (unchanged)
+═══════════════════════════════════════════ */
 .receipt-wrap { text-align: center; }
 .receipt-wrap img {
   width: 100%; border-radius: var(--radius-md);
@@ -682,6 +797,11 @@ body {
 [data-theme="dark"] .hist-count        { background: var(--brand-pale); }
 [data-theme="dark"] .edit-info-box     { background: var(--brand-pale); }
 
+/* Dark mode payment cards */
+[data-theme="dark"] .payment-card-header { background: #0f1a2e; }
+[data-theme="dark"] .payment-card-header:hover { background: #162035; }
+[data-theme="dark"] .payment-card-header.open { background: #172554; }
+
 /* ── Dark mode text visibility ── */
 [data-theme="dark"] { color: var(--text); }
 
@@ -710,12 +830,6 @@ body {
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
 <body>
-
-<!-- LOADER -->
-<div id="loader">
-  <div class="loader-ring"></div>
-  <div class="loader-text">Loading fee portal…</div>
-</div>
 
 <!-- APP -->
 <div id="app">
@@ -825,7 +939,7 @@ enableIndexedDbPersistence(db).catch(err => {
 ═══════════════════════════════════════════ */
 const ADMIN_EMAIL_1 = "immanuelmelbindj@gmail.com";
 const ADMIN_EMAIL_2 = "SCHOOL_OFFICE_EMAIL@gmail.com"; // PLACEHOLDER – replace with actual school email
-const UPI_ID       = "jinmelkunnath@oksbi";
+const UPI_ID       = "jinmelkunnath@oksbi";          // legacy – not used in new popup
 const UPI_NAME     = "St.%20Annes%20ICSE";
 const WHATSAPP_URL = "https://wa.me/917012808911";
 const QR_URL       = "https://raw.githubusercontent.com/jinmelkunnath-alt/St.Annes-ICSE-School-Payment-Portal/refs/heads/main/QR_IMG_01.png";
@@ -901,7 +1015,6 @@ let isAdminMode = false;
    LOADER
 ═══════════════════════════════════════════ */
 function hideLoader() {
-  el("loader").classList.add("hidden");
   el("app").classList.add("visible");
 }
 
@@ -1190,13 +1303,20 @@ function buildExpCard({ id, icon, title, subtitle, rows }) {
       hdr.classList.remove("open");
       openCard = null;
     } else {
+      body.style.willChange = "max-height";
       requestAnimationFrame(() => {
         const inner = body.querySelector(".exp-body-inner");
-        body.style.maxHeight = "900px";
+        const targetHeight = inner ? inner.scrollHeight : 400;
+        body.style.maxHeight = targetHeight + "px";
       });
       arr.classList.add("open");
       hdr.classList.add("open");
       openCard = card;
+      const onTransitionEnd = () => {
+        body.style.willChange = "auto";
+        body.removeEventListener("transitionend", onTransitionEnd);
+      };
+      body.addEventListener("transitionend", onTransitionEnd, { once: true });
     }
   });
 
@@ -1843,6 +1963,171 @@ function overlay(html, onDismiss) {
 }
 
 /* ═══════════════════════════════════════════
+   PAY FEES POPUP (NEW MULTI-ACCOUNT)
+═══════════════════════════════════════════ */
+const PAYMENT_ACCOUNTS = {
+  tuition: {
+    name: "Tuition Fees",
+    upiId: "TUITION_UPI_ID",        // Replace with actual tuition UPI ID
+    qr: "TUITION_QR_URL"            // Replace with actual tuition QR code
+  },
+  bus: {
+    name: "Bus Fees",
+    upiId: "BUS_UPI_ID",            // Replace with actual bus UPI ID
+    qr: "BUS_QR_URL"                // Replace with actual bus QR code
+  },
+  other: {
+    name: "Other Fees",
+    upiId: "OTHER_UPI_ID",          // Replace with actual other fees UPI ID
+    qr: "OTHER_QR_URL"              // Replace with actual other fees QR code
+  }
+};
+
+function openPay() {
+  const m = overlay(`
+    <button class="modal-close">✕</button>
+    <div class="payment-popup">
+      <h3>Select Payment Category</h3>
+      <p class="subtitle">Please pay to the correct account based on the fee type.</p>
+      <div class="payment-card" data-account="tuition">
+        <div class="payment-card-header">
+          <div class="payment-card-icon">📘</div>
+          <div class="payment-card-info">
+            <div class="payment-card-name">Tuition Fees</div>
+            <div class="payment-card-upi">${htmlEscape(PAYMENT_ACCOUNTS.tuition.upiId)}</div>
+          </div>
+          <div class="payment-card-chevron">▶</div>
+        </div>
+        <div class="payment-card-body">
+          <div class="payment-card-body-inner">
+            <img src="${htmlEscape(PAYMENT_ACCOUNTS.tuition.qr)}" alt="Tuition QR">
+            <div class="upi-row">
+              <span class="upi-text">${htmlEscape(PAYMENT_ACCOUNTS.tuition.upiId)}</span>
+              <button class="btn-copy" data-upi="${htmlEscape(PAYMENT_ACCOUNTS.tuition.upiId)}">📋 Copy</button>
+            </div>
+            <button class="btn-upi-pay" data-upi="${htmlEscape(PAYMENT_ACCOUNTS.tuition.upiId)}" data-name="Tuition Fees">Pay via UPI App</button>
+          </div>
+        </div>
+      </div>
+      <div class="payment-card" data-account="bus">
+        <div class="payment-card-header">
+          <div class="payment-card-icon">🚌</div>
+          <div class="payment-card-info">
+            <div class="payment-card-name">Bus Fees</div>
+            <div class="payment-card-upi">${htmlEscape(PAYMENT_ACCOUNTS.bus.upiId)}</div>
+          </div>
+          <div class="payment-card-chevron">▶</div>
+        </div>
+        <div class="payment-card-body">
+          <div class="payment-card-body-inner">
+            <img src="${htmlEscape(PAYMENT_ACCOUNTS.bus.qr)}" alt="Bus QR">
+            <div class="upi-row">
+              <span class="upi-text">${htmlEscape(PAYMENT_ACCOUNTS.bus.upiId)}</span>
+              <button class="btn-copy" data-upi="${htmlEscape(PAYMENT_ACCOUNTS.bus.upiId)}">📋 Copy</button>
+            </div>
+            <button class="btn-upi-pay" data-upi="${htmlEscape(PAYMENT_ACCOUNTS.bus.upiId)}" data-name="Bus Fees">Pay via UPI App</button>
+          </div>
+        </div>
+      </div>
+      <div class="payment-card" data-account="other">
+        <div class="payment-card-header">
+          <div class="payment-card-icon">📋</div>
+          <div class="payment-card-info">
+            <div class="payment-card-name">Other Fees</div>
+            <div class="payment-card-upi">${htmlEscape(PAYMENT_ACCOUNTS.other.upiId)}</div>
+          </div>
+          <div class="payment-card-chevron">▶</div>
+        </div>
+        <div class="payment-card-body">
+          <div class="payment-card-body-inner">
+            <img src="${htmlEscape(PAYMENT_ACCOUNTS.other.qr)}" alt="Other QR">
+            <div class="upi-row">
+              <span class="upi-text">${htmlEscape(PAYMENT_ACCOUNTS.other.upiId)}</span>
+              <button class="btn-copy" data-upi="${htmlEscape(PAYMENT_ACCOUNTS.other.upiId)}">📋 Copy</button>
+            </div>
+            <button class="btn-upi-pay" data-upi="${htmlEscape(PAYMENT_ACCOUNTS.other.upiId)}" data-name="Other Fees">Pay via UPI App</button>
+          </div>
+        </div>
+      </div>
+    </div>`);
+
+  const cards = m.querySelectorAll(".payment-card");
+  let currentlyOpen = null;
+
+  cards.forEach(card => {
+    const header = card.querySelector(".payment-card-header");
+    const body = card.querySelector(".payment-card-body");
+    const chevron = card.querySelector(".payment-card-chevron");
+
+    header.addEventListener("click", () => {
+      if (currentlyOpen && currentlyOpen !== card) {
+        const prevBody = currentlyOpen.querySelector(".payment-card-body");
+        const prevHeader = currentlyOpen.querySelector(".payment-card-header");
+        prevBody.style.maxHeight = "0";
+        prevHeader.classList.remove("open");
+      }
+
+      if (currentlyOpen === card) {
+        body.style.maxHeight = "0";
+        header.classList.remove("open");
+        currentlyOpen = null;
+      } else {
+        body.style.willChange = "max-height";
+        requestAnimationFrame(() => {
+          const inner = body.querySelector(".payment-card-body-inner");
+          body.style.maxHeight = inner.scrollHeight + "px";
+        });
+        header.classList.add("open");
+        currentlyOpen = card;
+        const onEnd = () => {
+          body.style.willChange = "auto";
+          body.removeEventListener("transitionend", onEnd);
+        };
+        body.addEventListener("transitionend", onEnd, { once: true });
+      }
+    });
+
+    // Copy button
+    const copyBtn = card.querySelector(".btn-copy");
+    if (copyBtn) {
+      copyBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const upi = copyBtn.getAttribute("data-upi");
+        const fallback = () => {
+          const ta = document.createElement("textarea");
+          ta.value = upi;
+          ta.style.position = "fixed"; ta.style.opacity = "0";
+          document.body.appendChild(ta);
+          ta.focus(); ta.select();
+          try { document.execCommand("copy"); } catch (_) {}
+          document.body.removeChild(ta);
+        };
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(upi).catch(fallback);
+        } else {
+          fallback();
+        }
+        const originalText = copyBtn.textContent;
+        copyBtn.textContent = "✔ Copied";
+        setTimeout(() => { copyBtn.textContent = originalText; }, 1500);
+      });
+    }
+
+    // UPI button
+    const upiBtn = card.querySelector(".btn-upi-pay");
+    if (upiBtn) {
+      upiBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const upi = upiBtn.getAttribute("data-upi");
+        const name = upiBtn.getAttribute("data-name") || "St. Anne's ICSE";
+        const encodedName = encodeURIComponent(name);
+        window.location.href = `upi://pay?pa=${encodeURIComponent(upi)}&pn=${encodedName}&cu=INR`;
+      });
+    }
+  });
+}
+
+/* ═══════════════════════════════════════════
    ADMIN ADD FLOW
 ═══════════════════════════════════════════ */
 function adminSelectFeeType() {
@@ -2029,49 +2314,6 @@ function adminActionFlow(feeType, identifier, label) {
     closeAllOverlays();
     await applyPayment(feeType, identifier, amount, false, mode);
   };
-}
-
-/* ═══════════════════════════════════════════
-   PAY POPUP
-═══════════════════════════════════════════ */
-function openPay() {
-  const m = overlay(`
-    <button class="modal-close">✕</button>
-    <h3>Pay Fees</h3>
-    <div class="qr-wrap">
-      <img src="${htmlEscape(QR_URL)}" alt="QR">
-    </div>
-    <div class="upi-row">
-      <span class="upi-text">${htmlEscape(UPI_ID)}</span>
-      <button class="btn-copy" id="copyUpi">📋 Copy</button>
-    </div>
-    <button class="btn-upi-pay" id="upiPay">Pay via UPI App</button>
-    <div class="wa-note">Share payment screenshot to <span class="wa-link" id="waLink">Office WhatsApp</span></div>`);
-
-  m.querySelector("#copyUpi").onclick = function () {
-    const btn = this;
-    const fallback = () => {
-      const ta = document.createElement("textarea");
-      ta.value = UPI_ID;
-      ta.style.position = "fixed"; ta.style.opacity = "0";
-      document.body.appendChild(ta);
-      ta.focus(); ta.select();
-      try { document.execCommand("copy"); } catch (_) {}
-      document.body.removeChild(ta);
-    };
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(UPI_ID).catch(fallback);
-    } else {
-      fallback();
-    }
-    btn.textContent = "✔ Copied";
-    setTimeout(() => { btn.textContent = "📋 Copy"; }, 1400);
-  };
-
-  m.querySelector("#upiPay").onclick = () => {
-    window.location.href = `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${UPI_NAME}&cu=INR`;
-  };
-  m.querySelector("#waLink").onclick = () => window.open(WHATSAPP_URL);
 }
 
 /* ═══════════════════════════════════════════
