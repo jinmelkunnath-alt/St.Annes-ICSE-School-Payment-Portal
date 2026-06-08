@@ -1,9 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, height=device-height, viewport-fit=cover">
     <title>Login | Fee Portal</title>
     <style>
+        :root {
+            --bg-gradient: linear-gradient(145deg, #f0f4fa 0%, #e9eef5 100%);
+            --card-bg: #ffffff;
+            --heading-color: #0f2b3d;
+            --label-color: #2c4c6e;
+            --input-bg: #ffffff;
+            --input-border: #e2e9f0;
+            --input-text: #1a2c3e;
+            --input-placeholder: #b7c3d2;
+            --btn-bg: #1e4a76;
+            --btn-hover-bg: #0f3a5c;
+            --btn-shadow: rgba(30, 74, 118, 0.25);
+            --footer-color: #8da0b0;
+            --error-bg: #fff4f2;
+            --error-color: #bc4e2c;
+            --error-border: #bc4e2c;
+            --toggle-icon-color: #4a627a;
+            --card-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.02);
+            --card-hover-shadow: 0 25px 40px -14px rgba(0, 0, 0, 0.12);
+        }
+
+        body.dark-mode {
+            --bg-gradient: linear-gradient(145deg, #0f1720 0%, #1b2430 100%);
+            --card-bg: #1b2430;
+            --heading-color: #f3f6fa;
+            --label-color: #cbd5e1;
+            --input-bg: #111827;
+            --input-border: #2d3748;
+            --input-text: #f3f6fa;
+            --input-placeholder: #64748b;
+            --btn-bg: #1e4a76;
+            --btn-hover-bg: #163d5c;
+            --btn-shadow: rgba(30, 74, 118, 0.4);
+            --footer-color: #94a3b8;
+            --error-bg: #3a1f1f;
+            --error-color: #ffb4a8;
+            --error-border: #ffb4a8;
+            --toggle-icon-color: #cbd5e1;
+            --card-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.3);
+            --card-hover-shadow: 0 25px 40px -14px rgba(0, 0, 0, 0.7);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -12,46 +55,75 @@
         }
 
         html, body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-}
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
 
-body {
-    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    background: linear-gradient(145deg, #f0f4fa 0%, #e9eef5 100%);
-
-    height: 100dvh; /* 🔥 important */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    padding: 1.5rem;
-}
+        body {
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg-gradient);
+            height: 100dvh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            transition: background 0.3s ease;
+        }
 
         /* Card */
         .login-card {
-            background: white;
+            background: var(--card-bg);
             border-radius: 2rem;
             width: 100%;
             max-width: 380px;
             padding: 2rem 1.8rem 2.2rem;
-            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.02);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: var(--card-shadow);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
+            position: relative;
         }
 
         .login-card:hover {
-            box-shadow: 0 25px 40px -14px rgba(0, 0, 0, 0.12);
+            box-shadow: var(--card-hover-shadow);
         }
 
         h3 {
             font-size: 1.6rem;
             font-weight: 600;
-            color: #0f2b3d;
+            color: var(--heading-color);
             margin-bottom: 1.4rem;
             letter-spacing: -0.3px;
             border-left: 4px solid #1e4a76;
             padding-left: 0.8rem;
+            transition: color 0.3s ease;
+        }
+
+        /* Dark mode toggle button */
+        .dark-mode-toggle {
+            position: absolute;
+            top: 1.2rem;
+            right: 1.2rem;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--toggle-icon-color);
+            transition: color 0.3s ease;
+            border-radius: 0.5rem;
+        }
+        .dark-mode-toggle:hover {
+            opacity: 0.8;
+        }
+        .dark-mode-toggle svg {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            stroke-width: 2;
+            fill: none;
         }
 
         /* Input groups */
@@ -63,11 +135,12 @@ body {
             display: block;
             font-size: 0.75rem;
             font-weight: 600;
-            color: #2c4c6e;
+            color: var(--label-color);
             text-transform: uppercase;
             letter-spacing: 0.5px;
             margin-bottom: 0.4rem;
             margin-left: 0.25rem;
+            transition: color 0.3s ease;
         }
 
         .input-wrapper {
@@ -79,13 +152,13 @@ body {
         .input-wrapper input {
             width: 100%;
             padding: 0.85rem 1rem;
-            border: 1.5px solid #e2e9f0;
+            border: 1.5px solid var(--input-border);
             border-radius: 1.2rem;
             font-size: 0.95rem;
             font-family: inherit;
-            background: white;
-            transition: all 0.2s ease;
-            color: #1a2c3e;
+            background: var(--input-bg);
+            transition: all 0.2s ease, background-color 0.3s, border-color 0.3s, color 0.3s;
+            color: var(--input-text);
         }
 
         .input-wrapper input:focus {
@@ -95,8 +168,9 @@ body {
         }
 
         .input-wrapper input::placeholder {
-            color: #b7c3d2;
+            color: var(--input-placeholder);
             font-weight: 400;
+            transition: color 0.3s ease;
         }
 
         /* Professional eye icon (SVG) */
@@ -125,7 +199,7 @@ body {
         .eye-icon svg {
             width: 20px;
             height: 20px;
-            stroke: #4a627a;
+            stroke: var(--toggle-icon-color);
             stroke-width: 1.8;
             fill: none;
             transition: stroke 0.2s;
@@ -138,7 +212,7 @@ body {
         /* Login Button */
         .login-btn {
             width: 100%;
-            background: #1e4a76;
+            background: var(--btn-bg);
             color: white;
             font-weight: 600;
             font-size: 0.95rem;
@@ -146,16 +220,16 @@ body {
             border: none;
             border-radius: 2rem;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.2s ease, background-color 0.3s, box-shadow 0.3s;
             font-family: inherit;
             margin-top: 0.8rem;
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         }
 
         .login-btn:hover {
-            background: #0f3a5c;
+            background: var(--btn-hover-bg);
             transform: translateY(-1px);
-            box-shadow: 0 6px 14px rgba(30, 74, 118, 0.25);
+            box-shadow: 0 6px 14px var(--btn-shadow);
         }
 
         .login-btn:active {
@@ -164,24 +238,26 @@ body {
 
         /* Error message */
         .error-msg {
-            color: #bc4e2c;
+            color: var(--error-color);
             font-size: 0.75rem;
             margin-top: 0.8rem;
             padding: 0.5rem 0.8rem;
-            background: #fff4f2;
+            background: var(--error-bg);
             border-radius: 1rem;
             text-align: center;
-            border-left: 3px solid #bc4e2c;
+            border-left: 3px solid var(--error-border);
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
         }
 
         /* small footer */
         .login-footer {
             text-align: center;
             font-size: 0.7rem;
-            color: #8da0b0;
+            color: var(--footer-color);
             margin-top: 1.8rem;
             padding-top: 0.8rem;
             border-top: 1px solid #eef2f8;
+            transition: color 0.3s ease;
         }
 
         /* Responsive */
@@ -201,6 +277,12 @@ body {
 <body>
 
 <div class="login-card">
+    <button class="dark-mode-toggle" id="darkModeToggle" aria-label="Toggle dark mode">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+    </button>
+
     <h3>Secure Login</h3>
 
     <div class="input-group">
@@ -213,7 +295,7 @@ body {
     <div class="input-group">
         <label for="password">Password</label>
         <div class="input-wrapper">
-            <input type="password" id="password" placeholder="••••••••">
+            <input type="password" id="password" placeholder="********">
             <button type="button" class="eye-icon" id="togglePasswordBtn" aria-label="Show password">
                 <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z" stroke="currentColor" fill="none"/>
@@ -234,120 +316,204 @@ body {
 <script>
     (function() {
         // ---------- Hardcoded users (case-sensitive) ----------
-        
-        
-                // ---------- STD 10  ----------
-
         const USERS = [
-{ username: "AGNEYAP", password: "GNYP1001", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=agneyap001" },
-{ username: "ANCHALAGEORGE", password: "NCHLGRG1090", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=anchalageorge002" },
-{ username: "ANNAREJI", password: "NNRJ1080", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=annareji003" },
-{ username: "ELNASIJO", password: "LNSJ1070", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=elnasijo004" },
-{ username: "MAYURIM", password: "MYRM1060", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=mayurim005" },
-{ username: "NEHAMARIYABINU", password: "NHMRYBN1050", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=nehamariyabinu006" },
-{ username: "ROSEBINOY", password: "RSBNY1040", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=rosebinoy007" },
-{ username: "ROSEHARI", password: "RSHR1030", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=ananyapr001" },
-{ username: "SERAMARIYAJOSEPH", password: "SRMRYJSPH1020", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=seramariyajoseph008" },
-{ username: "VAIGAVENUNAIR", password: "VGVNNR1010", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=vaigavenunair009" },
+            // ---------- STD 10 ----------
+            { username: "AGNEYAP", password: "GNYP1001", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=agneyap001" },
+            { username: "ANCHALAGEORGE", password: "NCHLGRG1090", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=anchalageorge002" },
+            { username: "ANNAREJI", password: "NNRJ1080", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=annareji003" },
+            { username: "ELNASIJO", password: "LNSJ1070", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=elnasijo004" },
+            { username: "MAYURIM", password: "MYRM1060", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=mayurim005" },
+            { username: "NEHAMARIYABINU", password: "NHMRYBN1050", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=nehamariyabinu006" },
+            { username: "ROSEBINOY", password: "RSBNY1040", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=rosebinoy007" },
+            { username: "ROSEHARI", password: "RSHR1030", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=ananyapr001" },
+            { username: "SERAMARIYAJOSEPH", password: "SRMRYJSPH1020", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=seramariyajoseph008" },
+            { username: "VAIGAVENUNAIR", password: "VGVNNR1010", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=vaigavenunair009" },
 
-{ username: "DEMOSTUDENT", password: "DEMOSTUDENT", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=demostudent001" },
-                                                                                                            
-        // ---------- STD 9 ----------
-                                                            
-{ username: "ABELSUNIL", password: "BLSNL931", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=abelsunil001" },
-{ username: "ABIYAELIZABETHSINOJ", password: "BYLZBTHSNJ921", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=abiyaelizabethsinoj002" },
-{ username: "AJOHNJOSEPH", password: "JHNJSPH911", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=ajohnjoseph003" },
-{ username: "ALPHONSAVINO", password: "LPHNSVN901", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=alphonsavino004" },
-{ username: "ANAIKAN", password: "NKN990", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=anaikan005" },
-{ username: "ANGELJOMON", password: "NGLJMN980", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=angeljomon006" },
-{ username: "ANNMARIASIBICHEN", password: "NNMRSBCHN970", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=annmariasibichen007" },
-{ username: "ARONTOMY", password: "RNTMY960", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=arontomy008" },
-{ username: "AYRINTHERESAJOSEPH", password: "YRNTHRSJSPJ950", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=ayrintheresajoseph009" },
-{ username: "DEVANADHRAJESH", password: "DVNDHRJSH940", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=devanadhrajesh010" },
-{ username: "EDWINBINEESH", password: "DWNBNSH930", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=edwinbineesh011" },
-{ username: "JOSEPHASANIL", password: "JSPHSNL920", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=josephasanil012" },
-{ username: "JOVANAMANOJ", password: "JVNMNJ910", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=jovanamanoj013" },
-               
-      // ----------- STD 8 ------------
+            // ---------- STD 9 ----------
+            { username: "ABELSUNIL", password: "BLSNL931", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=abelsunil001" },
+            { username: "ABIYAELIZABETHSINOJ", password: "BYLZBTHSNJ921", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=abiyaelizabethsinoj002" },
+            { username: "AJOHNJOSEPH", password: "JHNJSPH911", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=ajohnjoseph003" },
+            { username: "ALPHONSAVINO", password: "LPHNSVN901", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=alphonsavino004" },
+            { username: "ANAIKAN", password: "NKN990", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=anaikan005" },
+            { username: "ANGELJOMON", password: "NGLJMN980", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=angeljomon006" },
+            { username: "ANNMARIASIBICHEN", password: "NNMRSBCHN970", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=annmariasibichen007" },
+            { username: "ARONTOMY", password: "RNTMY960", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=arontomy008" },
+            { username: "AYRINTHERESAJOSEPH", password: "YRNTHRSJSPJ950", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=ayrintheresajoseph009" },
+            { username: "DEVANADHRAJESH", password: "DVNDHRJSH940", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=devanadhrajesh010" },
+            { username: "EDWINBINEESH", password: "DWNBNSH930", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=edwinbineesh011" },
+            { username: "JOSEPHASANIL", password: "JSPHSNL920", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=josephasanil012" },
+            { username: "JOVANAMANOJ", password: "JVNMNJ910", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=jovanamanoj013" },
 
-{ username: "ADHIDEVVK", password: "DHDVVK852", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=adhidevvk001" },
-{ username: "ALPHONSABINOY", password: "LPHNSBNY842", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=alphonsabinoy002" },
-{ username: "ANFIYAANNAJISS", password: "NFYNNJSS832", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=anfiyaannajiss003" },
-{ username: "ANGELROSESONY", password: "NGLRSSNY822", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=angelrosesony004" },
-{ username: "ANGELSIJO", password: "NGLSJ812", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=angelsijo005" },
-{ username: "ANGELASINO", password: "NGLSN802", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=angelasino006" },
-{ username: "ANPHIYAROSE", password: "NPHYRS891", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=anphiyarose007" },
-{ username: "ARLINSINU", password: "RLNSN881", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=arlinsinu008" },
-{ username: "ASWANTHCHANDRAN", password: "SWNTHCHNDRN871", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=aswanthchandran009" },
-{ username: "CAROLINEROSEMANEESH", password: "CRLNRSMNSH861", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=carolinerosemaneesh010" },
-{ username: "DHANFRANCISVARGHESE", password: "DHNFRNCSVRGHS851", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=dhanfrancisvarghese011" },
-{ username: "EDWINABILASH841", password: "DWNBLSH841", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=edwinabilash012" },
-{ username: "EVANAANNVINOD", password: "VNNNVND831", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=evanaannvinod013" },
-{ username: "EVANAELIZABETHSHIJO", password: "VNLZBTHSHJ821", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=evanaelizabethshijo014" },  
-{ username: "JISMARIYAJINCE", password: "JSMRYJNCE811", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=jismariyajince015" },
-{ username: "JOSEMONJOSHY", password: "JSMNJSHY801", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=josemonjoshy016" },
-{ username: "KIRANRAJM", password: "KRNRJM890", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=kiranrajm017" },
-{ username: "MARIYAAK", password: "MRYK880", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=mariyaak018" },
-{ username: "MICHELMATHAISUNIL", password: "MCHLMTHSNL870", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=michelmathaisunil019" },
-{ username: "MUHAMMADIRFAN", password: "MHMMDRFN860", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=muhammadirfan020" },
-{ username: "SALVIYAANNAJOSEPH", password: "SLVYNNJSPH850", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=salviyaannajoseph021" },
-{ username: "STINSKS", password: "STNSKS840", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=stinsks022" },
-{ username: "TOMRAJU", password: "TMRJ830", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=tomraju023" },
-{ username: "VAIGALAKSHMIPK", password: "VGLKSHMPK820", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=vaigalakshmipk" },
-{ username: "YADHUNANDP", password: "YDHNNDP810", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=yadhunandp" },
+            // ----------- STD 8 ------------
+            { username: "ADHIDEVVK", password: "DHDVVK852", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=adhidevvk001" },
+            { username: "ALPHONSABINOY", password: "LPHNSBNY842", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=alphonsabinoy002" },
+            { username: "ANFIYAANNAJISS", password: "NFYNNJSS832", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=anfiyaannajiss003" },
+            { username: "ANGELROSESONY", password: "NGLRSSNY822", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=angelrosesony004" },
+            { username: "ANGELSIJO", password: "NGLSJ812", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=angelsijo005" },
+            { username: "ANGELASINO", password: "NGLSN802", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=angelasino006" },
+            { username: "ANPHIYAROSE", password: "NPHYRS891", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=anphiyarose007" },
+            { username: "ARLINSINU", password: "RLNSN881", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=arlinsinu008" },
+            { username: "ASWANTHCHANDRAN", password: "SWNTHCHNDRN871", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=aswanthchandran009" },
+            { username: "CAROLINEROSEMANEESH", password: "CRLNRSMNSH861", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=carolinerosemaneesh010" },
+            { username: "DHANFRANCISVARGHESE", password: "DHNFRNCSVRGHS851", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=dhanfrancisvarghese011" },
+            { username: "EDWINABILASH", password: "DWNBLSH841", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=edwinabilash012" },
+            { username: "EVANAANNVINOD", password: "VNNNVND831", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=evanaannvinod013" },
+            { username: "EVANAELIZABETHSHIJO", password: "VNLZBTHSHJ821", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=evanaelizabethshijo014" },
+            { username: "JISMARIYAJINCE", password: "JSMRYJNCE811", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=jismariyajince015" },
+            { username: "JOSEMONJOSHY", password: "JSMNJSHY801", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=josemonjoshy016" },
+            { username: "KIRANRAJM", password: "KRNRJM890", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=kiranrajm017" },
+            { username: "MARIYAAK", password: "MRYK880", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=mariyaak018" },
+            { username: "MICHELMATHAISUNIL", password: "MCHLMTHSNL870", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=michelmathaisunil019" },
+            { username: "MUHAMMADIRFAN", password: "MHMMDRFN860", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=muhammadirfan020" },
+            { username: "SALVIYAANNAJOSEPH", password: "SLVYNNJSPH850", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=salviyaannajoseph021" },
+            { username: "STINSKS", password: "STNSKS840", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=stinsks022" },
+            { username: "TOMRAJU", password: "TMRJ830", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=tomraju023" },
+            { username: "VAIGALAKSHMIPK", password: "VGLKSHMPK820", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=vaigalakshmipk" },
+            { username: "YADHUNANDP", password: "YDHNNDP810", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=yadhunandp" },
 
+            // ---------------- STD 7 ----------------
+            { username: "ANANYAPR", password: "NNYPR781", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=ananyapr001" },
+            { username: "ANGELINAMANEESH", password: "NGLNMNSH771", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=angelinamaneesh002" },
+            { username: "ANTONTHOMASTIJU", password: "NTNTHMSTJ761", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=antonthomastiju003" },
+            { username: "ARSHITHMANOJ", password: "RSHTHMNJ751", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=arshithmanoj004" },
+            { username: "ASHBELJUSTIN", password: "SHBLJSTN741", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=ashbeljustin005" },
+            { username: "ASHNABOBYABRAHAM", password: "SHNBBYBRHM731", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=ashnabobyabraham006" },
+            { username: "EVANMANEESH", password: "VNMNSH721", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=evanmaneesh007" },
+            { username: "JEWELRAJESH", password: "JWLRJSH711", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=jewelrajesh008" },
+            { username: "MARIYAMELBIN", password: "MRYMLBN701", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=mariyamelbin009" },
+            { username: "MUHAMMEDIMTHYAZIBRAHIM", password: "MHMMDMTHYZ790", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=muhammedimthiyazibrahim010" },
+            { username: "MUHAMMEDNABILA", password: "MHMMDNBL780", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=muhammednabila011" },
+            { username: "SERACHINNU", password: "SRCHNN770", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=serachinnu012" },
+            { username: "SHERRILSHELLY", password: "SHRLSHLLY760", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=sherilshelly013" },
+            { username: "SHREYALAKSHMI", password: "SHRYLKSHM750", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=shreyalakshmi014" },
+            { username: "SIYONSHYJO", password: "SYNSHYJ740", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=siyonshyjo015" },
+            { username: "SOLAMANVPRASANTH", password: "SLMNVPRSNTH730", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=solamanvprasanth016" },
+            { username: "SIONAANNSAJI", password: "SNNNSJ720", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=sionaannsaji017" },
+            { username: "SHREEYASATHEESHA", password: "SHRYSTHSH710", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=shreeyasatheesha018" },
 
-// ---------------- STD 7 ----------------
+            // ------------ STD 6 -----------------
+            { username: "ABELSANDEEP", password: "BLSNDP662", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=abelsandeep001" },
+            { username: "ABENSANDEEP", password: "BNSNDP652", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=abensandeep002" },
+            { username: "ABINBOBYABRAHAM", password: "BNBBYBRHM642", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=abinbobyabraham003" },
+            { username: "AIRINEELIZABETHSINOJ", password: "RNLZBTHSNJ632", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=airineelizabethsinoj004" },
+            { username: "ALWINRICHARDTHOMAS", password: "LWNRCHRDTHMS622", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=alwinrochardthomas005" },
+            { username: "ANLIYAELDHO", password: "NLYLDH612", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=anliyaeldho006" },
+            { username: "DEVANJANAM", password: "DVNJNM602", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=devanjanam007" },
+            { username: "DHYANCHANDRAN", password: "DHYNCHNDRN691", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=dhyanchandran008" },
+            { username: "EDWINAVINOD", password: "DWNVND681", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=edwinavinod009" },
+            { username: "ELAINAMARYVIKAS", password: "LNMRYVKS671", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=elainamaryvikas010" },
+            { username: "ELNASHINSON", password: "LNSHNSN661", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=elnashinson011" },
+            { username: "EVANACSUNNY", password: "VNCSNNY651", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=evanacsunny012" },
+            { username: "IRINCSUNNY", password: "RNCSNNY641", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=irincsunny013" },
+            { username: "JOHANANEESH", password: "JHNNSH631", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=johananeesh014" },
+            { username: "JUWELROY", password: "JWLRY621", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=juwelroy015" },
+            { username: "KRISHNAPRIYAKRISHNAN", password: "KRSHNPRYKRSHNN611", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=krishnapriyakrishnan016" },
+            { username: "LEONTHOMAS", password: "LNTHMS601", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=leonthomas017" },
+            { username: "MALHAMARYAJITH", password: "MLHMRYJTH690", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=malhamaryajith018" },
+            { username: "MUHAMMADSINANK", password: "MHMMDSNNK680", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=muhammadsinank019" },
+            { username: "NAFEESATHNIHANASRIN", password: "NFSTHNHNSRN670", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=nafeesathnihanasrin020" },
+            { username: "SAMRAJU", password: "SMRJ660", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=samraju021" },
+            { username: "SRIYASATHYAN", password: "SRYSTHYN650", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=sriyasathyan022" },
+            { username: "UDAYKRISHNA", password: "DYKRSHN640", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=udaykrishna023u" },
+            { username: "UDITKRISHNA", password: "DTKRSHN630", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=uditkrishna024" },
+            { username: "VAISAKHVK", password: "VSKHVK620", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=vaisakhvk025" },
+            { username: "ZIDHANABDULLA", password: "ZDHNBDLL610", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=zidhanabdulla026" },
 
-{ username: "ANANYAPR", password: "NNYPR781", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=ananyapr001" },
-{ username: "ANGELINAMANEESH", password: "NGLNMNSH771", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=angelinamaneesh002" },
-{ username: "ANTONTHOMASTIJU", password: "NTNTHMSTJ761", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=antonthomastiju003" },
-{ username: "ARSHITHMANOJ", password: "RSHTHMNJ751", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=arshithmanoj004" },
-{ username: "ASHBELJUSTIN", password: "SHBLJSTN741", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=ashbeljustin005" },
-{ username: "ASHNABOBYABRAHAM", password: "SHNBBYBRHM731", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=ashnabobyabraham006" },
-{ username: "EVANMANEESH", password: "VNMNSH721", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=evanmaneesh007" },
-{ username: "JEWELRAJESH", password: "JWLRJSH711", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=jewelrajesh008" },
-{ username: "MARIYAMELBIN", password: "MRYMLBN701", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=mariyamelbin009" },
-{ username: "MUHAMMEDIMTHYAZIBRAHIM", password: "MHMMDMTHYZ790", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=muhammedimthiyazibrahim010" },
-{ username: "MUHAMMEDNABILA", password: "MHMMDNBL780", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=muhammednabila011" },
-{ username: "SERACHINNU", password: "SRCHNN770", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=serachinnu012" },
-{ username: "SHERRILSHELLY", password: "SHRLSHLLY760", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=sherilshelly013" },
-{ username: "SHREYALAKSHMI", password: "SHRYLKSHM750", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=shreyalakshmi014" },
-{ username: "SIYONSHYJO", password: "SYNSHYJ740", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=siyonshyjo015" },
-{ username: "SOLAMANVPRASANTH", password: "SLMNVPRSNTH730", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=solamanvprasanth016" },
-{ username: "SIONAANNSAJI", password: "SNNNSJ720", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=sionaannsaji017" },
-{ username: "SHREEYASATHEESHA", password: "SHRYSTHSH710", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=shreeyasatheesha018" },
+            // ------------ STD 5 -----------------
+            { username: "ADONJISSMATHEW", password: "DNJSSMTHW512", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=adonjissmathew001" },
+            { username: "ALONABPRASAD", password: "LNBPRSD502", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=alonabprasad002" },
+            { username: "ANCELSHINIL", password: "NCLSHNL591", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=ancelshinil003" },
+            { username: "ANGELJOSEPH", password: "NGLJSPH581", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=angeljoseph004" },
+            { username: "ANSAPRINCE", password: "NSPRNC571", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=ansaprince005" },
+            { username: "ANUGRAHMNAIR", password: "NGRHMNR561", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=anugrahmnair006" },
+            { username: "ARAVK", password: "RVK551", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=aravk007" },
+            { username: "AVALONJILS", password: "VLNJLS541", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=avalonjils008" },
+            { username: "CHRISTOMATHEWMEJO", password: "CHRSTMTHWMJ531", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=christomathewmejo009" },
+            { username: "DHKARTHIKEYAN", password: "DHKRTHKYN521", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=dhkarthikeyan010" },
+            { username: "EMMANUELTHOMAS", password: "MMNLTHMS511", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=emmanuelthomas011" },
+            { username: "ETHANSINO", password: "THNSN501", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=ethansino012" },
+            { username: "JERICBIJESH", password: "JRCBJSH590", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=jericbijesh013" },
+            { username: "JOHANJOSEPHJINEESH", password: "JHNJSPHJNSH580", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=johanjosephjineesh014" },
+            { username: "JOSILJOSHY", password: "JSLJSHY570", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=josiljoshy015" },
+            { username: "KISORERAJM", password: "KSRRJM560", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=kisorerajm016" },
+            { username: "MANNAHMARYSAJITH", password: "MNNHMRYSJTH550", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=mannahmarysajith017" },
+            { username: "NATHANIELSIJIL", password: "NTHNLSJL540", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=nathanielsijil018" },
+            { username: "SHIVANIM", password: "SHVNM530", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=shivanim019" },
+            { username: "SREEDEVP", password: "SRDVP520", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=sreedevp020" },
+            { username: "UTHARAMANOJ", password: "THRMNJ510", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=utharamanoj021" },
 
+            // ------------ STD 4 -----------------
+            { username: "ADHISREE", password: "DHSR413", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=adhisree001" },
+            { username: "ALNAMERYSUJAN", password: "LNMRYSJN403", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=alnamerysujan002" },
+            { username: "ALPHONSARAJU", password: "LPHNSRJ492", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=alphonsaraju003" },
+            { username: "ANSHINSAM", password: "NSHNSM482", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=anshinsam004" },
+            { username: "ARADHYARK", password: "RDHYRK472", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=aradhyark005" },
+            { username: "ARAVRK", password: "RVRK462", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=aravrk006" },
+            { username: "ATHMIYAP", password: "THMYP452", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=athmiyap007" },
+            { username: "AVNIDEV", password: "VNDV442", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=avnidev008" },
+            { username: "AYSHAHINA", password: "YSHHN432", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=ayshahina009" },
+            { username: "AYSHATHULAIDHA", password: "SHTHLDH422", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=ayshathulaidha010" },
+            { username: "CHRISTENSENJOSEPHSHINE", password: "CHRSTNSNJSPHSHN412", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=christensenjosephshine011" },
+            { username: "CLEMENTVPRASANTH", password: "CLMNTVPRSNTH402", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=clementvprasanth012" },
+            { username: "DEVARANJM", password: "DVRNJM491", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=devaranjm013" },
+            { username: "DHWANIKRISHNA", password: "DHWNKRSHN481", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=dhwanikrishna014" },
+            { username: "ELSHASHINSON", password: "LSHSHNSN471", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=elshashinson015" },
+            { username: "ELWASAJU", password: "LWSJ461", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=elwasaju016" },
+            { username: "EMMANUELJOMON", password: "MMNLJMN451", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=emmanueljomon017" },
+            { username: "ERICSEN", password: "RCSN441", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=ericsen018" },
+            { username: "EVANJOSEPH", password: "VNJSPH431", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=evanjoseph019" },
+            { username: "EVANIASARAHJIJO", password: "VNSRHJJ421", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=evaniasarahjijo020" },
+            { username: "EVLINTHERESASHIJO", password: "VLNTHRSSHJ411", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=evlintheresashijo021" },
+            { username: "FATHIMATHTHANSIN", password: "FTHMTHTHNSN401", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=fathimaththansin022" },
+            { username: "ISHANKISHAN", password: "SHNKSHN490", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=ishankishan023" },
+            { username: "JOVAKJOSEPH", password: "JVKJSPH480", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=jovakjoseph024" },
+            { username: "NANDAKISHOREA", password: "NNDKSHR470", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=nandakishorea025" },
+            { username: "NUHAFATHIMAPP", password: "NHFTHMPP460", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=nuhafathimapp026" },
+            { username: "RIDDHINAMBIAR", password: "RDDHNMBR450", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=riddhinambiar027" },
+            { username: "RIGVEDM", password: "RGVDM440", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=rigvedm028" },
+            { username: "RISHIBINEESH", password: "RSHBNSH430", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=rishibineesh029" },
+            { username: "SERAFINAELIZABETHJOSEPH", password: "SRFNLZBTH420", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=serafinaelizabethjoseph030" },
+            { username: "TYSONSHIJU", password: "TYSNSHJ410", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=tysonshiju031" },
 
-// ------------ STD 6 -----------------
-
-{ username: "ABELSANDEEP", password: "BLSNDP662", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=abelsandeep001" },
-{ username: "ABENSANDEEP", password: "BNSNDP652", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=abensandeep002" },
-{ username: "ABINBOBYABRAHAM", password: "BNBBYBRHM642", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=abinbobyabraham003" },
-{ username: "AIRINEELIZABETHSINOJ", password: "RNLZBTHSNJ632", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=airineelizabethsinoj004" },
-{ username: "ALWINRICHARDTHOMAS", password: "LWNRCHRDTHMS622", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=alwinrochardthomas005" },
-{ username: "ANLIYAELDHO", password: "NLYLDH612", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=anliyaeldho006" },
-{ username: "DEVANJANAM", password: "DVNJNM602", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=devanjanam007" },
-{ username: "DHYANCHANDRAN", password: "DHYNCHNDRN691", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=dhyanchandran008" },
-{ username: "EDWINAVINOD", password: "DWNVND681", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=edwinavinod009" },
-{ username: "ELAINAMARYVIKAS", password: "LNMRYVKS671", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=elainamaryvikas010" },
-{ username: "ELNASHINSON", password: "LNSHNSN661", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=elnashinson011" },
-{ username: "EVANACSUNNY", password: "VNCSNNY651", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=evanacsunny012" },
-{ username: "IRINCSUNNY", password: "RNCSNNY641", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=irincsunny013" },
-{ username: "JOHANANEESH", password: "JHNNSH631", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=johananeesh014" },
-{ username: "JUWELROY", password: "JWLRY621", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=juwelroy015" },
-{ username: "KRISHNAPRIYAKRISHNAN", password: "KRSHNPRYKRSHNN611", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=krishnapriyakrishnan016" },
-{ username: "LEONTHOMAS", password: "LNTHMS601", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=leonthomas017" },
-{ username: "MALHAMARYAJITH", password: "MLHMRYJTH690", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=malhamaryajith018" },
-{ username: "MUHAMMADSINANK", password: "MHMMDSNNK680", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=muhammadsinank019" },
-{ username: "NAFEESATHNIHANASRIN", password: "NFSTHNHNSRN670", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=nafeesathnihanasrin020" },
-{ username: "SAMRAJU", password: "SMRJ660", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=samraju021" },
-{ username: "SRIYASATHYAN", password: "SRYSTHYN650", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=sriyasathyan022" },
-{ username: "UDAYKRISHNA", password: "DYKRSHN640", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=udaykrishna023u" },
-{ username: "UDITKRISHNA", password: "DTKRSHN630", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=uditkrishna024" },
-{ username: "VAISAKHVK", password: "VSKHVK620", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=vaisakhvk025" },
-{ username: "ZIDHANABDULLA", password: "ZDHNBDLL610", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=zidhanabdulla026" },
-
+            // ------------ STD 3 -----------------
+            { username: "AADHIKRISHNANAM", password: "DHKRSHNNM383", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=aadhikrishnanam001" },
+            { username: "ADVIKAT", password: "DVKT373", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=advikat002" },
+            { username: "AIDENABILASH", password: "DNBLSH363", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=aidenabilash003" },
+            { username: "AIDENSTEPHENTINS", password: "DNSTPHNTNS353", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=aidenstephentins004" },
+            { username: "AMALABIJU", password: "MLBJ343", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=amalabiju005" },
+            { username: "ANNAMARIYAMTIJU", password: "NNMRYMTJ333", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=annamariyamtiju006" },
+            { username: "ANSAANNASINOJ", password: "NSNNSNJ323", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=ansaannasinoj007" },
+            { username: "ANSHIKASHIJU", password: "NSHKSHJ313", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=anshikashiju008" },
+            { username: "ANVIATHERESABINU", password: "NVTHRSBN303", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=anviathersabinu009" },
+            { username: "AYANP", password: "YNP392", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=ayanp010" },
+            { username: "BRIONAJITHPHILIP", password: "BRNJTHPHLP382", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=brionajithphilip011" },
+            { username: "DHKASHINADHAN", password: "DHKSHNDHN372", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=dhkashinadhan012" },
+            { username: "DARSHITHM", password: "DRSHTHM362", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=darshithm013" },
+            { username: "DIONFRANCIS", password: "DNFRNCS352", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=dionfrancis014" },
+            { username: "ELVANAELIZABETHSANISH", password: "LVNLZBTHSNSH342", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=elvanaelizabethsanish015" },
+            { username: "ELWINABHILASH", password: "LWNBHLSH332", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=elwinabhilash016" },
+            { username: "EVANJOSEPHDIJO", password: "VNJSPHDJ322", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=evanjosephdijo017" },
+            { username: "EVANMANEESH", password: "VNMNSH312", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=evanmaneesh018" },
+            { username: "EVANAELIZABETHSANEESH", password: "VNLZBTHSNSH302", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=evanaelizabethsaneesh019" },
+            { username: "EVLYNKATHERINESHINCE", password: "VLYNKTHRNSHNC391", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=evlynkatherineshince020" },
+            { username: "IRENEGEO", password: "RNG381", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=irenegeo021" },
+            { username: "ISHANSHIJU", password: "SHNSHJ371", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=ishanshiju022" },
+            { username: "JAIRUSFRANCISSOJAN", password: "JRSFRNCSSJN361", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=jairusfrancissojan023" },
+            { username: "JETTIN ANEESH", password: "JTTN NSH351", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=jettinaneesh024" },
+            { username: "JIYANABIJU", password: "JYNBJ341", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=jiyanabiju025" },
+            { username: "JOVITTAMARIYASANIL", password: "JVTTMRYSNL331", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=jovittamariyasanil026" },
+            { username: "JUANJOBISHPAMPLANI", password: "JNJBSPHMPLN321", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=juanjobishpamplani027" },
+            { username: "KELVINMATHEWMANEEHS", password: "KLVNMTHWMNHS311", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=kelvinmathewmaneehs028" },
+            { username: "KESSIYAANNABIJU", password: "KSSYNNBJ301", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=kessiyaannabiju029" },
+            { username: "LEONAELIZABETH", password: "LNLZBTH390", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=leonaelizabeth030" },
+            { username: "NASHWAFATIMA", password: "NSHWFTM380", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=nashwafatima031" },
+            { username: "PALLAVIM", password: "PLLVM370", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=pallavim032" },
+            { username: "PRATHIKSHAKR", password: "PRTHKSHKR360", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=prathikshakr033" },
+            { username: "PRAYAGAPS", password: "PRYGPS350", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=prayagaps034" },
+            { username: "RAYANJINEESH", password: "RYNJNSH340", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=rayanjineesh035" },
+            { username: "RYANSINOJ", password: "RYNSNJ330", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=ryansinoj036" },
+            { username: "SANMARIYAJOSEPH", password: "SNMRYJSPH320", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=sanmariyajoseph037" },
+            { username: "SAVIOMATHEWTIBIN", password: "SVMTHWTBN310", redirect: "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=saviomathewtibin038" },
         ];
 
         // DOM elements
@@ -360,7 +526,6 @@ body {
         function showError(msg) {
             errorDiv.textContent = msg;
             errorDiv.style.display = 'block';
-            // Auto hide after 3 seconds
             setTimeout(() => {
                 if (errorDiv.textContent === msg) {
                     errorDiv.style.opacity = '0';
@@ -379,31 +544,28 @@ body {
             errorDiv.textContent = '';
         }
 
-        // Toggle password visibility (professional icon)
+        // Toggle password visibility
         const toggleBtn = document.getElementById('togglePasswordBtn');
         if (toggleBtn) {
             toggleBtn.addEventListener('click', function() {
                 const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
                 passwordInput.setAttribute('type', type);
-                // optional: change icon style? but keep clean
             });
         }
 
         // Login logic
         function handleLogin() {
             const username = usernameInput.value.trim();
-            const password = passwordInput.value;  // keep as entered
+            const password = passwordInput.value;
 
             if (!username || !password) {
                 showError("Please enter both username and password.");
                 return;
             }
 
-            // Find matching user
             const matched = USERS.find(user => user.username === username && user.password === password);
 
             if (matched) {
-                // Redirect to the specific page
                 window.location.href = matched.redirect;
             } else {
                 showError("Invalid username or password");
@@ -413,18 +575,54 @@ body {
 
         // Event listeners
         loginBtn.addEventListener('click', handleLogin);
-
-        // Pressing Enter in any field triggers login
         usernameInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') handleLogin();
         });
         passwordInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') handleLogin();
         });
-
-        // Clear error when user starts typing
         usernameInput.addEventListener('input', () => clearError());
         passwordInput.addEventListener('input', () => clearError());
+    })();
+</script>
+<script>
+    (function() {
+        const body = document.body;
+        const toggleBtn = document.getElementById('darkModeToggle');
+
+        const sunIcon = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
+        const moonIcon = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+
+        function setTheme(theme) {
+            if (theme === 'dark') {
+                body.classList.add('dark-mode');
+                toggleBtn.innerHTML = sunIcon;
+            } else {
+                body.classList.remove('dark-mode');
+                toggleBtn.innerHTML = moonIcon;
+            }
+        }
+
+        const storedTheme = localStorage.getItem('theme');
+        if (storedTheme) {
+            setTheme(storedTheme);
+        } else {
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            setTheme(prefersDark ? 'dark' : 'light');
+        }
+
+        toggleBtn.addEventListener('click', () => {
+            const isDark = body.classList.contains('dark-mode');
+            const newTheme = isDark ? 'light' : 'dark';
+            setTheme(newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            if (!localStorage.getItem('theme')) {
+                setTheme(e.matches ? 'dark' : 'light');
+            }
+        });
     })();
 </script>
 </body>
