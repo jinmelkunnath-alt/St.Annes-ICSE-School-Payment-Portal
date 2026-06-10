@@ -1282,11 +1282,19 @@ body.dark .excel-spinner {
                 <select id="studentClass" required>
                     <option value="">Select Class</option>
                     <option>Playschool</option>
-                    <option>LKG</option><option>UKG</option>
-                    <option>STD 1 A</option><option>STD 1 B</option>
-                    <option>STD 2</option><option>STD 3</option>
-                    <option>STD 4</option><option>STD 5</option><option>STD 6</option>
-                    <option>STD 7</option><option>STD 8</option><option>STD 9</option>
+                    <option>LKG A</option>
+                    <option>LKG B</option>
+                    <option>UKG</option>
+                    <option>STD 1 A</option>
+                    <option>STD 1 B</option>
+                    <option>STD 2</option>
+                    <option>STD 3</option>
+                    <option>STD 4</option>
+                    <option>STD 5</option>
+                    <option>STD 6</option>
+                    <option>STD 7</option>
+                    <option>STD 8</option>
+                    <option>STD 9</option>
                     <option>STD 10</option>
                 </select>
             </div>
@@ -1364,7 +1372,26 @@ body.dark .excel-spinner {
         <form id="editStudentForm">
             <div class="form-group"><label>Student ID (read only)</label><input type="text" id="editStudentId" disabled></div>
             <div class="form-group"><label>Full Name *</label><input type="text" id="editStudentName" required></div>
-            <div class="form-group"><label>Class *</label><select id="editStudentClass" required><option>Playschool</option><option>LKG</option><option>UKG</option><option>STD 1 A</option><option>STD 1 B</option><option>STD 2</option><option>STD 3</option><option>STD 4</option><option>STD 5</option><option>STD 6</option><option>STD 7</option><option>STD 8</option><option>STD 9</option><option>STD 10</option></select></div>
+            <div class="form-group">
+                <label>Class *</label>
+                <select id="editStudentClass" required>
+                    <option>Playschool</option>
+                    <option>LKG A</option>
+                    <option>LKG B</option>
+                    <option>UKG</option>
+                    <option>STD 1 A</option>
+                    <option>STD 1 B</option>
+                    <option>STD 2</option>
+                    <option>STD 3</option>
+                    <option>STD 4</option>
+                    <option>STD 5</option>
+                    <option>STD 6</option>
+                    <option>STD 7</option>
+                    <option>STD 8</option>
+                    <option>STD 9</option>
+                    <option>STD 10</option>
+                </select>
+            </div>
             <div class="form-group"><label>Phone Number *</label><input type="tel" id="editStudentPhone" required></div>
             <div class="section-divider"></div>
             <div class="form-group"><label>Term 1 Total — June–August (₹)</label><input type="number" id="editTerm1Total" min="0"></div>
@@ -1413,7 +1440,26 @@ body.dark .excel-spinner {
         <div id="universalContent">
             <div class="form-group"><label>Action</label><select id="universalAction"><option value="updateEca">Update ECA Fee (All / Class)</option><option value="updateAnnual">Update Annual Day Fee (All / Class)</option></select></div>
             <div class="form-group"><label>Scope</label><select id="universalScope"><option value="all">All Students</option><option value="class">Specific Class</option></select></div>
-            <div id="universalClassSelect" style="display:none;" class="form-group"><label>Class</label><select id="universalTargetClass"><option>Playschool</option><option>LKG</option><option>UKG</option><option>STD 1 A</option><option>STD 1 B</option><option>STD 2</option><option>STD 3</option><option>STD 4</option><option>STD 5</option><option>STD 6</option><option>STD 7</option><option>STD 8</option><option>STD 9</option><option>STD 10</option></select></div>
+            <div id="universalClassSelect" style="display:none;" class="form-group">
+                <label>Class</label>
+                <select id="universalTargetClass">
+                    <option>Playschool</option>
+                    <option>LKG A</option>
+                    <option>LKG B</option>
+                    <option>UKG</option>
+                    <option>STD 1 A</option>
+                    <option>STD 1 B</option>
+                    <option>STD 2</option>
+                    <option>STD 3</option>
+                    <option>STD 4</option>
+                    <option>STD 5</option>
+                    <option>STD 6</option>
+                    <option>STD 7</option>
+                    <option>STD 8</option>
+                    <option>STD 9</option>
+                    <option>STD 10</option>
+                </select>
+            </div>
             <div class="form-group"><label>New Amount (₹)</label><input type="number" id="universalAmount" placeholder="Enter amount" min="0"></div>
             <div class="modal-actions"><button class="modal-btn" id="cancelUniversalBtn">Cancel</button><button class="modal-btn primary" id="applyUniversalBtn">Apply to All</button></div>
         </div>
@@ -1583,7 +1629,23 @@ async function fetchAllStudents() {
 }
 
 function renderClassGrid() {
-    const classList = ["Playschool","LKG","UKG","STD 1 A","STD 1 B","STD 2","STD 3","STD 4","STD 5","STD 6","STD 7","STD 8","STD 9","STD 10"];
+    const classList = [
+        "Playschool",
+        "LKG A",
+        "LKG B",
+        "UKG",
+        "STD 1 A",
+        "STD 1 B",
+        "STD 2",
+        "STD 3",
+        "STD 4",
+        "STD 5",
+        "STD 6",
+        "STD 7",
+        "STD 8",
+        "STD 9",
+        "STD 10"
+    ];
     classesGrid.innerHTML = '';
     classList.forEach((cls, i) => {
         const count = (studentData[cls] || []).length;
