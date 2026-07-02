@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1194,6 +1195,18 @@ body.dark .excel-spinner {
     .header-actions { gap: 0.4rem; }
     .verify-receipt-btn, .dark-mode-toggle { font-size: 0.74rem; padding: 0.4rem 0.7rem; }
 }
+
+/* ── BULK IMPORT OUTLINE BUTTONS ── */
+.modal-btn.outline-btn {
+    background: transparent;
+    border: 1px solid var(--button-border);
+    color: var(--text-primary);
+}
+.modal-btn.outline-btn:hover:not(:disabled) {
+    background: var(--button-hover-bg);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px -6px var(--accent-glow);
+}
     </style>
 </head>
 <body class="light">
@@ -1497,6 +1510,60 @@ body.dark .excel-spinner {
     </div>
 </div>
 
+<!-- Bulk Student Import Modal -->
+<div id="bulkImportModal" class="modal-overlay">
+    <div class="modal-card">
+        <div class="modal-close" id="closeBulkImportModal">✕</div>
+        <h3>Bulk Student Import</h3>
+        <div class="form-group">
+            <label>Select Class</label>
+            <select id="bulkImportClass">
+                <option value="">Select Class</option>
+                <option>Playschool</option>
+                <option>LKG A</option>
+                <option>LKG B</option>
+                <option>UKG</option>
+                <option>STD 1 A</option>
+                <option>STD 1 B</option>
+                <option>STD 2</option>
+                <option>STD 3</option>
+                <option>STD 4</option>
+                <option>STD 5</option>
+                <option>STD 6</option>
+                <option>STD 7</option>
+                <option>STD 8</option>
+                <option>STD 9</option>
+                <option>STD 10</option>
+            </select>
+        </div>
+        <div class="modal-actions" style="flex-direction: column; gap: 0.6rem;">
+            <button type="button" class="modal-btn primary" id="importWithoutBusBtn" style="width: 100%;">Import Students (Without Bus Fee)</button>
+            <button type="button" class="modal-btn primary" id="importWithBusBtn" style="width: 100%;">Import Students (With Bus Fee)</button>
+        </div>
+        <div class="section-divider"></div>
+        <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
+            <button type="button" class="modal-btn outline-btn" id="downloadTemplateWithoutBusBtn" style="flex: 1; min-width: 140px;">Download Template (Without Bus)</button>
+            <button type="button" class="modal-btn outline-btn" id="downloadTemplateWithBusBtn" style="flex: 1; min-width: 140px;">Download Template (With Bus)</button>
+        </div>
+        <input type="file" id="bulkImportFileInput" accept=".xlsx,.xls" style="display: none;">
+        <div id="bulkImportStatus" style="margin-top: 1rem; text-align: center; display: none;">
+            <span class="excel-spinner"></span>
+            <span id="bulkImportStatusText" style="margin-left: 0.5rem; color: var(--text-secondary); font-size: 0.85rem;">Importing...</span>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Import Summary Modal -->
+<div id="bulkImportSummaryModal" class="modal-overlay">
+    <div class="modal-card" style="text-align: center;">
+        <h3 style="border-left: none; padding-left: 0;">Import Completed</h3>
+        <div id="bulkImportSummaryContent" style="margin: 1rem 0; color: var(--text-secondary); line-height: 1.6;"></div>
+        <div class="modal-actions" style="justify-content: center;">
+            <button class="modal-btn primary" id="closeBulkImportSummaryBtn">OK</button>
+        </div>
+    </div>
+</div>
+
 <!-- Contact Developer Modal -->
 <div id="contactModal" class="contact-modal">
     <div class="contact-card">
@@ -1516,7 +1583,7 @@ body.dark .excel-spinner {
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import {
-    getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc
+    getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc, writeBatch
 } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 import {
     getAuth, signInWithEmailAndPassword
@@ -1683,11 +1750,13 @@ window.addEventListener('popstate', () => {
     else { classViewDiv.style.display = 'block'; }
 });
 
-async function createStudent({ id, name, cls, phone, term1, term2, term3, busEnabled, busMonths, ecaTotal, annualTotal, prevYear }) {
+async function createStudent({ id, name, cls, phone, term1, term2, term3, busEnabled, busMonths, ecaTotal, annualTotal, prevYear }, batch = null) {
     const data = { name, class: cls, phone, terms: [{ name: "Term 1 (June – August)", total: safeFloat(term1), paid: 0 },{ name: "Term 2 (September – November)", total: safeFloat(term2), paid: 0 },{ name: "Term 3 (December – February)", total: safeFloat(term3), paid: 0 }], ecaFee: { total: safeFloat(ecaTotal) || 1250, paid: 0 }, otherFees: [], receipts: [], previousYearFees: prevYear || null };
     if (safeFloat(annualTotal) > 0) data.annualFee = { total: safeFloat(annualTotal), paid: 0 };
     if (busEnabled && busMonths) data.busFee = { monthly: busMonths, paidMonths: [], partialPayments: [] };
-    await setDoc(doc(db, "students", id), data);
+    const studentRef = doc(db, "students", id);
+    if (batch) { batch.set(studentRef, data); }
+    else { await setDoc(studentRef, data); }
 }
 
 const addStudentModal = document.getElementById('addStudentModal');
@@ -1856,6 +1925,265 @@ document.getElementById('whatsappBtn').addEventListener('click', () => { window.
 document.getElementById('closeAddModal').onclick = () => hideModal(addStudentModal);
 document.getElementById('cancelAddBtn').onclick = () => hideModal(addStudentModal);
 
+// ═════════════════════════════════════════════════════════════════
+// BULK STUDENT IMPORT FEATURE (Hidden Shortcut: Ctrl+Shift+E+X)
+// ═════════════════════════════════════════════════════════════════
+
+const bulkImportModal = document.getElementById('bulkImportModal');
+const bulkImportSummaryModal = document.getElementById('bulkImportSummaryModal');
+const bulkImportClassSelect = document.getElementById('bulkImportClass');
+const importWithoutBusBtn = document.getElementById('importWithoutBusBtn');
+const importWithBusBtn = document.getElementById('importWithBusBtn');
+const downloadTemplateWithoutBusBtn = document.getElementById('downloadTemplateWithoutBusBtn');
+const downloadTemplateWithBusBtn = document.getElementById('downloadTemplateWithBusBtn');
+const bulkImportFileInput = document.getElementById('bulkImportFileInput');
+const bulkImportStatus = document.getElementById('bulkImportStatus');
+const bulkImportStatusText = document.getElementById('bulkImportStatusText');
+const bulkImportSummaryContent = document.getElementById('bulkImportSummaryContent');
+
+const WITHOUT_BUS_HEADERS = ["Student ID", "Name", "Phone Number", "Term 1 Fee", "Term 2 Fee", "Term 3 Fee", "ECA Fee", "Annual Day Fee"];
+const WITH_BUS_HEADERS = ["Student ID", "Name", "Phone Number", "Term 1 Fee", "Term 2 Fee", "Term 3 Fee", "June Bus", "July Bus", "August Bus", "September Bus", "October Bus", "November Bus", "December Bus", "January Bus", "February Bus", "March Bus", "ECA Fee", "Annual Day Fee"];
+
+let bulkImportWithBus = false;
+
+function openBulkImportModal() {
+    bulkImportClassSelect.value = currentClass || '';
+    bulkImportFileInput.value = '';
+    hideModal(bulkImportSummaryModal);
+    showModal(bulkImportModal);
+}
+
+function setBulkImportLoading(loading, text = 'Importing...') {
+    const buttons = [importWithoutBusBtn, importWithBusBtn, downloadTemplateWithoutBusBtn, downloadTemplateWithBusBtn];
+    buttons.forEach(btn => btn.disabled = loading);
+    bulkImportStatus.style.display = loading ? 'block' : 'none';
+    bulkImportStatusText.textContent = text;
+}
+
+function validateHeaders(headers, expected) {
+    if (!headers || headers.length !== expected.length) return false;
+    return expected.every((h, i) => (headers[i] || '').toString().trim().toLowerCase() === h.toLowerCase());
+}
+
+function parseFee(val) {
+    if (val === undefined || val === null || val === '') return 0;
+    const n = Number(val);
+    return isNaN(n) ? 0 : n;
+}
+
+function downloadTemplate(headers, filename) {
+    const ws = XLSX.utils.aoa_to_sheet([headers]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Template');
+    XLSX.writeFile(wb, filename);
+}
+
+downloadTemplateWithoutBusBtn.addEventListener('click', () => downloadTemplate(WITHOUT_BUS_HEADERS, 'Bulk_Import_Template_Without_Bus.xlsx'));
+downloadTemplateWithBusBtn.addEventListener('click', () => downloadTemplate(WITH_BUS_HEADERS, 'Bulk_Import_Template_With_Bus.xlsx'));
+
+importWithoutBusBtn.addEventListener('click', () => {
+    if (!bulkImportClassSelect.value) { toast('Please select a class', true); return; }
+    bulkImportWithBus = false;
+    bulkImportFileInput.click();
+});
+
+importWithBusBtn.addEventListener('click', () => {
+    if (!bulkImportClassSelect.value) { toast('Please select a class', true); return; }
+    bulkImportWithBus = true;
+    bulkImportFileInput.click();
+});
+
+bulkImportFileInput.addEventListener('change', async e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    await processBulkImport(file, bulkImportWithBus);
+    bulkImportFileInput.value = '';
+});
+
+async function processBulkImport(file, withBus) {
+    const selectedClass = bulkImportClassSelect.value;
+    if (!selectedClass) { toast('Please select a class', true); return; }
+
+    setBulkImportLoading(true, 'Reading file...');
+    try {
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (!['xlsx', 'xls'].includes(ext)) throw new Error('Invalid file type. Please upload .xlsx or .xls');
+
+        const data = await file.arrayBuffer();
+        const workbook = XLSX.read(data, { type: 'array' });
+        if (!workbook || !workbook.SheetNames || workbook.SheetNames.length === 0) throw new Error('Empty or invalid workbook');
+
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+        if (!rows || rows.length < 2) throw new Error('No data rows found');
+
+        const headers = rows[0].map(h => String(h).trim());
+        const expectedHeaders = withBus ? WITH_BUS_HEADERS : WITHOUT_BUS_HEADERS;
+        if (!validateHeaders(headers, expectedHeaders)) throw new Error(`Invalid headers. Expected: ${expectedHeaders.join(', ')}`);
+
+        let totalRows = 0;
+        let invalidRows = 0;
+        let duplicateFileRows = 0;
+        const students = [];
+        const seenIds = new Set();
+        for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+            if (!row || row.every(cell => String(cell).trim() === '')) continue;
+            totalRows++;
+
+            const studentId = String(row[0] || '').trim().toLowerCase();
+            const name = String(row[1] || '').trim();
+            const phone = String(row[2] || '').trim();
+            if (!studentId || !name) { invalidRows++; continue; }
+
+            const term1 = parseFee(row[3]);
+            const term2 = parseFee(row[4]);
+            const term3 = parseFee(row[5]);
+
+            let busMonths = null;
+            let ecaIndex = 6;
+            let annualIndex = 7;
+            if (withBus) {
+                busMonths = {};
+                BUS_MONTHS.forEach((m, idx) => { busMonths[m] = parseFee(row[6 + idx]); });
+                ecaIndex = 16;
+                annualIndex = 17;
+            }
+            const ecaFee = parseFee(row[ecaIndex]);
+            const annualFee = parseFee(row[annualIndex]);
+
+            if (seenIds.has(studentId)) { duplicateFileRows++; continue; }
+            seenIds.add(studentId);
+            students.push({ studentId, name, phone, term1, term2, term3, busMonths, ecaFee, annualFee });
+        }
+
+        if (students.length === 0) throw new Error('No valid student rows found');
+
+        setBulkImportLoading(true, `Checking ${students.length} students...`);
+        const existingSnapshot = await getDocs(collection(db, 'students'));
+        const existingIds = new Set(existingSnapshot.docs.map(d => d.id));
+
+        const duplicates = [];
+        const toImport = [];
+        for (const s of students) {
+            if (existingIds.has(s.studentId)) duplicates.push(s);
+            else toImport.push(s);
+        }
+
+        if (toImport.length === 0) {
+            showBulkImportSummary(totalRows, 0, duplicates.length, invalidRows, duplicateFileRows);
+            return;
+        }
+
+        setBulkImportLoading(true, `Importing ${toImport.length} students...`);
+        const busEnabled = withBus;
+        let batch = writeBatch(db);
+        let batchCount = 0;
+        let importedCount = 0;
+
+        for (const s of toImport) {
+            createStudent({
+                id: s.studentId,
+                name: s.name,
+                cls: selectedClass,
+                phone: s.phone,
+                term1: s.term1,
+                term2: s.term2,
+                term3: s.term3,
+                busEnabled,
+                busMonths: s.busMonths,
+                ecaTotal: s.ecaFee,
+                annualTotal: s.annualFee,
+                prevYear: null
+            }, batch);
+            batchCount++;
+            if (batchCount >= 450) {
+                await batch.commit();
+                importedCount += batchCount;
+                batch = writeBatch(db);
+                batchCount = 0;
+                setBulkImportLoading(true, `Imported ${importedCount}/${toImport.length}...`);
+            }
+        }
+        if (batchCount > 0) {
+            await batch.commit();
+            importedCount += batchCount;
+        }
+
+        for (const s of toImport) {
+            if (!studentData[selectedClass]) studentData[selectedClass] = [];
+            const exists = studentData[selectedClass].some(st => st.id === s.studentId);
+            if (!exists) studentData[selectedClass].push({ name: s.name, id: s.studentId });
+        }
+        renderClassGrid();
+        if (currentClass === selectedClass) renderStudentList(studentData[selectedClass] || [], selectedClass);
+
+        showBulkImportSummary(totalRows, importedCount, duplicates.length, invalidRows, duplicateFileRows);
+    } catch (err) {
+        console.error('Bulk import error:', err);
+        toast(err.message || 'Import failed. Please check the file and try again.', true);
+    } finally {
+        setBulkImportLoading(false);
+    }
+}
+
+function showBulkImportSummary(totalRows, imported, duplicates, invalidRows, duplicateFileRows = 0) {
+    hideModal(bulkImportModal);
+    const reasons = [];
+    if (duplicates > 0) reasons.push('Duplicate Student IDs');
+    if (invalidRows > 0) reasons.push('Missing required fields');
+    if (duplicateFileRows > 0) reasons.push('Duplicate IDs within file');
+    const reasonText = reasons.length ? reasons.join('<br>') : '';
+    bulkImportSummaryContent.innerHTML = `
+        <div>Total Rows: ${totalRows}</div>
+        <div>Imported: ${imported}</div>
+        <div>Skipped: ${duplicates + invalidRows + duplicateFileRows}</div>
+        ${reasonText ? `<div style="margin-top: 0.5rem;">Reason:<br>${reasonText}</div>` : ''}
+    `;
+    showModal(bulkImportSummaryModal);
+}
+
+document.getElementById('closeBulkImportModal').onclick = () => hideModal(bulkImportModal);
+document.getElementById('closeBulkImportSummaryBtn').onclick = () => hideModal(bulkImportSummaryModal);
+bulkImportModal.addEventListener('click', e => { if (e.target === bulkImportModal) hideModal(bulkImportModal); });
+bulkImportSummaryModal.addEventListener('click', e => { if (e.target === bulkImportSummaryModal) hideModal(bulkImportSummaryModal); });
+
+// ── Hidden keyboard shortcut: Ctrl + Shift + E + X ──
+const importShortcutState = { eTimer: null };
+const importPressedKeys = new Set();
+document.addEventListener('keydown', e => {
+    if (!e.ctrlKey || !e.shiftKey) return;
+    importPressedKeys.add(e.key.toLowerCase());
+    const key = e.key.toLowerCase();
+    if (key === 'e') {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        if (importPressedKeys.has('x')) {
+            // X was pressed first and is still held
+            if (importShortcutState.eTimer) { clearTimeout(importShortcutState.eTimer); importShortcutState.eTimer = null; }
+            openBulkImportModal();
+        } else {
+            importShortcutState.eTimer = setTimeout(() => {
+                importShortcutState.eTimer = null;
+                openUnifiedAdminAccess();
+            }, 200);
+        }
+    } else if (key === 'x') {
+        if (importShortcutState.eTimer) {
+            clearTimeout(importShortcutState.eTimer);
+            importShortcutState.eTimer = null;
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            openBulkImportModal();
+        }
+    } else if (importShortcutState.eTimer) {
+        // Another key was pressed while waiting for X; cancel the pending E action
+        clearTimeout(importShortcutState.eTimer);
+        importShortcutState.eTimer = null;
+    }
+}, true);
+document.addEventListener('keyup', e => { importPressedKeys.delete(e.key.toLowerCase()); }, true);
+
 async function initMain() {
     await fetchAllStudents(); renderClassGrid(); classViewDiv.style.display = 'block'; fullscreenStudentView.classList.remove('active');
     if (window.location.search) history.replaceState(null, '', window.location.pathname);
@@ -1864,5 +2192,5 @@ async function initMain() {
 function generateParticles() { const container = document.getElementById('particles'); for (let i = 0; i < 25; i++) { const p = document.createElement('div'); p.className = 'particle'; const size = Math.random() * 80 + 40; p.style.width = size + 'px'; p.style.height = size + 'px'; p.style.left = Math.random() * 100 + '%'; p.style.top = Math.random() * 100 + '%'; p.style.animationDelay = Math.random() * 14 + 's'; container.appendChild(p); } }
 window.addEventListener('load', () => { loginOverlay.style.display = 'flex'; adminHeader.style.display = 'none'; appContainer.style.display = 'none'; footer.style.display = 'none'; });
 </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a14b890409e3968e',t:'MTc4Mjk3MzEyOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
