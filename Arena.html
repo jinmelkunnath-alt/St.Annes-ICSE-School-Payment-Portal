@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#1e4a76">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
 <title>St. Anne's ICSE | Fee Portal</title>
 <style>
 /* ════════════════════════════════════════════════════════════════
@@ -22,29 +22,30 @@
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
-  /* Brand — kept, used as ACCENT ONLY (never as a surface) */
+  /* Brand — accent ONLY (never a surface, never decoration) */
   --brand:        #3b82f6;
   --brand-strong: #2f6fe0;
   --brand-ink:    #1e4a76;
 
-  /* Surface elevation ramp — every layer distinct */
-  --bg:        #0c0f14;   /* app background (graphite) */
-  --bg-2:      #10141b;   /* page surface */
-  --surface-1: #161b23;   /* card base */
-  --surface-2: #1c222c;   /* raised / inset */
-  --surface-3: #232a35;   /* interactive / hover */
-  --surface-hi:#2a323e;   /* high-emphasis fill */
+  /* Surface elevation ramp — wider steps = readable depth on AMOLED + LCD */
+  --bg:        #0b0e13;   /* app background (graphite) */
+  --bg-2:      #0f131a;   /* page surface */
+  --surface-1: #161b24;   /* card base / containers */
+  --surface-2: #1d2530;   /* raised / inset / hero */
+  --surface-3: #262f3c;   /* interactive / hover */
+  --surface-hi:#303a49;   /* high-emphasis fill */
 
   /* Hairlines (low-alpha light, not flat grey) */
-  --line:        rgba(255, 255, 255, .08);
-  --line-strong: rgba(255, 255, 255, .14);
-  --line-soft:   rgba(255, 255, 255, .05);
+  --line:        rgba(255, 255, 255, .09);
+  --line-strong: rgba(255, 255, 255, .15);
+  --line-soft:   rgba(255, 255, 255, .055);
 
   /* Typography colors — rich whites, not washed out */
-  --text:   #eef2f8;
-  --text-2: #c3ccd9;
-  --text-3: #8a93a3;
-  --text-4: #5f6877;
+  --text:   #f1f5fb;
+  --text-2: #c6cfdc;
+  --text-3: #9aa4b4;
+  --text-4: #6b7484;
+  --muted:  #9aa4b4;   /* secondary/meta text used by JS-rendered markup */
 
   /* Semantic colors — high quality, never muddy */
   --green:      #34d399;
@@ -65,13 +66,13 @@
   --r-sm: 12px;
   --r-pill: 999px;
 
-  /* Soft, layered, ambient elevation (dark: borders do the work) */
-  --sh-xs: 0 1px 2px rgba(0, 0, 0, .35);
-  --sh-sm: 0 2px 10px -2px rgba(0, 0, 0, .45);
-  --sh-md: 0 10px 30px -10px rgba(0, 0, 0, .55);
-  --sh-lg: 0 22px 52px -18px rgba(0, 0, 0, .68);
-  --sh-cta: 0 10px 26px -8px rgba(59, 130, 246, .45);
-  --card-edge: inset 0 1px 0 rgba(255, 255, 255, .05);
+  /* Soft, layered, ambient elevation (borders do the work in dark) */
+  --sh-xs: 0 1px 2px rgba(0, 0, 0, .40);
+  --sh-sm: 0 2px 10px -2px rgba(0, 0, 0, .48);
+  --sh-md: 0 10px 30px -10px rgba(0, 0, 0, .58);
+  --sh-lg: 0 22px 52px -18px rgba(0, 0, 0, .70);
+  --sh-cta: 0 10px 26px -8px rgba(59, 130, 246, .38);
+  --card-edge: inset 0 1px 0 rgba(255, 255, 255, .06);
 
   /* Motion — physical, with momentum */
   --ease:       cubic-bezier(.4, 0, .2, 1);
@@ -81,19 +82,31 @@
   --dur:      240ms;
   --dur-slow: 360ms;
 
+  /* ── Liquid Glass material system (v3.0) ── */
+  --glass-line:   rgba(255, 255, 255, .12);
+  --glass-line-2: rgba(255, 255, 255, .07);
+  --g-sheen:  linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,0) 38%);
+  --g-nav:    linear-gradient(180deg, rgba(28,34,46,.80), rgba(11,14,19,.58));
+  --g-elev:   linear-gradient(165deg, rgba(36,45,60,.74), rgba(17,22,30,.58));
+  --g-std:    linear-gradient(165deg, rgba(30,38,51,.66), rgba(16,21,29,.54));
+  --g-modal:  linear-gradient(180deg, rgba(26,33,45,.92), rgba(13,17,24,.86));
+  --g-edge:   inset 0 1px 0 rgba(255,255,255,.14), inset 0 0 0 1px rgba(255,255,255,.05);
+  --g-blur:   blur(20px) saturate(160%);
+  --g-blur-2: blur(14px) saturate(150%);
+  --g-blur-3: blur(30px) saturate(170%);
   --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 /* True-AMOLED variant (system dark) — pure black base, same language */
 [data-theme="dark"] {
   --bg:        #000000;
-  --bg-2:      #06080c;
-  --surface-1: #0e1219;
-  --surface-2: #141a23;
-  --surface-3: #1a212c;
-  --surface-hi:#212934;
-  --line:        rgba(255, 255, 255, .07);
-  --line-strong: rgba(255, 255, 255, .13);
+  --bg-2:      #05070b;
+  --surface-1: #0d1118;
+  --surface-2: #131922;
+  --surface-3: #19212c;
+  --surface-hi:#202935;
+  --line:        rgba(255, 255, 255, .08);
+  --line-strong: rgba(255, 255, 255, .14);
 }
 
 html { font-size: 100%; scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
@@ -108,6 +121,12 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overscroll-behavior-y: none;
+}
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(120% 80% at 50% -10%, rgba(59,130,246,.10), rgba(59,130,246,0) 55%),
+    radial-gradient(90% 60% at 100% 0%, rgba(255,255,255,.045), rgba(255,255,255,0) 50%);
 }
 
 /* ════════════════════════════════════════════════════════════════
@@ -133,12 +152,11 @@ body {
 /* ── Skeleton loader ── */
 .skeleton-screen { max-width: 480px; margin: 0 auto; padding: 0 16px 28px; }
 .sk {
-  background: linear-gradient(90deg, #1a1f29 25%, #232a35 37%, #1a1f29 63%);
-  background-size: 400% 100%;
-  animation: shimmer 1.5s infinite linear;
+  background: var(--surface-2);
+  animation: skPulse 1.5s ease-in-out infinite;
   border-radius: var(--r-lg);
 }
-@keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+@keyframes skPulse { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
 .sk-header { height: 64px; margin: 0 -16px 20px; border-radius: 0 0 var(--r-lg) var(--r-lg); }
 .sk-card  { height: 116px; margin-bottom: 12px; }
 
@@ -150,10 +168,11 @@ body {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
   padding: calc(12px + env(safe-area-inset-top)) 16px 12px;
   margin: 0 -16px 20px;
-  background: rgba(12, 15, 20, .72);
-  backdrop-filter: blur(22px) saturate(160%);
-  -webkit-backdrop-filter: blur(22px) saturate(160%);
-  border-bottom: 1px solid var(--line);
+  background: var(--g-nav);
+  backdrop-filter: var(--g-blur);
+  -webkit-backdrop-filter: var(--g-blur);
+  border-bottom: 1px solid var(--glass-line);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .10), 0 12px 30px -18px rgba(0, 0, 0, .75);
 }
 .header-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
 
@@ -180,7 +199,7 @@ body {
   cursor: pointer; transition: transform var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
   font-family: inherit;
 }
-.btn-logout .material-symbols-rounded { font-size: 19px; }
+
 .btn-logout:hover { background: var(--surface-3); color: var(--text); }
 .btn-logout:active { transform: scale(.92); }
 
@@ -189,13 +208,15 @@ body {
 ═══════════════════════════════════════════════════════════════ */
 .student-card {
   position: relative; overflow: hidden;
-  background: var(--surface-1);
-  border: 1px solid var(--line);
+  background: var(--g-sheen), var(--g-elev);
+  border: 1px solid var(--glass-line);
   border-radius: var(--r-xl);
   padding: 20px;
   margin-bottom: 16px;
   color: var(--text);
-  box-shadow: var(--sh-md), var(--card-edge);
+  backdrop-filter: var(--g-blur);
+  -webkit-backdrop-filter: var(--g-blur);
+  box-shadow: var(--sh-md), var(--g-edge);
   display: flex; flex-direction: column; gap: 14px;
 }
 .profile-top { display: flex; align-items: center; gap: 14px; }
@@ -216,7 +237,7 @@ body {
   padding: 4px 11px; border-radius: var(--r-pill);
   font-size: .72rem; font-weight: 600;
 }
-.tag-ico { font-size: 14px !important; color: var(--text-3); }
+
 .profile-year { font-size: .72rem; color: var(--text-3); letter-spacing: .03em; font-weight: 600; margin-top: 5px; }
 .profile-status { margin-top: 2px; }
 
@@ -231,12 +252,14 @@ body {
 ═══════════════════════════════════════════════════════════════ */
 .view-tabs {
   display: flex; gap: 3px;
-  background: var(--surface-2);
-  border: 1px solid var(--line);
+  background: var(--g-sheen), var(--g-std);
+  border: 1px solid var(--glass-line-2);
   border-radius: var(--r-pill); padding: 4px;
   width: fit-content; max-width: 100%;
-  margin-bottom: 18px;
-  box-shadow: var(--sh-xs);
+  margin: 0 0 16px;
+  backdrop-filter: var(--g-blur-2);
+  -webkit-backdrop-filter: var(--g-blur-2);
+  box-shadow: var(--sh-xs), var(--g-edge);
 }
 .view-tab {
   border: none; background: transparent;
@@ -245,9 +268,9 @@ body {
   cursor: pointer; transition: color var(--dur) var(--ease), background var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
   font-family: inherit; color: var(--text-3);
   display: inline-flex; align-items: center; gap: 5px;
-  min-height: 40px; user-select: none; -webkit-user-select: none;
+  min-height: 44px; user-select: none; -webkit-user-select: none;
 }
-.view-tab .material-symbols-rounded { font-size: 18px; }
+
 .view-tab.active { background: var(--blue-soft); color: var(--brand); box-shadow: var(--sh-xs); }
 
 /* ════════════════════════════════════════════════════════════════
@@ -261,11 +284,13 @@ body {
    TERM CARDS — no icon box; progress + chevron define them
 ═══════════════════════════════════════════════════════════════ */
 .term-card {
-  background: var(--surface-1); border: 1px solid var(--line);
-  border-radius: var(--r-md); box-shadow: var(--sh-sm), var(--card-edge);
+  background: var(--g-sheen), var(--g-std); border: 1px solid var(--glass-line-2);
+  border-radius: var(--r-md); box-shadow: var(--sh-xs), var(--g-edge);
   margin-bottom: 12px; overflow: hidden;
+  backdrop-filter: var(--g-blur-2);
+  -webkit-backdrop-filter: var(--g-blur-2);
   animation: cardIn var(--dur-slow) var(--ease-out) both;
-  transition: box-shadow var(--dur) var(--ease), transform var(--dur-fast) var(--ease), border-color var(--dur) var(--ease);
+  transition: box-shadow var(--dur) var(--ease), transform var(--dur-fast) var(--ease), border-color var(--dur) var(--ease), background var(--dur) var(--ease);
 }
 .term-card:active { transform: scale(.994); }
 .term-card-head {
@@ -294,11 +319,13 @@ body {
 .sections-list { display: flex; flex-direction: column; gap: 12px; }
 
 .exp-card {
-  background: var(--surface-1); border: 1px solid var(--line);
-  border-radius: var(--r-md); box-shadow: var(--sh-sm), var(--card-edge);
+  background: var(--g-sheen), var(--g-std); border: 1px solid var(--glass-line-2);
+  border-radius: var(--r-md); box-shadow: var(--sh-xs), var(--g-edge);
   overflow: hidden;
+  backdrop-filter: var(--g-blur-2);
+  -webkit-backdrop-filter: var(--g-blur-2);
   animation: cardIn var(--dur-slow) var(--ease-out) both;
-  transition: box-shadow var(--dur) var(--ease), transform var(--dur-fast) var(--ease), border-color var(--dur) var(--ease);
+  transition: box-shadow var(--dur) var(--ease), transform var(--dur-fast) var(--ease), border-color var(--dur) var(--ease), background var(--dur) var(--ease);
 }
 .exp-card:active { transform: scale(.992); }
 
@@ -315,8 +342,8 @@ body {
 .exp-header.open   { background: var(--surface-2); border-bottom-color: var(--line); }
 .exp-header-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .exp-icon {
-  font-size: 1.25rem; line-height: 1;
-  width: 42px; height: 42px; flex-shrink: 0; border-radius: 50%;   /* circle, distinct from payment's square */
+  font-size: 22px; line-height: 1;
+  width: 44px; height: 44px; flex-shrink: 0; border-radius: 50%;   /* circle, distinct from payment's square */
   display: flex; align-items: center; justify-content: center;
   background: var(--surface-3); color: var(--brand);
   box-shadow: var(--card-edge);
@@ -351,8 +378,8 @@ body {
    FEE TABLE (desktop/tablet) — reflows to cards on phones (see responsive)
 ═══════════════════════════════════════════════════════════════ */
 .term-table-wrap {
-  background: var(--surface-1); border-radius: var(--r-md);
-  border: 1px solid var(--line); box-shadow: var(--sh-sm), var(--card-edge); overflow: hidden;
+  background: var(--g-sheen), var(--g-std); border-radius: var(--r-md);
+  border: 1px solid var(--glass-line-2); box-shadow: var(--sh-sm), var(--g-edge); overflow: hidden;
   animation: cardIn var(--dur-slow) var(--ease-out) both;
 }
 .fee-table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -378,17 +405,21 @@ body {
 ═══════════════════════════════════════════════════════════════ */
 .summary-bar {
   display: flex; flex-wrap: wrap; gap: 14px;
-  background: var(--surface-2); border: 1px solid var(--line);
+  background: var(--g-sheen), var(--g-elev);
+  border: 1px solid var(--glass-line);
   border-left: 3px solid var(--brand);
   border-radius: var(--r-lg);
-  padding: 18px 20px; margin-top: 18px;
-  box-shadow: var(--sh-md), var(--card-edge);
+  padding: 20px 22px; margin: 0 0 16px;
+  backdrop-filter: var(--g-blur);
+  -webkit-backdrop-filter: var(--g-blur);
+  box-shadow: var(--sh-md), var(--g-edge);
   animation: cardIn var(--dur-slow) var(--ease-out) both;
 }
 .summary-hero { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 160px; }
 .summary-hero-label { font-size: .68rem; font-weight: 700; color: var(--brand); text-transform: uppercase; letter-spacing: .08em; }
-.summary-hero-value { font-size: 2.2rem; font-weight: 800; letter-spacing: -.03em; line-height: 1.04; color: var(--text); font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
+.summary-hero-value { font-size: 2.35rem; font-weight: 800; letter-spacing: -.03em; line-height: 1.02; color: var(--text); font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
 .summary-hero-value.green { color: var(--green); }
+.summary-hero-value.red   { color: var(--red-text); }   /* amount owed — semantic emphasis */
 .summary-stats { display: flex; gap: 22px; margin-top: 10px; }
 .summary-stat { display: flex; flex-direction: column; }
 .summary-stat span { font-size: .66rem; color: var(--text-3); text-transform: uppercase; letter-spacing: .05em; font-weight: 700; }
@@ -399,7 +430,7 @@ body {
 /* ════════════════════════════════════════════════════════════════
    ACTION ROW / BUTTONS — Pay is the single strongest action
 ═══════════════════════════════════════════════════════════════ */
-.action-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+.action-row { display: flex; gap: 12px; flex-wrap: wrap; margin: 0 0 20px; }
 .btn-action {
   border: none; border-radius: var(--r-pill);
   padding: 13px 22px; font-size: .88rem; font-weight: 600;
@@ -407,24 +438,26 @@ body {
   font-family: inherit; display: inline-flex; align-items: center; justify-content: center; gap: 7px;
   min-height: 52px; user-select: none; -webkit-user-select: none;
 }
-.btn-action .material-symbols-rounded { font-size: 19px; }
+
 .btn-pay  { background: var(--brand); color: #fff; box-shadow: var(--sh-cta); flex: 1; font-weight: 700; }
 .btn-pay:hover  { background: var(--brand-strong); transform: translateY(-1px); }
 .btn-pay:active { transform: scale(.97); }
 .btn-pay:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: none; }
-.btn-help { background: var(--surface-2); color: var(--text-2); border: 1px solid var(--line); }
+.btn-help { background: var(--g-std); color: var(--text-2); border: 1px solid var(--glass-line-2); }
 .btn-help:hover { background: var(--surface-3); color: var(--text); }
 .btn-help:active { transform: scale(.97); }
 
 /* Notification card — its own identity: subtle amber notice accent */
 .info-note {
   font-size: .76rem; color: var(--text-3);
-  background: var(--surface-2); border: 1px solid var(--line);
+  background: var(--g-sheen), var(--g-std); border: 1px solid var(--glass-line-2);
   border-left: 3px solid var(--amber);
   padding: 10px 14px; border-radius: var(--r-sm);
-  margin-top: 12px; display: inline-flex; align-items: center; gap: 6px;
+  margin: 16px 0 0; display: flex; align-items: center; gap: 8px;
+  backdrop-filter: var(--g-blur-2);
+  -webkit-backdrop-filter: var(--g-blur-2);
 }
-.info-note .material-symbols-rounded { font-size: 17px; color: var(--amber-text); }
+
 
 /* ════════════════════════════════════════════════════════════════
    STATUS CHIPS
@@ -433,8 +466,9 @@ body {
   display: inline-flex; align-items: center; gap: 4px;
   padding: 4px 11px; border-radius: var(--r-pill);
   font-size: .72rem; font-weight: 700; white-space: nowrap;
+  border: 1px solid rgba(255, 255, 255, .12);
 }
-.status-chip .material-symbols-rounded { font-size: 15px; vertical-align: -2px; }
+
 .chip-paid     { background: var(--green-soft); color: var(--green-text); }
 .chip-pending  { background: var(--amber-soft); color: var(--amber-text); }
 .chip-partial  { background: var(--blue-soft);  color: #bcd4ff; }   /* partial = progress = brand */
@@ -452,16 +486,14 @@ body {
 ═══════════════════════════════════════════════════════════════ */
 .empty-state {
   text-align: center; padding: 44px 24px; color: var(--text-3);
-  background: var(--surface-1); border: 1px solid var(--line);
+  background: var(--g-sheen), var(--g-std); border: 1px solid var(--glass-line-2);
   border-radius: var(--r-lg); margin: 4px 0 12px;
+  backdrop-filter: var(--g-blur-2);
+  -webkit-backdrop-filter: var(--g-blur-2);
+  box-shadow: var(--sh-xs), var(--g-edge);
   animation: cardIn var(--dur-slow) var(--ease-out) both;
 }
-.empty-state .material-symbols-rounded {
-  background: var(--surface-3); color: var(--text-2);
-  width: 72px; height: 72px; border-radius: 50%;
-  display: inline-flex; align-items: center; justify-content: center;
-  font-size: 36px !important; opacity: 1; margin-bottom: 6px; box-shadow: var(--card-edge);
-}
+
 .empty-state h4 { font-size: 1rem; font-weight: 700; color: var(--text); margin: 12px 0 4px; letter-spacing: -.01em; }
 .empty-state p  { font-size: .82rem; line-height: 1.55; }
 
@@ -486,21 +518,23 @@ body {
   position: fixed; inset: 0; z-index: 8000;
   display: flex; align-items: flex-end; justify-content: center;
   padding: 0;
-  background: rgba(0, 0, 0, .62);            /* focus on the sheet, not the blur */
-  backdrop-filter: blur(3px) saturate(120%);
-  -webkit-backdrop-filter: blur(3px) saturate(120%);
+  background: rgba(0, 0, 0, .58);
+  backdrop-filter: blur(6px) saturate(130%);
+  -webkit-backdrop-filter: blur(6px) saturate(130%);
   opacity: 0; animation: fadeIn var(--dur) var(--ease) forwards;
 }
 @keyframes fadeIn { to { opacity: 1; } }
 
 .modal {
   width: 100%; max-width: 480px; margin: 0 auto;
-  background: var(--surface-1);
-  border: 1px solid var(--line-strong);
+  background: var(--g-sheen), var(--g-modal);
+  border: 1px solid var(--glass-line);
   border-radius: 28px 28px 0 0;
   padding: 6px 22px calc(24px + env(safe-area-inset-bottom));
   max-height: 92vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
-  box-shadow: var(--sh-lg), var(--card-edge);
+  backdrop-filter: var(--g-blur-3);
+  -webkit-backdrop-filter: var(--g-blur-3);
+  box-shadow: var(--sh-lg), var(--g-edge);
   transform: translateY(100%);
   animation: sheetUp .36s var(--ease-out) both;
 }
@@ -512,11 +546,10 @@ body {
 }
 .modal h3 {
   font-size: 1.15rem; font-weight: 700; color: var(--text);
-  border-left: 3px solid var(--brand); padding-left: 12px;
   margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
   letter-spacing: -.01em;
 }
-.modal h3 .material-symbols-rounded { font-size: 20px; color: var(--brand); }
+
 
 .modal-close {
   position: absolute; top: 14px; right: 16px;
@@ -600,10 +633,12 @@ body {
 .payment-popup .subtitle { font-size: .78rem; color: var(--text-3); margin-bottom: 16px; }
 
 .payment-card {
-  background: var(--surface-1); border: 1px solid var(--line);
-  border-radius: var(--r-md); box-shadow: var(--sh-sm), var(--card-edge);
+  background: var(--g-sheen), var(--g-std); border: 1px solid var(--glass-line-2);
+  border-radius: var(--r-md); box-shadow: var(--sh-xs), var(--g-edge);
   margin-bottom: 12px; overflow: hidden;
-  transition: box-shadow var(--dur) var(--ease), transform var(--dur-fast) var(--ease), border-color var(--dur) var(--ease);
+  backdrop-filter: var(--g-blur-2);
+  -webkit-backdrop-filter: var(--g-blur-2);
+  transition: box-shadow var(--dur) var(--ease), transform var(--dur-fast) var(--ease), border-color var(--dur) var(--ease), background var(--dur) var(--ease);
 }
 .payment-card:active { transform: scale(.992); }
 .payment-card-header {
@@ -616,7 +651,7 @@ body {
 .payment-card-header:hover  { background: var(--surface-2); }
 .payment-card-header.open   { background: var(--surface-2); border-bottom-color: var(--line); }
 .payment-card-icon {
-  font-size: 1.7rem; width: 44px; height: 44px; flex-shrink: 0; border-radius: 13px;   /* ROUNDED SQUARE — different from exp circle */
+  font-size: 22px; width: 44px; height: 44px; flex-shrink: 0; border-radius: 13px;   /* ROUNDED SQUARE — different from exp circle */
   background: var(--surface-3); color: var(--brand);
   display: flex; align-items: center; justify-content: center; box-shadow: var(--card-edge);
 }
@@ -660,7 +695,7 @@ body {
   display: inline-flex; align-items: center; gap: 5px; min-height: 36px;
   transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
 }
-.btn-copy .material-symbols-rounded { font-size: 16px; }
+
 .btn-copy:hover { background: var(--surface-hi); color: var(--text); }
 .btn-upi-pay {
   width: 100%; background: var(--brand); color: #fff;
@@ -672,7 +707,7 @@ body {
   transition: transform var(--dur-fast) var(--ease), background var(--dur) var(--ease);
   min-height: 50px;
 }
-.btn-upi-pay .material-symbols-rounded { font-size: 19px; }
+
 .btn-upi-pay:hover { background: var(--brand-strong); transform: translateY(-1px); }
 .btn-upi-pay:active { transform: scale(.98); }
 .wa-note { font-size: .76rem; color: var(--text-3); text-align: center; margin-top: 10px; }
@@ -685,7 +720,7 @@ body {
   transition: transform var(--dur-fast) var(--ease), background var(--dur) var(--ease);
   min-height: 50px;
 }
-.btn-wa .material-symbols-rounded { font-size: 19px; }
+
 .btn-wa:hover { background: #15803d; transform: translateY(-1px); }
 .btn-wa:active { transform: scale(.98); }
 
@@ -717,14 +752,14 @@ body {
 .toast {
   position: fixed; bottom: calc(24px + env(safe-area-inset-bottom)); left: 50%;
   transform: translateX(-50%);
-  background: rgba(20, 25, 33, .94); color: var(--text);
+  background: var(--g-sheen), var(--g-modal); color: var(--text);
   padding: 12px 20px; border-radius: var(--r-pill);
   font-size: .82rem; font-weight: 500;
-  z-index: 9500; box-shadow: var(--sh-lg);
+  z-index: 9500; box-shadow: var(--sh-lg), var(--g-edge);
   animation: toastAnim 2.6s forwards;
   white-space: nowrap; max-width: 90%;
-  border: 1px solid var(--line-strong);
-  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--glass-line);
+  backdrop-filter: var(--g-blur-3); -webkit-backdrop-filter: var(--g-blur-3);
 }
 @keyframes toastAnim {
   0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
@@ -780,13 +815,15 @@ body {
 .txn-list { display: flex; flex-direction: column; gap: 10px; }
 .txn-card {
   display: flex; align-items: center; gap: 12px;
-  background: var(--surface-1); border: 1px solid var(--line);
-  border-radius: var(--r-sm); padding: 14px 16px; box-shadow: var(--sh-xs), var(--card-edge);
+  background: var(--g-sheen), var(--g-std); border: 1px solid var(--glass-line-2);
+  border-radius: var(--r-sm); padding: 14px 16px; box-shadow: var(--sh-xs), var(--g-edge);
+  backdrop-filter: var(--g-blur-2);
+  -webkit-backdrop-filter: var(--g-blur-2);
   animation: cardIn var(--dur-slow) var(--ease-out) both;
 }
 .txn-icon {
-  width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;   /* semantic CIRCLE */
-  display: flex; align-items: center; justify-content: center; font-size: 20px;
+  width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;   /* semantic CIRCLE */
+  display: flex; align-items: center; justify-content: center; font-size: 22px;
 }
 .txn-pos { background: var(--green-soft); color: var(--green); }
 .txn-neg { background: var(--blue-soft); color: var(--brand); }
@@ -820,21 +857,34 @@ body {
 @keyframes blinkPulse { 0%, 100% { opacity: 1; } 50% { opacity: .55; } }
 
 /* ════════════════════════════════════════════════════════════════
-   ICON SYSTEM — Material Symbols Rounded
+   ICON SYSTEM — Lucide (inline SVG, single 24×24 / 2px-stroke family)
 ═══════════════════════════════════════════════════════════════ */
-.material-symbols-rounded {
-  font-family: 'Material Symbols Rounded';
-  font-weight: normal; font-style: normal;
-  line-height: 1; letter-spacing: normal; text-transform: none;
-  display: inline-block; white-space: nowrap; word-wrap: normal;
-  direction: ltr; -webkit-font-feature-settings: 'liga';
-  -webkit-font-smoothing: antialiased; vertical-align: middle;
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+.icon {
+  display: inline-block; vertical-align: middle; flex-shrink: 0;
+  width: 1em; height: 1em;
 }
-.help-ico { font-size: 18px !important; color: var(--amber-text); vertical-align: -3px; margin-right: 4px; }
+/* Sizing — Lucide SVGs share a 24x24 grid + 2px stroke, so optical weight
+   and footprint are identical at every size; only the display px varies. */
+.exp-icon .icon, .payment-card-icon .icon, .txn-icon .icon { width: 22px; height: 22px; }
+.view-tab .icon { width: 18px; height: 18px; }
+.btn-action .icon, .btn-pay .icon, .btn-help .icon, .btn-wa .icon, .btn-logout .icon { width: 19px; height: 19px; }
+.btn-copy .icon { width: 16px; height: 16px; }
+.status-chip .icon { width: 15px; height: 15px; vertical-align: -2px; }
+.info-note .icon { width: 17px; height: 17px; color: var(--amber-text); }
+.modal h3 .icon { width: 20px; height: 20px; color: var(--brand); }
+.empty-state .icon {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: var(--surface-3); color: var(--text-2);
+  padding: 18px; margin-bottom: 6px; box-sizing: border-box;
+}
+.alert-icon .icon { width: 28px; height: 28px; }
+.txn-receipt .icon { width: 18px; height: 18px; }
+.modal-close .icon { width: 18px; height: 18px; }
+.exp-arrow .icon, .payment-card-chevron .icon { width: 18px; height: 18px; }
+.help-ico { width: 18px; height: 18px; color: var(--amber-text); vertical-align: -3px; margin-right: 4px; flex-shrink: 0; }
+.tag-ico { width: 14px; height: 14px; color: var(--text-3); }
+
 .tab-label { font-size: .82rem; font-weight: 600; letter-spacing: .01em; }
-.ms-inline { font-size: 17px !important; vertical-align: -3px; margin-right: 3px; }
-.hist-empty-icon { font-size: 2.4rem; margin-bottom: 10px; line-height: 1; }
 
 /* ── Ripple + pay loading ── */
 .btn-action, .btn-modal, .btn-pay, .btn-help, .btn-upi-pay, .btn-wa, .btn-copy,
@@ -890,10 +940,17 @@ body {
   .app-header { margin: 0 -16px 18px; }
   .filter-bar { gap: 8px; }
   .view-tab { padding: 9px 13px; font-size: .78rem; }
-  .view-tab .material-symbols-rounded { font-size: 17px; }
+  
   .summary-hero { min-width: 100%; }
   .fee-table { font-size: .82rem; }
   .fee-table thead th, .fee-table tbody td { padding: 11px 12px; }
+}
+
+/* Very small phones — tighten controls so nothing crowds */
+@media (max-width: 380px) {
+  .btn-action { padding: 12px 16px; font-size: .84rem; }
+  .view-tab { padding: 9px 11px; }
+  .summary-hero-value { font-size: 2.1rem; }
 }
 
 /* Phones: transform fee tables into responsive payment cards */
@@ -923,12 +980,42 @@ body {
   .fee-table tbody td:nth-child(5)::before { content: "Status"; }
 }
 
+/* Phones: explicit separation so Pay never fuses with the segmented nav */
+@media (max-width: 767px) {
+  .action-row { margin-bottom: 22px; }
+}
+
 /* Landscape phones — compact, no wasted vertical space */
 @media (max-height: 480px) and (orientation: landscape) {
   .student-card { padding: 14px 18px; gap: 10px; flex-direction: row; align-items: center; flex-wrap: wrap; }
   .profile-top { flex: 1; min-width: 200px; }
   .app-header { margin-bottom: 14px; }
   #app { padding-bottom: 16px; }
+}
+
+
+/* Foldables (Samsung Fold / Pixel Fold / OnePlus Open) unfolded ~712-840px -> tablet-style dashboard */
+@media (min-width: 712px) and (max-width: 767px) and (orientation: portrait) {
+  #app.visible {
+    display: grid;
+    grid-template-columns: 300px minmax(0, 1fr);
+    grid-template-areas:
+      "header  header"
+      "profile tabs"
+      "summary content"
+      "actions content"
+      "note    content";
+    gap: 16px 20px; align-items: start;
+    max-width: 860px; margin: 0 auto;
+    padding: 22px 22px calc(28px + env(safe-area-inset-bottom));
+  }
+  .app-header  { grid-area: header; margin: 0; border-radius: 0 0 var(--r-md) var(--r-md); }
+  .student-card { grid-area: profile; margin: 0; }
+  .view-tabs   { grid-area: tabs; margin: 0; width: 100%; }
+  .summary-bar { grid-area: summary; margin: 0; }
+  #content     { grid-area: content; min-height: 420px; }
+  .action-row  { grid-area: actions; margin: 0; }
+  .info-note   { grid-area: note; margin: 0; }
 }
 
 /* Tablet / foldable-unfolded / small desktop → two-column dashboard.
@@ -950,12 +1037,12 @@ body {
     padding: 24px 24px calc(32px + env(safe-area-inset-bottom));
   }
   .app-header  { grid-area: header; margin: 0; border-radius: 0 0 var(--r-md) var(--r-md); }
-  .student-card { grid-area: profile; margin-bottom: 0; }
-  .view-tabs   { grid-area: tabs; margin-bottom: 0; width: 100%; }
-  .summary-bar { grid-area: summary; margin-top: 0; }
+  .student-card { grid-area: profile; margin: 0; }
+  .view-tabs   { grid-area: tabs; margin: 0; width: 100%; }
+  .summary-bar { grid-area: summary; margin: 0; }
   #content     { grid-area: content; min-height: 460px; }
-  .action-row  { grid-area: actions; }
-  .info-note   { grid-area: note; margin-top: 0; }
+  .action-row  { grid-area: actions; margin: 0; }
+  .info-note   { grid-area: note; margin: 0; }
 
   .fee-table { font-size: .9rem; }
   .term-card, .exp-card { border-radius: var(--r-md); }
@@ -972,6 +1059,9 @@ body {
 /* Ultra-wide — spacious, not stretched */
 @media (min-width: 1600px) {
   #app.visible { max-width: 1480px; gap: 24px 36px; }
+}
+@media (min-width: 1920px) {
+  #app.visible { max-width: 1640px; gap: 28px 44px; }
 }
 
 /* ════════════════════════════════════════════════════════════════
@@ -1008,7 +1098,7 @@ body {
       <div class="student-avatar" id="studentAvatar">S</div>
       <span class="brand-name">St. Anne's ICSE</span>
     </div>
-    <button class="btn-logout" id="logoutBtn" aria-label="Logout"><span class="material-symbols-rounded">logout</span></button>
+    <button class="btn-logout" id="logoutBtn" aria-label="Logout"><span class="icon-slot" data-icon="logout"></span></button>
   </header>
 
   <div class="student-card" id="studentCard">
@@ -1031,9 +1121,9 @@ body {
   </div>
 
   <div class="view-tabs" role="tablist">
-    <button class="view-tab active" id="tabTerm" role="tab" aria-selected="true"><span class="material-symbols-rounded">school</span><span class="tab-label">Term</span></button>
-    <button class="view-tab"        id="tabOther" role="tab" aria-selected="false"><span class="material-symbols-rounded">receipt_long</span><span class="tab-label">Other</span></button>
-    <button class="view-tab"        id="tabHistory" role="tab" aria-selected="false"><span class="material-symbols-rounded">history</span><span class="tab-label">History</span></button>
+    <button class="view-tab active" id="tabTerm" role="tab" aria-selected="true"><span class="icon-slot" data-icon="school"></span><span class="tab-label">Term</span></button>
+    <button class="view-tab"        id="tabOther" role="tab" aria-selected="false"><span class="icon-slot" data-icon="receipt_long"></span><span class="tab-label">Other</span></button>
+    <button class="view-tab"        id="tabHistory" role="tab" aria-selected="false"><span class="icon-slot" data-icon="history"></span><span class="tab-label">History</span></button>
   </div>
 
   <div id="content"></div>
@@ -1041,10 +1131,10 @@ body {
   <div class="summary-bar" id="summaryBar"></div>
 
   <div class="action-row">
-    <button class="btn-action btn-pay"  id="payBtn"><span class="material-symbols-rounded">payments</span> Pay Fees</button>
-    <button class="btn-action btn-help" id="helpBtn"><span class="material-symbols-rounded">help</span> Help</button>
+    <button class="btn-action btn-pay"  id="payBtn"><span class="icon-slot" data-icon="payments"></span> Pay Fees</button>
+    <button class="btn-action btn-help" id="helpBtn"><span class="icon-slot" data-icon="help"></span> Help</button>
   </div>
-  <div class="info-note"><span class="material-symbols-rounded">lightbulb</span> Fee updates are reflected within 36 working hours.</div>
+  <div class="info-note"><span class="icon-slot" data-icon="lightbulb"></span> Fee updates are reflected within 36 working hours.</div>
 </div>
 
 <!-- Receipt template (off-screen) -->
@@ -1116,7 +1206,7 @@ enableIndexedDbPersistence(db).catch(err => {
    CONSTANTS
 ═══════════════════════════════════════════ */
 const ADMIN_EMAIL_1 = "immanuelmelbindj@gmail.com";
-const ADMIN_EMAIL_2 = "SCHOOL_OFFICE_EMAIL@gmail.com"; // PLACEHOLDER – replace with actual school email
+const ADMIN_EMAIL_2 = "SCHOOL_OFFICE_EMAIL@gmail.com"; // school office email (deployment config)
 const UPI_ID       = "jinmelkunnath@oksbi";          // legacy – not used in new popup
 const UPI_NAME     = "St.%20Annes%20ICSE";
 const WHATSAPP_URL = "https://wa.me/917012808911";
@@ -1132,7 +1222,7 @@ const TERM_NAMES = [
 ];
 
 const FEE_ICONS = {
-  bus:       "directions_bus", transport: "directions_bus",
+  bus:       "bus", transport: "bus",
   eca:       "palette", arts:      "palette", art: "palette",
   annual:    "celebration", day:       "celebration",
   sports:    "emoji_events", games:     "emoji_events",
@@ -1144,7 +1234,56 @@ const FEE_ICONS = {
   exam:      "edit_note", id:        "badge",
   picnic:    "park", trip:      "park",
   default:   "receipt_long"
+};const ICON_PATHS = {
+  'bus': '<path d="M8 6v6" /> <path d="M15 6v6" /> <path d="M2 12h19.6" /> <path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3" /> <circle cx="7" cy="18" r="2" /> <path d="M9 18h5" /> <circle cx="16" cy="18" r="2" />',
+  'palette': '<path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z" /> <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" /> <circle cx="17.5" cy="10.5" r=".5" fill="currentColor" /> <circle cx="6.5" cy="12.5" r=".5" fill="currentColor" /> <circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />',
+  'celebration': '<path d="M5.8 11.3 2 22l10.7-3.79" /> <path d="M4 3h.01" /> <path d="M22 8h.01" /> <path d="M15 2h.01" /> <path d="M22 20h.01" /> <path d="m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10" /> <path d="m22 13-.82-.33c-.86-.34-1.82.2-1.98 1.11c-.11.7-.72 1.22-1.43 1.22H17" /> <path d="m11 2 .33.82c.34.86-.2 1.82-1.11 1.98C9.52 4.9 9 5.52 9 6.23V7" /> <path d="M11 13c1.93 1.93 2.83 4.17 2 5-.83.83-3.07-.07-5-2-1.93-1.93-2.83-4.17-2-5 .83-.83 3.07.07 5 2Z" />',
+  'emoji_events': '<path d="M10 14.66v1.626a2 2 0 0 1-.976 1.696A5 5 0 0 0 7 21.978" /> <path d="M14 14.66v1.626a2 2 0 0 0 .976 1.696A5 5 0 0 1 17 21.978" /> <path d="M18 9h1.5a1 1 0 0 0 0-5H18" /> <path d="M4 22h16" /> <path d="M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z" /> <path d="M6 9H4.5a1 1 0 0 1 0-5H6" />',
+  'science': '<path d="M14 2v6a2 2 0 0 0 .245.96l5.51 10.08A2 2 0 0 1 18 22H6a2 2 0 0 1-1.755-2.96l5.51-10.08A2 2 0 0 0 10 8V2" /> <path d="M6.453 15h11.094" /> <path d="M8.5 2h7" />',
+  'computer': '<rect width="20" height="14" x="2" y="3" rx="2" /> <line x1="8" x2="16" y1="21" y2="21" /> <line x1="12" x2="12" y1="17" y2="21" />',
+  'menu_book': '<path d="M12 7v14" /> <path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" />',
+  'music_note': '<path d="M9 18V5l12-2v13" /> <circle cx="6" cy="18" r="3" /> <circle cx="18" cy="16" r="3" />',
+  'nightlife': '<path d="M12 12 4.207 4.207A.707.707 0 0 1 4.707 3h14.586a.707.707 0 0 1 .5 1.207z" /> <path d="M12 12v10" /> <path d="M7 22h10" />',
+  'checkroom': '<path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z" />',
+  'school': '<path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z" /> <path d="M22 10v6" /> <path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5" />',
+  'edit_note': '<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /> <path d="m15 5 4 4" />',
+  'badge': '<path d="m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526" /> <circle cx="12" cy="8" r="6" />',
+  'park': '<path d="M10 10v.2A3 3 0 0 1 8.9 16H5a3 3 0 0 1-1-5.8V10a3 3 0 0 1 6 0Z" /> <path d="M7 16v6" /> <path d="M13 19v3" /> <path d="M12 19h8.3a1 1 0 0 0 .7-1.7L18 14h.3a1 1 0 0 0 .7-1.7L16 9h.2a1 1 0 0 0 .8-1.7L13 3l-1.4 1.5" />',
+  'receipt_long': '<path d="M12 17V7" /> <path d="M16 8h-6a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4H8" /> <path d="M4 3a1 1 0 0 1 1-1 1.3 1.3 0 0 1 .7.2l.933.6a1.3 1.3 0 0 0 1.4 0l.934-.6a1.3 1.3 0 0 1 1.4 0l.933.6a1.3 1.3 0 0 0 1.4 0l.933-.6a1.3 1.3 0 0 1 1.4 0l.934.6a1.3 1.3 0 0 0 1.4 0l.933-.6A1.3 1.3 0 0 1 19 2a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1 1.3 1.3 0 0 1-.7-.2l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.934.6a1.3 1.3 0 0 1-1.4 0l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-1.4 0l-.934-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-.7.2 1 1 0 0 1-1-1z" />',
+  'logout': '<path d="m16 17 5-5-5-5" /> <path d="M21 12H9" /> <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />',
+  'payments': '<path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1" /> <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" />',
+  'help': '<circle cx="12" cy="12" r="10" /> <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /> <path d="M12 17h.01" />',
+  'history': '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /> <path d="M3 3v5h5" /> <path d="M12 7v5l4 2" />',
+  'warning': '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" /> <path d="M12 9v4" /> <path d="M12 17h.01" />',
+  'check_circle': '<circle cx="12" cy="12" r="10" /> <path d="m9 12 2 2 4-4" />',
+  'trending_down': '<path d="M16 17h6v-6" /> <path d="m22 17-8.5-8.5-5 5L2 7" />',
+  'schedule': '<circle cx="12" cy="12" r="10" /> <path d="M12 6v6l4 2" />',
+  'arrow_downward': '<path d="M12 5v14" /> <path d="m19 12-7 7-7-7" />',
+  'edit': '<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /> <path d="m15 5 4 4" />',
+  'content_copy': '<rect width="14" height="14" x="8" y="8" rx="2" ry="2" /> <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />',
+  'check': '<path d="M20 6 9 17l-5-5" />',
+  'download': '<path d="M12 15V3" /> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /> <path d="m7 10 5 5 5-5" />',
+  'send': '<path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z" /> <path d="m21.854 2.147-10.94 10.939" />',
+  'forum': '<path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719" />',
+  'call': '<path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384" />',
+  'mail': '<path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7" /> <rect x="2" y="4" width="20" height="16" rx="2" />',
+  'lock': '<rect width="18" height="11" x="3" y="11" rx="2" ry="2" /> <path d="M7 11V7a5 5 0 0 1 10 0v4" />',
+  'error': '<circle cx="12" cy="12" r="10" /> <line x1="12" x2="12" y1="8" y2="12" /> <line x1="12" x2="12.01" y1="16" y2="16" />',
+  'lightbulb': '<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" /> <path d="M9 18h6" /> <path d="M10 22h4" />',
+  'chevron_right': '<path d="m9 18 6-6-6-6" />',
+  'close': '<path d="M18 6 6 18" /> <path d="m6 6 12 12" />',
+  'receipt': '<path d="M12 17V7" /> <path d="M16 8h-6a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4H8" /> <path d="M4 3a1 1 0 0 1 1-1 1.3 1.3 0 0 1 .7.2l.933.6a1.3 1.3 0 0 0 1.4 0l.934-.6a1.3 1.3 0 0 1 1.4 0l.933.6a1.3 1.3 0 0 0 1.4 0l.933-.6a1.3 1.3 0 0 1 1.4 0l.934.6a1.3 1.3 0 0 0 1.4 0l.933-.6A1.3 1.3 0 0 1 19 2a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1 1.3 1.3 0 0 1-.7-.2l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.934.6a1.3 1.3 0 0 1-1.4 0l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-1.4 0l-.934-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-.7.2 1 1 0 0 1-1-1z" />'
 };
+
+function iconSvg(key, cls) {
+  return '<svg class="icon' + (cls ? ' ' + cls : '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICON_PATHS[key] || '') + '</svg>';
+}
+
+function hydrateIcons(root) {
+  (root || document).querySelectorAll('.icon-slot').forEach(function (el) {
+    el.outerHTML = iconSvg(el.getAttribute('data-icon'), el.getAttribute('data-cls') || '');
+  });
+}
 
 function iconFor(name) {
   if (!name) return FEE_ICONS.default;
@@ -1329,7 +1468,7 @@ async function loadStudent() {
         ? nmParts[0].charAt(0).toUpperCase()
         : (nmParts[0].charAt(0) + nmParts[1].charAt(0)).toUpperCase();
     }
-    el("studentTags").innerHTML   = `<span class="tag"><span class="material-symbols-rounded tag-ico">school</span> Class ${htmlEscape(SD.class)}</span>`;
+    el("studentTags").innerHTML   = `<span class="tag">${iconSvg("school", "tag-ico")} Class ${htmlEscape(SD.class)}</span>`;
     const pAv = el("profileAvatar");
     if (pAv) pAv.textContent = avEl ? avEl.textContent : "";
     const pYr = el("profileYear");
@@ -1433,12 +1572,12 @@ function feeStatus(total, paid) {
 function statusChipHTML(total, paid) {
   const s = feeStatus(total, paid);
   const icon = s.cls === "paid" ? "check_circle" : s.cls === "partial" ? "trending_down" : "schedule";
-  return `<span class="status-chip chip-${s.cls}"><span class="material-symbols-rounded">${icon}</span>${s.label}</span>`;
+  return `<span class="status-chip chip-${s.cls}">${iconSvg(icon)}${s.label}</span>`;
 }
 function emptyState(icon, title, sub) {
   const d = document.createElement("div");
   d.className = "empty-state";
-  d.innerHTML = `<span class="material-symbols-rounded">${htmlEscape(icon)}</span><h4>${htmlEscape(title)}</h4><p>${htmlEscape(sub)}</p>`;
+  d.innerHTML = `${iconSvg(icon)}<h4>${htmlEscape(title)}</h4><p>${htmlEscape(sub)}</p>`;
   return d;
 }
 
@@ -1474,7 +1613,7 @@ function buildExpCard({ id, icon, title, subtitle, rows }) {
   card.innerHTML = `
     <div class="exp-header" id="hdr-${id}">
       <div class="exp-header-left">
-        <span class="exp-icon material-symbols-rounded">${icon}</span>
+        <span class="exp-icon">${iconSvg(icon)}</span>
         <div>
           <div class="exp-title">${htmlEscape(title)}</div>
           ${subtitle ? `<div class="exp-subtitle">${htmlEscape(subtitle)}</div>` : ""}
@@ -1482,7 +1621,7 @@ function buildExpCard({ id, icon, title, subtitle, rows }) {
       </div>
       <div class="exp-header-right">
         <span class="exp-summary" id="sum-${id}"></span>
-        <span class="exp-arrow material-symbols-rounded" id="arr-${id}">chevron_right</span>
+        <span class="exp-arrow" id="arr-${id}">${iconSvg("chevron_right")}</span>
       </div>
     </div>
     <div class="exp-body" id="body-${id}">
@@ -1607,7 +1746,7 @@ function renderTermView(container) {
         </div>
         <div class="term-card-right">
           ${statusChipHTML(total, paid)}
-          <span class="exp-arrow material-symbols-rounded">chevron_right</span>
+          <span class="exp-arrow">${iconSvg("chevron_right")}</span>
         </div>
       </button>
       <div class="term-card-body" id="term-body-${i}">
@@ -1714,8 +1853,8 @@ function renderOtherView(container) {
     const remaining = totalT - totalP;
 
     const iconHtml = remaining > 0
-      ? `<span class="material-symbols-rounded blink-warn">warning</span>`
-      : `<span class="material-symbols-rounded" style="color:var(--green)">check_circle</span>`;
+      ? `${iconSvg('warning', 'blink-warn')}`
+      : `<span style="color:var(--green)">${iconSvg("check_circle")}</span>`;
 
     const card = buildExpCard({
       id: "previous-year",
@@ -1777,7 +1916,7 @@ function renderHistoryView(container) {
       const positive = amt >= 0;
       const method = (r.mode || "upi") === "cash" ? "Cash" : "UPI";
       return `<div class="txn-card">
-        <div class="txn-icon ${positive ? "txn-pos" : "txn-neg"}"><span class="material-symbols-rounded">${positive ? "arrow_downward" : "edit"}</span></div>
+        <div class="txn-icon ${positive ? "txn-pos" : "txn-neg"}">${iconSvg(positive ? "arrow_downward" : "edit")}</div>
         <div class="txn-main">
           <div class="txn-title">${htmlEscape(r.subType || "—")}</div>
           <div class="txn-meta">${htmlEscape(r.date || "—")} · ${method}</div>
@@ -1785,7 +1924,7 @@ function renderHistoryView(container) {
         </div>
         <div class="txn-right">
           <div class="txn-amount ${positive ? "pos" : "neg"}">${fmtRs(amt)}</div>
-          <button class="txn-receipt" data-sub="${htmlEscape(r.subType || "")}" data-amt="${Math.abs(amt)}" data-code="${htmlEscape(r.code || "")}" aria-label="View receipt"><span class="material-symbols-rounded">receipt_long</span></button>
+          <button class="txn-receipt" data-sub="${htmlEscape(r.subType || "")}" data-amt="${Math.abs(amt)}" data-code="${htmlEscape(r.code || "")}" aria-label="View receipt">${iconSvg("receipt")}</button>
         </div>
       </div>`;
     }).join("");
@@ -1862,8 +2001,8 @@ async function showSuccess(subType, amount, code) {
     amount, fee: subType, date: today(), code
   });
   const m = overlay(`
-    <button class="modal-close">✕</button>
-    <h3>Payment Updated <span class="material-symbols-rounded">check_circle</span></h3>
+    <button class="modal-close">${iconSvg("close")}</button>
+    <h3>Payment Updated ${iconSvg("check_circle")}</h3>
     <div class="receipt-wrap">
       <div class="tick-wrap">
         <svg class="tick-svg" viewBox="0 0 52 52">
@@ -1875,8 +2014,8 @@ async function showSuccess(subType, amount, code) {
       <img src="${imgUrl}" alt="Receipt">
       <div class="receipt-code">${htmlEscape(code)}</div>
       <div class="receipt-btns">
-        <button class="btn-action btn-pay" id="rcpt-dl"><span class="material-symbols-rounded">download</span> Download</button>
-        <button class="btn-action btn-help" id="rcpt-wa"><span class="material-symbols-rounded">send</span> Send</button>
+        <button class="btn-action btn-pay" id="rcpt-dl">${iconSvg("download")} Download</button>
+        <button class="btn-action btn-help" id="rcpt-wa">${iconSvg("send")} Send</button>
       </div>
     </div>`);
   m.querySelector("#rcpt-dl").onclick = () => dlReceipt(imgUrl, code);
@@ -2056,8 +2195,8 @@ function editPayment(code) {
   const resetAdmin = () => { isAdminMode = false; };
 
   const m = overlay(`
-    <button class="modal-close">✕</button>
-    <h3><span class="material-symbols-rounded">edit</span> Edit Payment</h3>
+    <button class="modal-close">${iconSvg("close")}</button>
+    <h3>${iconSvg("edit")} Edit Payment</h3>
     <div class="edit-info-box">
       <div class="edit-info-fee">${htmlEscape(receipt.subType || "—")}</div>
       <div class="edit-info-meta">Recorded: ${fmtRs(oldAmt)} &nbsp;·&nbsp; Date: ${htmlEscape(receipt.date || "—")}</div>
@@ -2168,9 +2307,9 @@ async function applyEdit(oldReceipt, newAmount, newMode = "upi") {
 ═══════════════════════════════════════════ */
 function appAlert(title, msg) {
   const m = overlay(`
-    <button class="modal-close">✕</button>
+    <button class="modal-close">${iconSvg("close")}</button>
     <div class="alert-card">
-      <div class="alert-icon"><span class="material-symbols-rounded">error</span></div>
+      <div class="alert-icon">${iconSvg("error")}</div>
       <h3>${htmlEscape(title)}</h3>
       <p>${htmlEscape(msg)}</p>
       <div class="modal-actions" style="justify-content:center">
@@ -2235,25 +2374,25 @@ const PAYMENT_ACCOUNTS = {
 
 function openPay() {
   const m = overlay(`
-    <button class="modal-close">✕</button>
+    <button class="modal-close">${iconSvg("close")}</button>
     <div class="payment-popup">
       <h3>Select Payment Category</h3>
       <p class="subtitle">Please pay to the correct account based on the fee type.</p>
       <div class="payment-card" data-account="tuition">
         <div class="payment-card-header">
-          <div class="payment-card-icon material-symbols-rounded">school</div>
+          <div class="payment-card-icon">${iconSvg("school")}</div>
           <div class="payment-card-info">
             <div class="payment-card-name">Tuition Fees</div>
             <div class="payment-card-upi">${htmlEscape(PAYMENT_ACCOUNTS.tuition.upiId)}</div>
           </div>
-          <div class="payment-card-chevron material-symbols-rounded">chevron_right</div>
+          <div class="payment-card-chevron">${iconSvg("chevron_right")}</div>
         </div>
         <div class="payment-card-body">
           <div class="payment-card-body-inner">
             <img src="${htmlEscape(PAYMENT_ACCOUNTS.tuition.qr)}" alt="Tuition QR">
             <div class="upi-row">
               <span class="upi-text">${htmlEscape(PAYMENT_ACCOUNTS.tuition.upiId)}</span>
-              <button class="btn-copy" data-upi="${htmlEscape(PAYMENT_ACCOUNTS.tuition.upiId)}"><span class="material-symbols-rounded">content_copy</span> Copy</button>
+              <button class="btn-copy" data-upi="${htmlEscape(PAYMENT_ACCOUNTS.tuition.upiId)}">${iconSvg("content_copy")} Copy UPI ID</button>
             </div>
             <button class="btn-upi-pay" data-upi="${htmlEscape(PAYMENT_ACCOUNTS.tuition.upiId)}" data-name="Tuition Fees">Pay via UPI App</button>
           </div>
@@ -2261,19 +2400,19 @@ function openPay() {
       </div>
       <div class="payment-card" data-account="bus">
         <div class="payment-card-header">
-          <div class="payment-card-icon material-symbols-rounded">directions_bus</div>
+          <div class="payment-card-icon">${iconSvg("bus")}</div>
           <div class="payment-card-info">
             <div class="payment-card-name">Bus Fees</div>
             <div class="payment-card-upi">${htmlEscape(PAYMENT_ACCOUNTS.bus.upiId)}</div>
           </div>
-          <div class="payment-card-chevron material-symbols-rounded">chevron_right</div>
+          <div class="payment-card-chevron">${iconSvg("chevron_right")}</div>
         </div>
         <div class="payment-card-body">
           <div class="payment-card-body-inner">
             <img src="${htmlEscape(PAYMENT_ACCOUNTS.bus.qr)}" alt="Bus QR">
             <div class="upi-row">
               <span class="upi-text">${htmlEscape(PAYMENT_ACCOUNTS.bus.upiId)}</span>
-              <button class="btn-copy" data-upi="${htmlEscape(PAYMENT_ACCOUNTS.bus.upiId)}"><span class="material-symbols-rounded">content_copy</span> Copy</button>
+              <button class="btn-copy" data-upi="${htmlEscape(PAYMENT_ACCOUNTS.bus.upiId)}">${iconSvg("content_copy")} Copy UPI ID</button>
             </div>
             <button class="btn-upi-pay" data-upi="${htmlEscape(PAYMENT_ACCOUNTS.bus.upiId)}" data-name="Bus Fees">Pay via UPI App</button>
           </div>
@@ -2281,19 +2420,19 @@ function openPay() {
       </div>
       <div class="payment-card" data-account="other">
         <div class="payment-card-header">
-          <div class="payment-card-icon material-symbols-rounded">receipt_long</div>
+          <div class="payment-card-icon">${iconSvg("receipt")}</div>
           <div class="payment-card-info">
             <div class="payment-card-name">Other Fees</div>
             <div class="payment-card-upi">${htmlEscape(PAYMENT_ACCOUNTS.other.upiId)}</div>
           </div>
-          <div class="payment-card-chevron material-symbols-rounded">chevron_right</div>
+          <div class="payment-card-chevron">${iconSvg("chevron_right")}</div>
         </div>
         <div class="payment-card-body">
           <div class="payment-card-body-inner">
             <img src="${htmlEscape(PAYMENT_ACCOUNTS.other.qr)}" alt="Other QR">
             <div class="upi-row">
               <span class="upi-text">${htmlEscape(PAYMENT_ACCOUNTS.other.upiId)}</span>
-              <button class="btn-copy" data-upi="${htmlEscape(PAYMENT_ACCOUNTS.other.upiId)}"><span class="material-symbols-rounded">content_copy</span> Copy</button>
+              <button class="btn-copy" data-upi="${htmlEscape(PAYMENT_ACCOUNTS.other.upiId)}">${iconSvg("content_copy")} Copy UPI ID</button>
             </div>
             <button class="btn-upi-pay" data-upi="${htmlEscape(PAYMENT_ACCOUNTS.other.upiId)}" data-name="Other Fees">Pay via UPI App</button>
           </div>
@@ -2349,7 +2488,7 @@ function openPay() {
           ta.style.position = "fixed"; ta.style.opacity = "0";
           document.body.appendChild(ta);
           ta.focus(); ta.select();
-          try { document.execCommand("copy"); } catch (_) {}
+          try { document.execCommand("content_copy"); } catch (_) {}
           document.body.removeChild(ta);
         };
         if (navigator.clipboard) {
@@ -2357,9 +2496,9 @@ function openPay() {
         } else {
           fallback();
         }
-        const originalText = copyBtn.textContent;
-        copyBtn.textContent = "Copied";
-        setTimeout(() => { copyBtn.textContent = originalText; }, 1500);
+        const originalHTML = copyBtn.innerHTML;
+        copyBtn.innerHTML = iconSvg("check") + ' Copied';
+        setTimeout(() => { copyBtn.innerHTML = originalHTML; }, 1500);
       });
     }
 
@@ -2398,7 +2537,7 @@ function adminSelectFeeType() {
   }
 
   const m = overlay(`
-    <button class="modal-close">✕</button>
+    <button class="modal-close">${iconSvg("close")}</button>
     <h3>Select Fee Type</h3>
     <div class="field">
       <label for="fee-type-sel">Fee Type</label>
@@ -2427,7 +2566,7 @@ function adminSelectFeeType() {
 function adminTermFlow() {
   const opts = TERMS.map((t, i) => `<option value="${i}">${htmlEscape(t.name)}</option>`).join("");
   const m = overlay(`
-    <button class="modal-close">✕</button>
+    <button class="modal-close">${iconSvg("close")}</button>
     <h3>Select Term</h3>
     <div class="field">
       <label for="term-sel">Term</label>
@@ -2453,7 +2592,7 @@ function adminMonthlyFlow(feeType, feeLabel) {
   const opts = availMonths.map(m => `<option value="${m}">${capF(m)}</option>`).join("");
 
   const modal = overlay(`
-    <button class="modal-close">✕</button>
+    <button class="modal-close">${iconSvg("close")}</button>
     <h3>Select Month</h3>
     <div class="field">
       <label for="month-sel">Month</label>
@@ -2475,7 +2614,7 @@ function adminMonthlyFlow(feeType, feeLabel) {
 function adminOtherFlow() {
   const opts = SD.otherFees.map((f, i) => `<option value="${i}">${htmlEscape(f.name)}</option>`).join("");
   const m = overlay(`
-    <button class="modal-close">✕</button>
+    <button class="modal-close">${iconSvg("close")}</button>
     <h3>Select Fee</h3>
     <div class="field">
       <label for="other-sel">Fee</label>
@@ -2497,7 +2636,7 @@ function adminOtherFlow() {
       const months = MONTH_ORDER.filter(mo => fee.monthly && fee.monthly[mo]);
       const mopts  = months.map(mo => `<option value="${mo}">${capF(mo)}</option>`).join("");
       const m2 = overlay(`
-        <button class="modal-close">✕</button>
+        <button class="modal-close">${iconSvg("close")}</button>
         <h3>Select Month</h3>
         <div class="field">
       <label for="month-sel">Month</label>
@@ -2521,7 +2660,7 @@ function adminOtherFlow() {
 
 function adminActionFlow(feeType, identifier, label) {
   const m = overlay(`
-    <button class="modal-close">✕</button>
+    <button class="modal-close">${iconSvg("close")}</button>
     <h3>Update: ${htmlEscape(label)}</h3>
     <div class="field">
       <label for="action-sel">Action</label>
@@ -2587,14 +2726,14 @@ function adminActionFlow(feeType, identifier, label) {
 ═══════════════════════════════════════════ */
 function openHelp() {
   const m = overlay(`
-    <button class="modal-close">✕</button>
+    <button class="modal-close">${iconSvg("close")}</button>
     <h3>Help & Support</h3>
     <div style="text-align:left;font-size:0.86rem;line-height:1.7;color:var(--muted);margin:0.6rem 0">
-      <p><span class="material-symbols-rounded help-ico">call</span> <strong>Phone:</strong> +91 12345 67890</p>
-      <p><span class="material-symbols-rounded help-ico">mail</span> <strong>Email:</strong> office@stannes.edu</p>
-      <p><span class="material-symbols-rounded help-ico">schedule</span> <strong>Hours:</strong> Mon–Fri, 9 AM – 4 PM</p>
+      <p>${iconSvg("call", "help-ico")} <strong>Phone:</strong> +91 12345 67890</p>
+      <p>${iconSvg("mail", "help-ico")} <strong>Email:</strong> office@stannes.edu</p>
+      <p>${iconSvg("schedule", "help-ico")} <strong>Hours:</strong> Mon–Fri, 9 AM – 4 PM</p>
     </div>
-    <button class="btn-wa" id="wa-chat"><span class="material-symbols-rounded">forum</span> Chat on WhatsApp</button>`);
+    <button class="btn-wa" id="wa-chat">${iconSvg("forum")} Chat on WhatsApp</button>`);
   m.querySelector("#wa-chat").onclick = () => window.open(WHATSAPP_URL);
 }
 
@@ -2677,8 +2816,8 @@ function openAdminAuth(mode) {
   }
 
   const m = overlay(`
-    <button class="modal-close">✕</button>
-    <h3><span class="material-symbols-rounded">lock</span> Admin Login</h3>
+    <button class="modal-close">${iconSvg("close")}</button>
+    <h3>${iconSvg("lock")} Admin Login</h3>
     <div class="field">
       <input type="password" id="admin-pass" placeholder="Enter password" autocomplete="current-password">
       <label for="admin-pass">Password</label>
@@ -2752,14 +2891,14 @@ function openAdminEditSelector() {
   const resetAdmin = () => { isAdminMode = false; };
 
   const m = overlay(`
-    <button class="modal-close">✕</button>
-    <h3><span class="material-symbols-rounded">edit</span> Select Payment to Edit</h3>
+    <button class="modal-close">${iconSvg("close")}</button>
+    <h3>${iconSvg("edit")} Select Payment to Edit</h3>
     <div class="field">
       <label for="edit-select">Payment Record</label>
       <select id="edit-select">${options}</select>
     </div>
     <div class="modal-actions" style="justify-content:space-between">
-      <button class="btn-modal btn-modal-cancel" style="background:transparent;color:var(--red);border:1px solid var(--red);padding:0.4rem 0.9rem;" id="m-signout"><span class="material-symbols-rounded">logout</span> Sign Out</button>
+      <button class="btn-modal btn-modal-cancel" style="background:transparent;color:var(--red);border:1px solid var(--red);padding:0.4rem 0.9rem;" id="m-signout">${iconSvg("logout")} Sign Out</button>
       <div style="display:flex;gap:0.5rem">
         <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
         <button class="btn-modal btn-modal-ok"     id="m-ok">Edit</button>
@@ -2816,9 +2955,12 @@ function initRipple() {
   }, { passive: true });
 }
 
+
+
 window.addEventListener("DOMContentLoaded", () => {
   detectSystemTheme();
   initRipple();
+  hydrateIcons();
 
   el("logoutBtn").onclick = async () => {
     if (adminUser) {
@@ -2858,5 +3000,5 @@ window.addEventListener("DOMContentLoaded", () => {
   nameEl.addEventListener("touchcancel", cancelLongPress, { passive: true });
 });
 </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1d045972b5b7ee2',t:'MTc4NDM2NDk3Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
