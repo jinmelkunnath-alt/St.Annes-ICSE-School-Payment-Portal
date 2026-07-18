@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1362,8 +1363,11 @@ function render() {
     otherTotal = o.total; otherPaid = o.paid;
     el("progressBlock").style.display = "none";
   }
-  const p = calcPreviousYearTotals();
-  const g = { total: termTotal + otherTotal + p.total, paid: termPaid + otherPaid + p.paid, remaining: termTotal + otherTotal + p.total - (termPaid + otherPaid + p.paid) };
+  // Previous-year pending fees belong only to the "Other Fees" view.
+  // They are excluded from the Term Fees view so they don't get mixed
+  // into the current term total.
+  const prevYear = (VIEW === "other") ? calcPreviousYearTotals() : { total: 0, paid: 0, remaining: 0 };
+  const g = { total: termTotal + otherTotal + prevYear.total, paid: termPaid + otherPaid + prevYear.paid, remaining: termTotal + otherTotal + prevYear.total - (termPaid + otherPaid + prevYear.paid) };
   renderSummary(g.total, g.paid, g.remaining);
 
   el("payBtn").disabled = g.remaining <= 0;
