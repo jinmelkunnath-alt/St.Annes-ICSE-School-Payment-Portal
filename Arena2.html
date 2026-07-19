@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
-<title>St. Anne's ICSE | Fee Portal</title>
+<title>St. Anne's ICSE School | Fee Portal</title>
 <style>
 /* ═════════════════════════════════════════════════════════════════════
    ST. ANNE'S ICSE — FEE PORTAL  ·  WALLET-STYLE REDESIGN (Phase 5)
@@ -50,12 +50,18 @@ h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em;color:var(--text)}
 
 .icon-slot,.nav-ico,.qa-ico,[data-icon],.tag-ico,.help-ico,.exp-icon svg,.txn-icon svg,.brand-mark svg,.bn-ico svg,.term-ico svg,.help-card-ico svg,.side-search .nav-ico svg{display:inline-flex;align-items:center;justify-content:center}
 .icon-slot svg,.nav-ico svg,.bn-ico svg,.term-ico svg,.help-card-ico svg,.side-search .nav-ico svg,[data-icon] svg,.tag-ico svg,.help-ico svg{width:1.15em;height:1.15em;display:block;stroke-width:2;stroke:currentColor;fill:none;stroke-linecap:round;stroke-linejoin:round}
+/* Base sizing for hydrated icon SVGs (class="icon"). Container rules above
+   target `svg` as a descendant of the icon slot; after hydration the span is
+   replaced by the <svg class="icon"> itself, so this rule guarantees every
+   hydrated icon sizes consistently on desktop and mobile. */
+.icon{width:1.15em;height:1.15em;display:block;stroke-width:2;stroke:currentColor;fill:none;stroke-linecap:round;stroke-linejoin:round}
 
 /* ── SKELETON LOADER ── */
 .skeleton-screen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:grid;grid-template-columns:var(--sidebar-w) minmax(0,1fr) var(--rightbar-w);grid-template-rows:var(--topbar-h) 1fr;grid-template-areas:"sk-side sk-top" "sk-side sk-main";gap:12px;padding:12px;max-width:1320px;margin:0 auto}
 @media (max-width:1023px){.skeleton-screen{grid-template-columns:1fr;grid-template-rows:var(--topbar-h) 1fr;grid-template-areas:"sk-top" "sk-main"}}
 .sk{position:relative;overflow:hidden;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--sh-xs)}
 .sk-side{grid-area:sk-side;box-shadow:var(--sh-xs)}
+.sk-brand{position:relative;z-index:2;padding:18px 14px 4px}
 .sk-topbar{grid-area:sk-top;height:var(--topbar-h);border-radius:var(--r-md)}
 .sk-main{grid-area:sk-main;display:flex;flex-direction:column;gap:12px;min-height:0}
 .sk-hero{height:150px}
@@ -69,7 +75,12 @@ h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em;color:var(--text)}
 @keyframes appIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .sidebar{grid-area:sidebar;min-height:0;background:var(--surface);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:18px 14px;gap:6px;position:relative}
 .brand{display:flex;align-items:center;gap:11px;padding:4px 6px 16px}
-.brand-mark{width:38px;height:38px;border-radius:11px;flex:0 0 auto;background:linear-gradient(135deg,var(--brand),var(--brand-700));color:#fff;font-weight:800;font-size:.95rem;display:flex;align-items:center;justify-content:center;box-shadow:var(--sh-brand)}
+.brand-mark{width:38px;height:38px;border-radius:11px;flex:0 0 auto;background:linear-gradient(135deg,var(--brand),var(--brand-700));display:flex;align-items:center;justify-content:center;box-shadow:var(--sh-brand);overflow:hidden}
+.brand-logo-img{width:100%;height:100%;object-fit:contain;padding:6px;display:block}
+.brand-mark .brand-logo-fallback{display:none}
+.brand-mark.logo-failed .brand-logo-img{display:none}
+.brand-mark.logo-failed .brand-logo-fallback{display:flex;align-items:center;justify-content:center}
+.brand-mark .icon{width:22px;height:22px;color:#fff}
 .brand-name{font-weight:800;font-size:.98rem;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .brand-sub{font-size:.68rem;color:var(--text-3);font-weight:600;letter-spacing:.06em;text-transform:uppercase}
 .nav{display:flex;flex-direction:column;gap:3px;flex:1;min-height:0;overflow-y:auto}
@@ -85,9 +96,6 @@ h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em;color:var(--text)}
 .nav-item.nav-logout{margin-top:4px;color:var(--red-text)}
 .nav-item.nav-logout .nav-ico{color:var(--red)}
 .nav-item.nav-logout:hover{background:var(--red-soft)}
-.sidebar-toggle{position:absolute;top:20px;right:-13px;width:26px;height:26px;border-radius:50%;background:var(--surface);border:1px solid var(--line);box-shadow:var(--sh-sm);display:flex;align-items:center;justify-content:center;color:var(--text-3);z-index:5}
-.sidebar-toggle:hover{color:var(--brand)}
-.sidebar-toggle svg{width:15px;height:15px;stroke-width:2.4}
 .side-search{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:11px;background:var(--surface-2);border:1px solid var(--line);color:var(--text-2);font-weight:600;font-size:.88rem;margin-bottom:4px}
 .side-search:hover{background:var(--brand-50);color:var(--brand)}
 .side-search .nav-ico{color:var(--text-3)}
@@ -95,13 +103,11 @@ h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em;color:var(--text)}
 #app.sidebar-collapsed .brand-text,#app.sidebar-collapsed .nav-label,#app.sidebar-collapsed .nav-group-label{display:none}
 #app.sidebar-collapsed .brand{justify-content:center}
 #app.sidebar-collapsed .nav-item{justify-content:center;padding:10px 0}
-#app.sidebar-collapsed .sidebar-toggle{transform:rotate(180deg)}
 
 /* ── TOPBAR (mobile) ── */
 .topbar{display:none;grid-area:topbar;height:var(--topbar-h);background:rgba(255,255,255,.9);backdrop-filter:saturate(150%) blur(8px);-webkit-backdrop-filter:saturate(150%) blur(8px);border-bottom:1px solid var(--line);align-items:center;justify-content:space-between;padding:0 14px;gap:10px;z-index:20}
 .topbar-left{display:flex;align-items:center;gap:10px;min-width:0}
-.topbar-greet{font-weight:700;font-size:1rem;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.topbar-greet b{color:var(--brand-700)}
+.topbar-greet{font-weight:700;font-size:1rem;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
 .topbar-right{display:flex;align-items:center;gap:8px}
 .icon-btn{position:relative;width:40px;height:40px;border-radius:11px;background:var(--surface-2);border:1px solid var(--line);color:var(--text-2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;transition:background var(--dur) var(--ease),color var(--dur) var(--ease)}
 .icon-btn:hover{background:var(--brand-50);color:var(--brand)}
@@ -148,7 +154,7 @@ h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em;color:var(--text)}
 .progress-pct{font-weight:800;font-size:.9rem;color:var(--brand-700);min-width:40px;text-align:right}
 
 /* ── BUTTONS ── */
-.hero-actions{display:flex;gap:10px;flex-wrap:wrap}
+.hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
 .hero-actions .btn-action{flex:1;min-width:150px}
 .btn-action{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 20px;border-radius:13px;font-weight:700;font-size:.94rem;transition:background var(--dur) var(--ease),transform var(--dur-fast) var(--ease),box-shadow var(--dur) var(--ease),color var(--dur) var(--ease);position:relative;overflow:hidden}
 .btn-action svg{width:18px;height:18px;stroke-width:2.2}
@@ -574,6 +580,206 @@ h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em;color:var(--text)}
   *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   PHASE 7 — POLISH & PREMIUM UX
+   (presentation / interaction only; no business or payment logic touched)
+   ═════════════════════════════════════════════════════════════════ */
+
+/* ── Full-width primary button ── */
+.btn-block{width:100%}
+.hero-actions .btn-block{flex:1 1 100%;min-width:0;width:100%}
+
+/* ── Fees screen: Term Fees | Other Fees tabs ── */
+.fee-tabs{display:flex;gap:6px;background:var(--surface-2);border:1px solid var(--line);border-radius:14px;padding:5px;margin-bottom:14px}
+.fee-tab{flex:1;text-align:center;padding:11px 12px;border-radius:10px;font-weight:700;font-size:.9rem;letter-spacing:-.01em;color:var(--text-2);background:transparent;border:none;cursor:pointer;transition:background var(--dur) var(--ease),color var(--dur) var(--ease),transform var(--dur-fast) var(--ease),box-shadow var(--dur) var(--ease)}
+.fee-tab:hover{color:var(--text)}
+.fee-tab.active{background:var(--surface);color:var(--brand-700);box-shadow:var(--sh-xs)}
+.fee-tab:active{transform:scale(.97)}
+.fee-tab:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+
+/* ── Bottom navigation: filled active / outlined inactive + motion ── */
+.bn-item .icon{transition:fill var(--dur) var(--ease),transform var(--dur-fast) var(--ease),color var(--dur) var(--ease)}
+.bn-item.active .icon{fill:none;transform:scale(1.06)}
+.bn-item{transition:color var(--dur) var(--ease),background var(--dur) var(--ease),transform var(--dur-fast) var(--ease)}
+.bn-item:active{transform:scale(.94)}
+
+/* ── Card hover elevation ── */
+.greet-card,.term-card,.exp-card,.txn-card,.help-card,.payall-card,.rb-panel,.settings-section,.help-sec,.notif,.empty-state{
+  transition:box-shadow var(--dur) var(--ease),transform var(--dur) var(--ease),border-color var(--dur) var(--ease)}
+.greet-card:hover,.term-card:hover,.exp-card:hover,.txn-card:hover,.help-card:hover,.payall-card:hover{transform:translateY(-2px);box-shadow:var(--sh-md)}
+.term-card:active,.exp-card:active,.txn-card:active,.payall-card:active{transform:translateY(0) scale(.995)}
+
+/* ── Button press feedback ── */
+.btn-action,.btn-pay,.btn-ghost,.btn-wa,.btn-upi-pay,.payall-btn,.cselect-trigger,.icon-btn{
+  transition:transform var(--dur-fast) var(--ease),box-shadow var(--dur) var(--ease),background var(--dur) var(--ease),color var(--dur) var(--ease),border-color var(--dur) var(--ease)}
+.btn-action:active,.btn-pay:active,.btn-ghost:active,.btn-wa:active,.btn-upi-pay:active,.payall-btn:active{transform:scale(.97)}
+.icon-btn:active{transform:scale(.94)}
+
+/* ── Modal spring (was a plain sheet slide) ── */
+@keyframes sheetSpring{0%{transform:translateY(112%)}55%{transform:translateY(-3%)}80%{transform:translateY(1.5%)}100%{transform:none}}
+.modal{animation:sheetSpring var(--dur-slow) var(--ease-out) both}
+
+/* ── Smooth focus ring everywhere ── */
+button:focus-visible,.fee-tab:focus-visible,.cselect-trigger:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:11px}
+
+/* ── Custom dropdown (replaces native <select>) ── */
+.cselect{position:relative;display:block;width:100%}
+.cselect.inline{display:inline-block;width:auto;min-width:160px}
+.cselect select{display:none}
+.cselect-trigger{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;padding:10px 13px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--text);font-weight:600;font-size:.86rem;box-shadow:var(--sh-xs);cursor:pointer}
+.cselect-trigger:hover{border-color:var(--line-strong);background:var(--surface-2)}
+.cselect.open .cselect-trigger{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-50)}
+.cselect-trigger .cs-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cselect-trigger .cs-arrow{width:16px;height:16px;flex:0 0 auto;color:var(--text-3);transition:transform var(--dur) var(--ease)}
+.cselect.open .cs-arrow{transform:rotate(180deg);color:var(--brand)}
+.cselect-menu{position:fixed;z-index:9600;min-width:170px;max-height:300px;overflow-y:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--sh-md);padding:6px;transform-origin:top center;animation:cselectIn var(--dur) var(--ease-out) both}
+@keyframes cselectIn{from{opacity:0;transform:translateY(-6px) scale(.98)}to{opacity:1;transform:none}}
+.cselect-opt{display:flex;align-items:center;gap:8px;padding:11px 12px;border-radius:10px;font-size:.86rem;font-weight:600;color:var(--text-2);cursor:pointer;transition:background var(--dur-fast) var(--ease),color var(--dur-fast) var(--ease)}
+.cselect-opt:hover,.cselect-opt.active{background:var(--brand-50);color:var(--brand-700)}
+.cselect-opt[aria-selected="true"]{color:var(--brand-700)}
+.cselect-opt .cs-check{margin-left:auto;width:17px;height:17px;opacity:0;flex:0 0 auto}
+.cselect-opt[aria-selected="true"] .cs-check{opacity:1}
+
+/* ═══════════════════════════════════════════════════════════════════
+   PHASE 8 — HOME DASHBOARD · HISTORY · RECEIPT · NAV MOTION · MICRO
+   (presentation / interaction only; no business or payment logic touched)
+   ═════════════════════════════════════════════════════════════════ */
+
+/* ── HOME dashboard modules ── */
+.home-grid{display:flex;flex-direction:column;gap:12px}
+.home-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--sh-xs);padding:15px 16px;transition:box-shadow var(--dur) var(--ease),transform var(--dur) var(--ease),border-color var(--dur) var(--ease)}
+.home-card:hover{box-shadow:var(--sh-sm)}
+.home-card-head{display:flex;align-items:center;gap:9px;margin-bottom:12px}
+.home-card-head .hc-ico{width:34px;height:34px;border-radius:10px;background:var(--brand-50);color:var(--brand);display:flex;align-items:center;justify-content:center;font-size:1.05rem;flex:0 0 auto}
+.home-card-head .hc-ico svg{width:18px;height:18px;stroke-width:2.2}
+.home-card-title{font-weight:800;font-size:.92rem;letter-spacing:-.01em}
+.home-card .progress-block{margin-top:2px}
+.home-status-line{display:flex;justify-content:space-between;align-items:baseline;margin-top:10px;font-size:.8rem;font-weight:600;color:var(--text-2)}
+.home-status-line b{font-size:.92rem;color:var(--text)}
+.home-dual{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.home-flag{display:flex;gap:11px;align-items:center}
+.home-flag .hf-ico{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex:0 0 auto;background:var(--brand-50);color:var(--brand)}
+.home-flag .hf-ico.warn{background:var(--red-soft);color:var(--red-text)}
+.home-flag .hf-ico.ok{background:var(--green-soft);color:var(--green-text)}
+.home-flag .hf-main{flex:1;min-width:0}
+.home-flag .hf-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3)}
+.home-flag .hf-value{font-weight:800;font-size:1.02rem;letter-spacing:-.01em;line-height:1.2;margin-top:2px}
+.home-flag .hf-sub{font-size:.74rem;color:var(--text-3);font-weight:600;margin-top:2px}
+.home-activity{display:flex;flex-direction:column;gap:8px}
+.home-act{display:flex;align-items:center;gap:11px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);cursor:pointer;transition:background var(--dur) var(--ease),border-color var(--dur) var(--ease),transform var(--dur-fast) var(--ease)}
+.home-act:hover{background:var(--brand-50);border-color:var(--brand-100)}
+.home-act:active{transform:scale(.99)}
+.home-act .ha-ico{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.05rem;flex:0 0 auto;background:var(--green-soft);color:var(--green-text)}
+.home-act .ha-main{flex:1;min-width:0}
+.home-act .ha-title{font-weight:700;font-size:.86rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.home-act .ha-meta{font-size:.72rem;color:var(--text-3);font-weight:600;margin-top:1px}
+.home-act .ha-amt{font-weight:800;font-size:.92rem;color:var(--green-text)}
+.home-act-empty{font-size:.82rem;color:var(--muted);text-align:center;padding:8px 0}
+.home-help{display:flex;align-items:center;gap:13px}
+.home-help .hh-ico{width:42px;height:42px;border-radius:12px;background:var(--brand-50);color:var(--brand);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex:0 0 auto}
+.home-help .hh-main{flex:1;min-width:0}
+.home-help .hh-title{font-weight:700;font-size:.92rem}
+.home-help .hh-sub{font-size:.76rem;color:var(--text-3);font-weight:500;margin-top:1px}
+.home-help .hh-btn{flex:0 0 auto;height:42px}
+.home-announce{display:flex;gap:11px;align-items:flex-start;background:linear-gradient(135deg,var(--brand-50),#fff);border:1px solid var(--brand-100);border-radius:var(--r-lg);padding:13px 15px}
+.home-announce .an-ico{width:34px;height:34px;border-radius:10px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.05rem;flex:0 0 auto}
+.home-announce .an-main{flex:1;min-width:0}
+.home-announce .an-title{font-weight:800;font-size:.86rem}
+.home-announce .an-desc{font-size:.78rem;color:var(--text-2);margin-top:2px;line-height:1.45}
+
+/* ── HISTORY premium transaction cards ── */
+.txn-card{flex-wrap:wrap;align-items:stretch;cursor:pointer}
+.txn-main{flex:1 1 160px;min-width:0}
+.txn-title{font-size:.94rem}
+.txn-sub{font-size:.7rem;color:var(--muted);font-weight:600;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.txn-meta{margin-top:3px}
+.txn-tags{display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap}
+.txn-amount{flex:0 0 auto;align-self:flex-start}
+.txn-actions{display:flex;gap:6px;flex:0 0 auto;align-items:center;padding-top:2px}
+.txn-act{width:38px;height:38px;border-radius:10px;background:var(--surface-2);border:1px solid var(--line);color:var(--text-2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;transition:background var(--dur) var(--ease),color var(--dur) var(--ease),transform var(--dur-fast) var(--ease),box-shadow var(--dur) var(--ease)}
+.txn-act:hover{background:var(--brand);color:#fff;box-shadow:var(--sh-xs)}
+.txn-act:active{transform:scale(.92)}
+.txn-act svg{width:17px;height:17px;stroke-width:2.2}
+.txn-print{display:none}
+@media (min-width:1024px){.txn-print{display:flex}}
+
+/* ── RECEIPT VIEWER + DOCUMENT ── */
+.receipt-viewer{display:flex;flex-direction:column;align-items:center;gap:14px}
+.receipt-doc{width:100%;max-width:360px;margin:0 auto;background:#fff;color:#0f172a;border-radius:18px;overflow:hidden;box-shadow:var(--sh-md);font-family:var(--font)}
+.receipt-doc .rd-head{background:linear-gradient(135deg,#1E40AF,#295EEF);color:#fff;padding:18px 20px;display:flex;align-items:center;gap:12px}
+.receipt-doc .rd-logo{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.15rem;letter-spacing:-.02em;flex:0 0 auto}
+.receipt-doc .rd-school{font-weight:800;font-size:1.02rem;line-height:1.1;letter-spacing:-.01em}
+.receipt-doc .rd-sub{font-size:.7rem;opacity:.88;margin-top:1px}
+.receipt-doc .rd-amount{text-align:center;padding:20px 16px 8px}
+.receipt-doc .rd-amount .lbl{font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:#94a3b8;font-weight:700}
+.receipt-doc .rd-amount .val{font-size:2.05rem;font-weight:800;color:#295EEF;letter-spacing:-.02em;line-height:1.1;margin-top:3px}
+.receipt-doc .rd-status{display:inline-flex;align-items:center;gap:6px;background:#dcfce7;color:#15803d;font-weight:700;font-size:.74rem;padding:5px 12px;border-radius:99px;margin-top:10px}
+.receipt-doc .rd-status svg{width:14px;height:14px;stroke-width:2.6}
+.receipt-doc .rd-rows{padding:8px 20px 16px;display:flex;flex-direction:column}
+.receipt-doc .rd-row{display:flex;justify-content:space-between;gap:12px;font-size:.85rem;padding:9px 0;border-bottom:1px solid #eef2f7}
+.receipt-doc .rd-row:last-child{border-bottom:none}
+.receipt-doc .rd-row .k{color:#64748b;font-weight:600;white-space:nowrap}
+.receipt-doc .rd-row .v{font-weight:700;text-align:right;word-break:break-word}
+.receipt-doc .rd-foot{background:#f8fafc;padding:12px 20px;text-align:center;font-size:.68rem;color:#94a3b8;border-top:1px solid #eef2f7;line-height:1.5}
+.receipt-doc .rd-foot b{color:#475569}
+.receipt-actions{display:flex;gap:10px;width:100%}
+.receipt-actions .btn-action{flex:1;min-width:0}
+
+/* Off-screen template (also rendered to PNG for download) */
+#receipt-tpl{max-width:360px;border-radius:18px}
+#receipt-tpl .rt-head{background:linear-gradient(135deg,#1E40AF,#295EEF);color:#fff;padding:18px 20px;border-bottom:none;border-radius:18px 18px 0 0;display:flex;align-items:center;gap:12px;text-align:left}
+#receipt-tpl .rt-logo{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.15rem;flex:0 0 auto}
+#receipt-tpl .rt-head h2{color:#fff;font-size:1.02rem;text-align:left;line-height:1.1}
+#receipt-tpl .rt-head p{color:rgba(255,255,255,.88);margin:1px 0 0;font-size:.7rem}
+#receipt-tpl .rt-body{padding:18px 20px 6px}
+#receipt-tpl .rt-amount{text-align:center;margin:2px 0 14px}
+#receipt-tpl .rt-amount .lbl{font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:#94a3b8;font-weight:700}
+#receipt-tpl .rt-amount .val{font-size:2.05rem;font-weight:800;color:#295EEF;letter-spacing:-.02em;line-height:1.1;margin-top:3px}
+#receipt-tpl .rt-amount .rd-status{display:inline-flex;align-items:center;gap:6px;background:#dcfce7;color:#15803d;font-weight:700;font-size:.74rem;padding:5px 12px;border-radius:99px;margin-top:8px}
+#receipt-tpl .rt-rows{display:flex;flex-direction:column;gap:0;font-size:.85rem}
+#receipt-tpl .rt-rows > div,#receipt-tpl .rt-meta-line{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #eef2f7}
+#receipt-tpl .rt-rows > div:last-child,#receipt-tpl .rt-meta-line:last-child{border-bottom:none}
+#receipt-tpl .rt-rows span,#receipt-tpl .rt-meta-line span{color:#64748b;font-weight:600}
+#receipt-tpl .rt-rows strong,#receipt-tpl .rt-meta-line strong{font-weight:700;text-align:right}
+#receipt-tpl .rt-code{text-align:center;font-family:ui-monospace,monospace;font-weight:700;margin-top:10px;color:#295EEF;font-size:.92rem}
+#receipt-tpl .rt-footer{text-align:center;font-size:.68rem;color:#94a3b8;margin-top:12px;border-top:1px solid #e2e8f0;padding:12px 0 4px;background:#f8fafc;border-radius:0 0 18px 18px;line-height:1.5}
+#receipt-tpl .rt-footer b{color:#475569}
+
+/* ── BOTTOM NAV — sliding indicator ── */
+.bottomnav{position:relative;overflow:hidden}
+.bn-indicator{position:absolute;top:6px;bottom:6px;left:0;width:0;border-radius:13px;background:var(--brand-50);transform:translateX(0);transition:transform .3s cubic-bezier(.34,1.2,.64,1),width .3s cubic-bezier(.34,1.2,.64,1);pointer-events:none;z-index:0}
+.bn-item{position:relative;z-index:1}
+.bn-item.active{background:transparent;color:var(--brand-700)}
+.bn-item .bn-label{display:inline-block;transition:color var(--dur) var(--ease),transform var(--dur-fast) var(--ease)}
+.bn-item.active .bn-label{font-weight:700;transform:scale(1.04)}
+.bn-item .bn-ico{transition:transform var(--dur-fast) var(--ease)}
+.bn-item.active .bn-ico{transform:translateY(-1px) scale(1.06)}
+
+/* ── MICRO-INTERACTIONS ── */
+@keyframes chipPulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}50%{box-shadow:0 0 0 5px rgba(239,68,68,.18)}}
+.chip-overdue{animation:chipPulse 1.9s var(--ease) infinite}
+@keyframes badgePop{0%{transform:scale(1)}40%{transform:scale(1.55)}100%{transform:scale(1)}}
+.icon-btn .dot.pop{animation:badgePop .5s var(--ease)}
+@keyframes navBounce{0%{transform:translateY(0)}40%{transform:translateY(-3px)}100%{transform:translateY(0)}}
+.bn-item.just-tapped .bn-ico{animation:navBounce .4s var(--ease)}
+@keyframes dlFlash{0%{background:var(--brand)}100%{background:var(--surface-2)}}
+.receipt-actions .btn-action.flash{animation:dlFlash .5s var(--ease)}
+
+/* ── NOTIFICATION / history item entry ── */
+.notif,.txn-card{animation:itemIn .32s var(--ease-out) both}
+@keyframes itemIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ── PRINT (receipt) ── */
+@media print{
+  body *{visibility:hidden!important}
+  .receipt-doc,.receipt-doc *{visibility:visible!important}
+  .receipt-doc{position:absolute;left:0;top:0;box-shadow:none;max-width:100%}
+}
+
+@media (max-width:480px){
+  .home-dual{grid-template-columns:1fr}
+}
+
 </style>
 
 
@@ -585,7 +791,14 @@ h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em;color:var(--text)}
 </head>
 <body><!-- APP SKELETON LOADER -->
 <div id="appLoader" class="skeleton-screen" aria-hidden="true">
-  <div class="sk sk-side"></div>
+  <div class="sk sk-side">
+    <div class="sk-brand">
+      <div class="brand-mark">
+        <img class="brand-logo-img" src="stanneslogo.jpg" alt="St. Anne's ICSE School" onerror="this.parentElement.classList.add('logo-failed')">
+        <span class="brand-logo-fallback" data-icon="school" data-cls="brand-logo-fallback"></span>
+      </div>
+    </div>
+  </div>
   <div class="sk sk-topbar"></div>
   <div class="sk-main">
     <div class="sk sk-hero"></div>
@@ -601,39 +814,42 @@ h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em;color:var(--text)}
   <!-- ══ LEFT SIDEBAR (desktop) ══ -->
   <aside class="sidebar" id="sidebar" aria-label="Primary">
     <div class="brand">
-      <div class="brand-mark">SA</div>
+      <div class="brand-mark">
+        <img class="brand-logo-img" src="stanneslogo.jpg" alt="St. Anne's ICSE School" onerror="this.parentElement.classList.add('logo-failed')">
+        <span class="brand-logo-fallback" data-icon="school" data-cls="brand-logo-fallback"></span>
+      </div>
       <div class="brand-text">
-        <div class="brand-name">St. Anne's</div>
+        <div class="brand-name">St. Anne's ICSE School</div>
         <div class="brand-sub">Fee Portal</div>
       </div>
     </div>
 
-    <button class="side-search" id="sideSearch" aria-label="Search"><span class="nav-ico" data-icon="search"></span><span class="nav-label">Search</span></button>
-
     <nav class="nav">
-      <button class="nav-item active" id="tabTerm" role="tab" aria-selected="true"><span class="nav-ico" data-icon="school"></span><span class="nav-label">Dashboard</span></button>
-      <button class="nav-item" id="tabOther" role="tab" aria-selected="false"><span class="nav-ico" data-icon="receipt_long"></span><span class="nav-label">Terms &amp; Fees</span></button>
-      <button class="nav-item" id="tabHistory" role="tab" aria-selected="false"><span class="nav-ico" data-icon="history"></span><span class="nav-label">Payment History</span></button>
-      <button class="nav-item" id="navPay"><span class="nav-ico" data-icon="payments"></span><span class="nav-label">Pay Now</span></button>
-      <button class="nav-item" id="navReceipts"><span class="nav-ico" data-icon="receipt"></span><span class="nav-label">Receipts</span></button>
-      <button class="nav-item" id="navNotify"><span class="nav-ico" data-icon="warning"></span><span class="nav-label">Notifications</span></button>
+      <button class="nav-item active" id="tabTerm" role="tab" aria-selected="true"><span class="nav-ico"><span data-icon="home"></span></span><span class="nav-label">Dashboard</span></button>
+      <button class="nav-item" id="tabOther" role="tab" aria-selected="false"><span class="nav-ico"><span data-icon="receipt"></span></span><span class="nav-label">Terms &amp; Fees</span></button>
+      <button class="nav-item" id="tabHistory" role="tab" aria-selected="false"><span class="nav-ico"><span data-icon="history"></span></span><span class="nav-label">Payment History</span></button>
+      <button class="nav-item" id="navPay"><span class="nav-ico"><span data-icon="payments"></span></span><span class="nav-label">Pay Now</span></button>
+      <button class="nav-item" id="navReceipts"><span class="nav-ico"><span data-icon="receipt_long"></span></span><span class="nav-label">Receipts</span></button>
+      <button class="nav-item" id="navNotify"><span class="nav-ico"><span data-icon="bell"></span></span><span class="nav-label">Notifications</span></button>
       <div class="nav-group-label">Support</div>
-      <button class="nav-item" id="helpBtn"><span class="nav-ico" data-icon="help"></span><span class="nav-label">Help &amp; Support</span></button>
-      <button class="nav-item" id="navSettings"><span class="nav-ico" data-icon="menu_book"></span><span class="nav-label">Settings</span></button>
-      <button class="nav-item nav-logout" id="navLogout"><span class="nav-ico" data-icon="logout"></span><span class="nav-label">Logout</span></button>
+      <button class="nav-item" id="helpBtn"><span class="nav-ico"><span data-icon="headset"></span></span><span class="nav-label">Help &amp; Support</span></button>
+      <button class="nav-item" id="navSettings"><span class="nav-ico"><span data-icon="menu_book"></span></span><span class="nav-label">Settings</span></button>
+      <button class="nav-item nav-logout" id="navLogout"><span class="nav-ico"><span data-icon="logout"></span></span><span class="nav-label">Logout</span></button>
     </nav>
 
-    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Collapse sidebar"><span data-icon="chevron_right"></span></button>
   </aside>
 
   <!-- ══ TOP NAV (mobile) ══ -->
   <header class="topbar" id="topbar">
     <div class="topbar-left">
-      <div class="topbar-greet">St. Anne's <b>ICSE</b></div>
+      <div class="brand-mark">
+        <img class="brand-logo-img" src="stanneslogo.jpg" alt="St. Anne's ICSE School" onerror="this.parentElement.classList.add('logo-failed')">
+        <span class="brand-logo-fallback" data-icon="school" data-cls="brand-logo-fallback"></span>
+      </div>
+      <div class="topbar-greet">St. Anne's ICSE School</div>
     </div>
     <div class="topbar-right">
-      <button class="icon-btn" id="topSearch" aria-label="Search"><span data-icon="search"></span></button>
-      <button class="icon-btn" id="topNotify" aria-label="Notifications"><span data-icon="warning"></span><span class="dot"></span></button>
+      <button class="icon-btn" id="topNotify" aria-label="Notifications"><span data-icon="bell"></span><span class="dot"></span></button>
       <button class="btn-logout" id="logoutBtn" aria-label="Logout"><span data-icon="logout"></span></button>
     </div>
   </header>
@@ -651,7 +867,7 @@ h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em;color:var(--text)}
         </div>
         <div class="student-status" id="profileStatus"></div>
         <div class="greet-meta">
-          <span id="studentRef">—</span> · <span id="profileYear">—</span> · <span id="studentYear">—</span>
+          <span id="profileYear">—</span>
         </div>
       </section>
 
@@ -664,13 +880,16 @@ h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em;color:var(--text)}
           <div class="progress-pct" id="progressPct">0%</div>
         </div>
         <div class="hero-actions">
-          <button class="btn-action btn-pay" id="payBtn"><span class="icon-slot" data-icon="payments"></span> Pay Now</button>
-          <button class="btn-action btn-ghost" id="viewDetailsBtn"><span class="icon-slot" data-icon="receipt_long"></span> View Details</button>
+          <button class="btn-action btn-pay btn-block" id="payBtn"><span class="icon-slot" data-icon="payments"></span> Pay Now</button>
         </div>
       </section>
 
-      <!-- TERMS & FEES -->
-      <div class="section-head"><h2 id="viewTitle">Term Fees</h2></div>
+      <!-- FEES: Term Fees | Other Fees tabs -->
+      <div class="fee-tabs" id="feeTabs" role="tablist" aria-label="Fees">
+        <button class="fee-tab active" id="tabTermFees" data-view="term" role="tab" aria-selected="true">Term Fees</button>
+        <button class="fee-tab" id="tabOtherFees" data-view="other" role="tab" aria-selected="false">Other Fees</button>
+      </div>
+      <h2 class="section-head" id="viewTitle" style="display:none">Term Fees</h2>
       <div id="content"></div>
 
       <!-- MOBILE-ONLY CARDS -->
@@ -683,13 +902,8 @@ h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em;color:var(--text)}
           <button class="btn-action btn-pay payall-btn" id="payAllBtn">Pay All Dues</button>
         </section>
 
-        <section class="pending-card" aria-label="Pending summary">
-          <div class="card-head">Pending Summary</div>
-          <div id="pendingSummary" class="pending-body"></div>
-        </section>
-
         <section class="help-card" aria-label="Help">
-          <div class="help-card-ico" data-icon="help"></div>
+          <div class="help-card-ico"><span data-icon="headset"></span></div>
           <div class="help-card-body">
             <div class="help-card-title">Need help?</div>
             <div class="help-card-sub">Our school office is one tap away.</div>
@@ -722,34 +936,44 @@ h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em;color:var(--text)}
 
   <!-- ══ BOTTOM NAV (mobile) ══ -->
   <nav class="bottomnav" id="bottomnav" aria-label="Primary">
-    <button class="bn-item active" id="bnHome"><span class="bn-ico" data-icon="school"></span><span class="bn-label">Home</span></button>
-    <button class="bn-item" id="bnTerms"><span class="bn-ico" data-icon="receipt_long"></span><span class="bn-label">Fees</span></button>
-    <button class="bn-item" id="bnHistory"><span class="bn-ico" data-icon="history"></span><span class="bn-label">History</span></button>
-    <button class="bn-item" id="bnHelp"><span class="bn-ico" data-icon="help"></span><span class="bn-label">Help</span></button>
+    <span class="bn-indicator"></span>
+    <button class="bn-item active" id="bnHome"><span class="bn-ico"><span data-icon="home"></span></span><span class="bn-label">Home</span></button>
+    <button class="bn-item" id="bnTerms"><span class="bn-ico"><span data-icon="receipt"></span></span><span class="bn-label">Fees</span></button>
+    <button class="bn-item" id="bnHistory"><span class="bn-ico"><span data-icon="history"></span></span><span class="bn-label">History</span></button>
+    <button class="bn-item" id="bnHelp"><span class="bn-ico"><span data-icon="headset"></span></span><span class="bn-label">Help</span></button>
   </nav>
 
 </div>
 
 <!-- Receipt template (off-screen, rendered to image) -->
 <div id="receipt-tpl">
-  <div class="rt-header">
-    <h2>St. Anne's ICSE School</h2>
-    <p>Official Fee Receipt</p>
+  <div class="rt-head">
+    <div class="rt-logo">SA</div>
+    <div>
+      <h2>St. Anne's ICSE School</h2>
+      <p>Official Fee Receipt</p>
+    </div>
   </div>
-  <div class="rt-student">
-    <div><div class="lbl">Student</div><div class="val" id="rt-name"></div></div>
-    <div style="text-align:right"><div class="lbl">Class</div><div class="val" id="rt-class"></div></div>
+  <div class="rt-body">
+    <div class="rt-amount">
+      <div class="lbl">Amount Paid</div>
+      <div class="val">&#8377;<span id="rt-amount"></span></div>
+      <div class="rd-status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M20 6 9 17l-5-5"/></svg> Payment Successful</div>
+    </div>
+    <div class="rt-rows">
+      <div><span>Student</span><strong id="rt-name"></strong></div>
+      <div><span>Class</span><strong id="rt-class"></strong></div>
+      <div><span>Fee</span><strong id="rt-fee"></strong></div>
+      <div><span>Date</span><strong id="rt-date"></strong></div>
+      <div><span>Time</span><strong id="rt-time"></strong></div>
+      <div><span>Method</span><strong id="rt-method"></strong></div>
+      <div><span>Term</span><strong id="rt-term"></strong></div>
+      <div><span>Academic Year</span><strong id="rt-ay"></strong></div>
+      <div><span>Receipt No.</span><strong id="rt-code"></strong></div>
+      <div><span>Txn Reference</span><strong id="rt-ref"></strong></div>
+    </div>
+    <div class="rt-footer">Digitally verified · St. Anne's Secure System<br><b>Thank you for your payment</b></div>
   </div>
-  <div class="rt-amount">
-    <div class="lbl">Amount Paid</div>
-    <div class="val">&#8377;<span id="rt-amount"></span></div>
-  </div>
-  <div class="rt-rows">
-    <div><span>Fee</span><strong id="rt-fee"></strong></div>
-    <div><span>Date</span><strong id="rt-date"></strong></div>
-  </div>
-  <div class="rt-code" id="rt-code"></div>
-  <div class="rt-footer">Digitally Verified · St. Anne's Secure System</div>
 </div>
 <script type="module">
 
@@ -866,7 +1090,11 @@ const FEE_ICONS = {
   'chevron_right': '<path d="m9 18 6-6-6-6" />',
   'close': '<path d="M18 6 6 18" /> <path d="m6 6 12 12" />',
   'receipt': '<path d="M12 17V7" /> <path d="M16 8h-6a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4H8" /> <path d="M4 3a1 1 0 0 1 1-1 1.3 1.3 0 0 1 .7.2l.933.6a1.3 1.3 0 0 0 1.4 0l.934-.6a1.3 1.3 0 0 1 1.4 0l.933.6a1.3 1.3 0 0 0 1.4 0l.933-.6a1.3 1.3 0 0 1 1.4 0l.934.6a1.3 1.3 0 0 0 1.4 0l.933-.6A1.3 1.3 0 0 1 19 2a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1 1.3 1.3 0 0 1-.7-.2l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.934.6a1.3 1.3 0 0 1-1.4 0l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-1.4 0l-.934-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-.7.2 1 1 0 0 1-1-1z" />',
-  'search': '<path d="M11 11m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" /><path d="m21 21-4.35-4.35" />'
+  'search': '<path d="M11 11m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" /><path d="m21 21-4.35-4.35" />',
+  'home': '<path d="m3 9 9-7 9 7" /><path d="M9 22V12h6v10" /><path d="M21 9v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9" />',
+  'bell': '<path d="M10.268 21a2 2 0 0 0 3.464 0" /><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" />',
+  'headset': '<path d="M3 11h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H4a1 1 0 0 1-1-1v-6a9 9 0 0 1 18 0v6a1 1 0 0 1-1 1h-2a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3" />',
+  'campaign': '<path d="m3 11 18-5v12L3 14v-3z" /><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" />'
 };
 
 function iconSvg(key, cls) {
@@ -874,7 +1102,7 @@ function iconSvg(key, cls) {
 }
 
 function hydrateIcons(root) {
-  (root || document).querySelectorAll('.icon-slot').forEach(function (el) {
+  (root || document).querySelectorAll('[data-icon]').forEach(function (el) {
     el.outerHTML = iconSvg(el.getAttribute('data-icon'), el.getAttribute('data-cls') || '');
   });
 }
@@ -919,7 +1147,7 @@ function orderedEntries(obj) {
 const studentId = (new URLSearchParams(location.search).get("id") || "").trim().toLowerCase();
 let SD          = {};
 let TERMS       = [];
-let VIEW        = "term";
+let VIEW        = "home";
 let isAdminMode = false;
 
 /* ═══════════════════════════════════════════
@@ -1127,12 +1355,28 @@ function calcPreviousYearTotals() {
 /* ═══════════════════════════════════════════
    PROGRESS
 ═══════════════════════════════════════════ */
+function countUp(elx, to, fmt) {
+  if (!elx) return;
+  fmt = fmt || (v => v);
+  const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const from = parseFloat(elx.getAttribute("data-cur") || "0") || 0;
+  if (reduce || from === to) { elx.textContent = fmt(to); elx.setAttribute("data-cur", to); return; }
+  const dur = 600, start = performance.now();
+  function step(t) {
+    const p = Math.min(1, (t - start) / dur);
+    const v = from + (to - from) * (1 - Math.pow(1 - p, 3));
+    elx.textContent = fmt(Math.round(v));
+    if (p < 1) requestAnimationFrame(step); else elx.setAttribute("data-cur", to);
+  }
+  requestAnimationFrame(step);
+}
+
 function updateProgress(total, paid) {
   const pct = safe(total) > 0 ? Math.min(100, (safe(paid) / safe(total)) * 100) : 0;
   el("progressBlock").style.display = "block";
   el("progressBar").style.width     = pct + "%";
   el("progressBar").style.minWidth  = pct > 0 ? "5px" : "0";
-  el("progressPct").textContent     = Math.round(pct) + "%";
+  countUp(el("progressPct"), Math.round(pct), v => v + "%");
   el("progressLabel").textContent   = VIEW === "term" ? "TERM FEES PAID" : "OTHER FEES PAID";
 }
 
@@ -1165,7 +1409,7 @@ function renderSummary(total, paid, remaining) {
     <div class="${heroClass}">
       <div class="summary-hero-main">
         <div class="summary-hero-label">Outstanding Balance</div>
-        <div class="summary-hero-value ${S.remaining > 0 ? "red" : "green"}">${fmtRs(S.remaining)}</div>
+        <div class="summary-hero-value ${S.remaining > 0 ? "red" : "green"}" id="heroVal">${fmtRs(S.remaining)}</div>
         <div class="summary-sub">${htmlEscape(sub)}</div>
         <div class="summary-stats">
           <div class="summary-stat"><span>Paid</span><strong class="green">${fmtRs(S.paid)}</strong></div>
@@ -1307,36 +1551,154 @@ function updateCardSummary(card, rows, id) {
 /* ═══════════════════════════════════════════
    RENDER
 ═══════════════════════════════════════════ */
+function renderHomeView(container, S) {
+  const ayStart = AcademicYearEngine.startYear();
+  // Nearest upcoming/overdue unpaid term -> "Next Due Date"
+  let nextDue = null;
+  (TERMS || []).forEach(x => {
+    const due = deriveTermDueDate(x.name, ayStart);
+    const rem = safe(x.total) - safe(x.paid);
+    if (rem > 0 && due) {
+      if (!nextDue || new Date(due) < new Date(nextDue.due)) {
+        const cd = CountdownEngine.forDueDate(due);
+        nextDue = { name: x.name, due, cd, rem };
+      }
+    }
+  });
+  const pendingTerms = (TERMS || []).filter(x => safe(x.total) - safe(x.paid) > 0);
+
+  // Recent activity (last 2)
+  const recents = (SD.receipts || [])
+    .filter(r => !r.status || r.status === "active")
+    .slice().sort((a, b) => (b.date || "").localeCompare(a.date || ""))
+    .slice(0, 2);
+
+  // Optional announcement
+  let ann = null;
+  try { ann = (NotificationEngine.generate() || []).find(n => n.cat === "announcement"); } catch (e) {}
+
+  const dueCard = nextDue
+    ? `<div class="home-card">
+        <div class="home-flag">
+          <div class="hf-ico ${nextDue.cd.overdue ? "warn" : ""}">${iconSvg(nextDue.cd.overdue ? "warning" : "schedule")}</div>
+          <div class="hf-main">
+            <div class="hf-label">Next Due Date</div>
+            <div class="hf-value">${htmlEscape(formatDue(nextDue.due))}</div>
+            <div class="hf-sub">${htmlEscape(nextDue.name)} · ${htmlEscape(nextDue.cd.text)}</div>
+          </div>
+          <div style="font-weight:800;font-size:1rem;color:${nextDue.cd.overdue ? "var(--red-text)" : "var(--text)"}">${fmtRs(nextDue.rem)}</div>
+        </div>
+      </div>`
+    : `<div class="home-card"><div class="home-flag"><div class="hf-ico ok">${iconSvg("check_circle")}</div><div class="hf-main"><div class="hf-label">Next Due Date</div><div class="hf-value">All clear</div><div class="hf-sub">No pending dues</div></div></div></div>`;
+
+  const pendingCard = `<div class="home-card">
+      <div class="home-flag">
+        <div class="hf-ico ${pendingTerms.length ? "" : "ok"}">${iconSvg(pendingTerms.length ? "school" : "check_circle")}</div>
+        <div class="hf-main">
+          <div class="hf-label">Pending Terms</div>
+          <div class="hf-value">${pendingTerms.length} of ${TERMS.length}</div>
+          <div class="hf-sub">${pendingTerms.length ? htmlEscape(pendingTerms[0].name) + " next" : "All terms cleared"}</div>
+        </div>
+      </div>
+    </div>`;
+
+  const activity = recents.length
+    ? recents.map(r => {
+        const amt = safe(r.amount);
+        const method = (r.mode || "upi") === "cash" ? "Cash" : "UPI";
+        return `<div class="home-act" data-code="${htmlEscape(r.code || "")}">
+          <div class="ha-ico">${iconSvg("arrow_downward")}</div>
+          <div class="ha-main">
+            <div class="ha-title">${htmlEscape(r.subType || "—")}</div>
+            <div class="ha-meta">${htmlEscape(r.date || "—")} · ${method}</div>
+          </div>
+          <div class="ha-amt">${fmtRs(amt)}</div>
+        </div>`;
+      }).join("")
+    : `<div class="home-act-empty">No recent payments yet.</div>`;
+
+  const annHTML = ann
+    ? `<section class="home-announce">
+         <div class="an-ico">${iconSvg("campaign")}</div>
+         <div class="an-main">
+           <div class="an-title">${htmlEscape(ann.title)}</div>
+           <div class="an-desc">${htmlEscape(ann.desc)}</div>
+         </div>
+       </section>`
+    : "";
+
+  container.innerHTML = `
+    <div class="home-grid">
+      <section class="home-card">
+        <div class="home-card-head"><span class="hc-ico">${iconSvg("trending_down")}</span><span class="home-card-title">Current Fee Status</span></div>
+        <div class="progress-block" style="margin-top:0;display:flex">
+          <div class="progress-label">PAID</div>
+          <div class="progress-track"><span class="progress-bar" id="homeProgressBar" style="width:${S.pct}%"></span></div>
+          <div class="progress-pct">${S.pct}%</div>
+        </div>
+        <div class="home-status-line"><span>${fmtRs(S.paid)} paid of ${fmtRs(S.total)}</span><b>${S.remaining > 0 ? fmtRs(S.remaining) + " due" : "All clear"}</b></div>
+      </section>
+
+      <div class="home-dual">
+        ${dueCard}
+        ${pendingCard}
+      </div>
+
+      <section class="home-card">
+        <div class="home-card-head"><span class="hc-ico">${iconSvg("history")}</span><span class="home-card-title">Recent Activity</span></div>
+        <div class="home-activity">${activity}</div>
+      </section>
+
+      <section class="home-card">
+        <div class="home-help">
+          <div class="hh-ico">${iconSvg("headset")}</div>
+          <div class="hh-main">
+            <div class="hh-title">Need help?</div>
+            <div class="hh-sub">Our school office is one tap away.</div>
+          </div>
+          <button class="btn-action btn-ghost hh-btn" id="homeHelpBtn">Contact</button>
+        </div>
+      </section>
+
+      ${annHTML}
+    </div>`;
+
+  container.querySelectorAll(".home-act[data-code]").forEach(a => {
+    a.addEventListener("click", () => setView("history"));
+  });
+  const hb = container.querySelector("#homeHelpBtn");
+  if (hb) hb.onclick = () => openHelp();
+}
+
 function render() {
   enforceDefaults();
   openCard = null;
   const container = el("content");
   container.innerHTML = "";
 
-  let termTotal=0, termPaid=0, otherTotal=0, otherPaid=0;
-  if (VIEW === "term") {
+  const S = SummaryEngine.compute();
+  const g = { total: S.total, paid: S.paid, remaining: S.remaining };
+
+  if (VIEW === "home") {
+    renderHomeView(container, S);
+    el("progressBlock").style.display = "none";
+  } else if (VIEW === "term") {
     renderTermView(container);
     const t = calcTermTotals();
-    termTotal = t.total; termPaid = t.paid;
     updateProgress(t.total, t.paid);
   } else if (VIEW === "other") {
     renderOtherView(container);
     const o = calcOtherTotals();
-    otherTotal = o.total; otherPaid = o.paid;
     updateProgress(o.total, o.paid);
   } else {
     renderHistoryView(container);
-    const t = calcTermTotals();
-    const o = calcOtherTotals();
-    termTotal = t.total; termPaid = t.paid;
-    otherTotal = o.total; otherPaid = o.paid;
     el("progressBlock").style.display = "none";
   }
-  // Previous-year pending fees belong only to the "Other Fees" view.
-  // They are excluded from the Term Fees view so they don't get mixed
-  // into the current term total.
-  const prevYear = (VIEW === "other") ? calcPreviousYearTotals() : { total: 0, paid: 0, remaining: 0 };
-  const g = { total: termTotal + otherTotal + prevYear.total, paid: termPaid + otherPaid + prevYear.paid, remaining: termTotal + otherTotal + prevYear.total - (termPaid + otherPaid + prevYear.paid) };
+
+  // Hide the mobile "Need Help" card on Home (the dashboard has its own).
+  const mh = document.querySelector(".m-only .help-card");
+  if (mh) mh.style.display = (VIEW === "home") ? "none" : "";
+
   const cv = el("content");
   cv.classList.remove("view-enter");
   void cv.offsetWidth;
@@ -1345,39 +1707,34 @@ function render() {
   const psEl = el("profileStatus");
   if (psEl) psEl.innerHTML = g.remaining <= 0 ? statusChipHTML(1, 1) : (g.paid > 0 ? statusChipHTML(2, 1) : statusChipHTML(1, 0));
   renderSummary(g.total, g.paid, g.remaining);
+  countUp(el("heroVal"), g.remaining, v => fmtRs(v));
   renderSidebars();
   updateViewTitle();
+  updateFeeTabs();
   automationRefresh();
-
   setHeroActions(g);
+  moveIndicator();
 }
+
 
 function setHeroActions(g) {
   const S = SummaryEngine.compute();
   const pay = el("payBtn");
-  const vd  = el("viewDetailsBtn");
-  if (!pay || !vd) return;
+  if (!pay) return;
   if (g.remaining <= 0) {
-    // Everything is paid -> celebrate, surface the most useful next action.
-    pay.className = "btn-action btn-pay";
-    pay.innerHTML = iconSvg("download", "icon-slot") + " Download Receipt";
+    // Everything is paid -> route to History where receipts live. The
+    // dashboard / Home must never expose a receipt download action.
+    pay.className = "btn-action btn-pay btn-block";
+    pay.innerHTML = iconSvg("check_circle", "icon-slot") + " All Fees Paid";
     pay.disabled = false;
-    pay.onclick = () => showLatestReceipt();
-    vd.className = "btn-action btn-ghost";
-    vd.innerHTML = iconSvg("history", "icon-slot") + " View History";
-    vd.disabled = false;
-    vd.onclick = () => setView("history");
+    pay.onclick = () => setView("history");
   } else {
-    // Outstanding balance -> single, confident primary call to action.
+    // Outstanding balance -> single, confident full-width primary CTA.
     const overdue = S.overdueTerms > 0;
-    pay.className = "btn-action btn-pay";
+    pay.className = "btn-action btn-pay btn-block";
     pay.innerHTML = iconSvg("payments", "icon-slot") + (overdue ? " Clear Dues" : " Pay Now");
     pay.disabled = false;
     pay.onclick = () => { pay.classList.add("is-loading"); setTimeout(() => { pay.classList.remove("is-loading"); openPay(); }, 320); };
-    vd.className = "btn-action btn-ghost";
-    vd.innerHTML = iconSvg("receipt_long", "icon-slot") + " View Details";
-    vd.disabled = false;
-    vd.onclick = () => { const c = el("content"); if (c) c.scrollIntoView({ behavior: "smooth", block: "start" }); };
   }
 }
 
@@ -1420,7 +1777,7 @@ function renderTermView(container) {
       </div>`;
     container.appendChild(card);
     const pay = card.querySelector(".term-pay");
-    if (pay) pay.addEventListener("click", (e) => { e.stopPropagation(); openPay(); });
+    if (pay) pay.addEventListener("click", (e) => { e.stopPropagation(); openPay({ account: "tuition" }); });
   });
 }
 
@@ -1548,6 +1905,7 @@ function renderHistoryView(container) {
     <input class="filter-search" id="hist-search" type="search" placeholder="Search receipts…" aria-label="Search receipts">
     <span class="hist-count" id="hist-count">${allReceipts.length} record${allReceipts.length !== 1 ? "s" : ""}</span>`;
   container.appendChild(filterBar);
+  upgradeSelects(filterBar);
 
   const listWrap = document.createElement("div");
   listWrap.className = "txn-list";
@@ -1583,22 +1941,41 @@ function renderHistoryView(container) {
       const amt = safe(r.amount);
       const positive = amt >= 0;
       const method = (r.mode || "upi") === "cash" ? "Cash" : "UPI";
-      return `<div class="txn-card">
+      const time = r.time || "—";
+      return `<div class="txn-card" data-code="${htmlEscape(r.code || "")}">
         <div class="txn-icon ${positive ? "txn-pos" : "txn-neg"}">${iconSvg(positive ? "arrow_downward" : "edit")}</div>
         <div class="txn-main">
           <div class="txn-title">${htmlEscape(r.subType || "—")}</div>
-          <div class="txn-meta">${htmlEscape(r.date || "—")} · ${method}</div>
-          <div class="txn-code">${htmlEscape(r.code || "—")}</div>
+          <div class="txn-sub">${htmlEscape(r.code || "—")}</div>
+          <div class="txn-meta">${htmlEscape(r.date || "—")} · ${htmlEscape(time)} · ${method}</div>
+          <div class="txn-tags">
+            <span class="status-chip chip-paid">${iconSvg("check_circle")} Paid</span>
+            <span class="txn-amount ${positive ? "pos" : "neg"}">${fmtRs(amt)}</span>
+          </div>
         </div>
-        <div class="txn-right">
-          <div class="txn-amount ${positive ? "pos" : "neg"}">${fmtRs(amt)}</div>
-          <button class="txn-receipt" data-sub="${htmlEscape(r.subType || "")}" data-amt="${Math.abs(amt)}" data-code="${htmlEscape(r.code || "")}" aria-label="View receipt">${iconSvg("receipt")}</button>
+        <div class="txn-actions">
+          <button class="txn-act" data-act="download" aria-label="Download receipt" title="Download">${iconSvg("download")}</button>
+          <button class="txn-act" data-act="share" aria-label="Share receipt" title="Share">${iconSvg("send")}</button>
+          <button class="txn-act txn-print" data-act="print" aria-label="Print receipt" title="Print">${iconSvg("receipt")}</button>
         </div>
       </div>`;
     }).join("");
 
-    listWrap.querySelectorAll(".txn-receipt").forEach(b => {
-      b.addEventListener("click", () => showSuccess(b.dataset.sub, Number(b.dataset.amt), b.dataset.code));
+    listWrap.querySelectorAll(".txn-card").forEach(card => {
+      const code = card.getAttribute("data-code");
+      const r = (SD.receipts || []).find(x => x.code === code);
+      card.addEventListener("click", (e) => {
+        const actBtn = e.target.closest(".txn-act");
+        if (actBtn) {
+          e.stopPropagation();
+          const act = actBtn.getAttribute("data-act");
+          if (act === "download") downloadReceipt(r);
+          else if (act === "share") shareReceipt(r);
+          else if (act === "print") printReceipt(r);
+          return;
+        }
+        if (r) openReceiptViewer(r);
+      });
     });
   }
 
@@ -1653,6 +2030,7 @@ async function renderReceiptImg(data) {
   s("rt-amount", data.amount);
   s("rt-fee",    data.fee);
   s("rt-date",   data.date);
+  s("rt-time",   data.time || "—");
   s("rt-code",   data.code);
   s("rt-method", data.mode === "cash" ? "Cash" : "UPI");
   s("rt-term",   data.term || "—");
@@ -1673,7 +2051,7 @@ async function showSuccess(subType, amount, code, opts) {
   const o = opts || {};
   const imgUrl = await renderReceiptImg({
     name: SD.name, class: SD.class,
-    amount, fee: subType, date: today(), code,
+    amount, fee: subType, date: today(), time: DateEngine.time(), code,
     mode: o.mode || "upi", term: o.term || subType, ay: o.ay || AcademicYearEngine.current(), ref: o.ref || code
   });
   const m = overlay(`
@@ -1704,6 +2082,90 @@ async function showSuccess(subType, amount, code, opts) {
 /* ═══════════════════════════════════════════
    PAYMENT HANDLER (admin only)
 ═══════════════════════════════════════════ */
+/* ── RECEIPT VIEWER · DOWNLOAD · SHARE · PRINT ── */
+function buildReceiptDoc(r) {
+  const amt = Math.abs(safe(r.amount));
+  const method = (r.mode || "upi") === "cash" ? "Cash" : "UPI";
+  const time = r.time || (r.date || "");
+  const ay = AcademicYearEngine.current();
+  const ref = r.code || "—";
+  return `
+    <div class="receipt-doc" id="rdDoc">
+      <div class="rd-head">
+        <div class="rd-logo">SA</div>
+        <div>
+          <div class="rd-school">St. Anne's ICSE School</div>
+          <div class="rd-sub">Official Fee Receipt</div>
+        </div>
+      </div>
+      <div class="rd-amount">
+        <div class="lbl">Amount Paid</div>
+        <div class="val">${fmtRs(amt)}</div>
+        <div class="rd-status">${iconSvg("check_circle")} Payment Successful</div>
+      </div>
+      <div class="rd-rows">
+        <div><span>Student</span><strong>${htmlEscape(SD.name || "—")}</strong></div>
+        <div><span>Class</span><strong>${htmlEscape(SD.class || "—")}</strong></div>
+        <div><span>Fee</span><strong>${htmlEscape(r.subType || "—")}</strong></div>
+        <div><span>Date</span><strong>${htmlEscape(r.date || "—")}</strong></div>
+        <div><span>Time</span><strong>${htmlEscape(time)}</strong></div>
+        <div><span>Method</span><strong>${htmlEscape(method)}</strong></div>
+        <div><span>Term</span><strong>${htmlEscape(r.subType || "—")}</strong></div>
+        <div><span>Academic Year</span><strong>${htmlEscape(ay)}</strong></div>
+        <div><span>Receipt No.</span><strong>${htmlEscape(r.code || "—")}</strong></div>
+        <div><span>Txn Reference</span><strong>${htmlEscape(ref)}</strong></div>
+      </div>
+      <div class="rd-foot">Digitally verified · St. Anne's Secure System<br><b>Thank you for your payment</b></div>
+    </div>`;
+}
+
+function openReceiptViewer(r) {
+  const m = overlay(`
+    <button class="modal-close">${iconSvg("close")}</button>
+    <h3>${iconSvg("receipt")} Receipt</h3>
+    <div class="receipt-viewer">
+      ${buildReceiptDoc(r)}
+      <div class="receipt-actions">
+        <button class="btn-action btn-pay" id="rvDl">${iconSvg("download")} Download</button>
+        <button class="btn-action btn-help" id="rvShare">${iconSvg("send")} Share</button>
+        <button class="btn-action btn-ghost" id="rvPrint">${iconSvg("receipt")} Print</button>
+      </div>
+    </div>`);
+  const dl = m.querySelector("#rvDl");
+  if (dl) dl.onclick = (e) => { e.currentTarget.classList.add("flash"); setTimeout(() => e.currentTarget.classList.remove("flash"), 500); downloadReceipt(r); };
+  const sh = m.querySelector("#rvShare"); if (sh) sh.onclick = () => shareReceipt(r);
+  const pr = m.querySelector("#rvPrint"); if (pr) pr.onclick = () => printReceipt(r);
+}
+
+async function downloadReceipt(r) {
+  try {
+    const amt = Math.abs(safe(r.amount));
+    const img = await renderReceiptImg({
+      name: SD.name, class: SD.class,
+      amount: amt, fee: r.subType, date: r.date || today(),
+      code: r.code, mode: r.mode || "upi", term: r.subType,
+      ay: AcademicYearEngine.current(), ref: r.code, time: r.time || ""
+    });
+    dlReceipt(img, r.code);
+    toast("Receipt downloaded");
+  } catch (e) { Logger.error("downloadReceipt", e); toast("Could not generate receipt."); }
+}
+
+async function shareReceipt(r) {
+  const amt = Math.abs(safe(r.amount));
+  const text = `St. Anne's ICSE School\nPayment Receipt\nFee: ${r.subType || ""}\nAmount: ${fmtRs(amt)}\nDate: ${r.date || ""}\nReceipt No: ${r.code || ""}`;
+  if (navigator.share) {
+    try { await navigator.share({ title: "Fee Receipt", text }); return; } catch (e) {}
+  }
+  try { if (navigator.clipboard) await navigator.clipboard.writeText(text); } catch (e) {}
+  window.open(WHATSAPP_URL + "?text=" + encodeURIComponent(text));
+}
+
+function printReceipt(r) {
+  if (!document.querySelector(".receipt-doc")) openReceiptViewer(r);
+  setTimeout(() => window.print(), 140);
+}
+
 async function applyPayment(feeType, identifier, amount, isFull, mode = "upi") {
   if (!adminUser) {
     toast("Admin login required.");
@@ -1783,7 +2245,7 @@ async function applyPayment(feeType, identifier, amount, isFull, mode = "upi") {
 
   const absAmount = Math.abs(delta);
   const code      = receiptCode(SD.name, SD.class, subType, absAmount);
-  const recObj    = { code, amount: delta, type: feeType, subType, date: today(), status: "active", mode };
+  const recObj    = { code, amount: delta, type: feeType, subType, date: today(), time: DateEngine.time(), status: "active", mode };
 
   if (!Array.isArray(SD.receipts)) SD.receipts = [];
   SD.receipts.push(recObj);
@@ -1951,6 +2413,7 @@ async function applyEdit(oldReceipt, newAmount, newMode = "upi") {
       type:    oldReceipt.type,
       subType: oldReceipt.subType,
       date:    today(),
+      time:    DateEngine.time(),
       status:  "active",
       mode:    newMode
     };
@@ -1996,6 +2459,7 @@ function appAlert(title, msg) {
 }
 
 function closeAllOverlays() {
+  closeOpenCSelect();
   const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const overlays = document.querySelectorAll(".overlay");
   overlays.forEach(o => {
@@ -2004,7 +2468,10 @@ function closeAllOverlays() {
     setTimeout(() => o.remove(), 240);
   });
   if (overlays.length) {
-    setTimeout(() => { if (!document.querySelector(".overlay")) document.body.style.overflow = ""; }, 260);
+    setTimeout(() => {
+      if (!document.querySelector(".overlay")) document.body.style.overflow = "";
+      if (!document.querySelector(".overlay")) syncBN();
+    }, 260);
   }
 }
 
@@ -2017,6 +2484,7 @@ function overlay(html, onDismiss) {
   m.setAttribute("role", html.indexOf("alertdialog") !== -1 ? "alertdialog" : "dialog");
   m.setAttribute("aria-modal", "true");
   m.innerHTML = html;
+  upgradeSelects(m);
   const h3 = m.querySelector("h3");
   if (h3 && !h3.id) { h3.id = "modalTitle_" + (++_modalSeq); m.setAttribute("aria-labelledby", h3.id); }
   ov.appendChild(m);
@@ -2054,6 +2522,104 @@ function trapFocus(container) {
   container.addEventListener("keydown", container._keyHandler);
 }
 
+/* ── CUSTOM DROPDOWN (replaces native <select> with a consistent,
+   touch/keyboard-friendly component). The native <select> is hidden and
+   kept in sync, so all existing value reads + change listeners keep working
+   unchanged — only the visible control is replaced. ── */
+let _activeCSelect = null;
+function closeOpenCSelect() { if (typeof _activeCSelect === "function") _activeCSelect(); }
+function upgradeSelects(root) {
+  (root || document).querySelectorAll("select:not([data-csel])").forEach(function (sel) {
+    if (!sel.id) sel.id = "csel-" + Math.random().toString(36).slice(2, 8);
+    sel.setAttribute("data-csel", "1");
+    sel.style.display = "none";
+    const wrap = document.createElement("div");
+    wrap.className = "cselect" + (sel.classList.contains("inline") ? " inline" : "");
+    sel.parentNode.insertBefore(wrap, sel);
+    wrap.appendChild(sel);
+    const trigger = document.createElement("button");
+    trigger.type = "button";
+    trigger.className = "cselect-trigger";
+    trigger.setAttribute("aria-haspopup", "listbox");
+    trigger.setAttribute("aria-expanded", "false");
+    trigger.innerHTML = '<span class="cs-label"></span>' +
+      '<svg class="cs-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+    wrap.appendChild(trigger);
+
+    let menu = null, opts = [], activeIdx = 0;
+
+    function syncLabel() {
+      const o = sel.options[sel.selectedIndex];
+      trigger.querySelector(".cs-label").textContent = o ? o.text : "";
+    }
+    function setActive(i, scroll) {
+      activeIdx = i;
+      menu.querySelectorAll(".cselect-opt").forEach(function (elx) {
+        const on = parseInt(elx.getAttribute("data-idx"), 10) === i;
+        elx.classList.toggle("active", on);
+        elx.setAttribute("aria-selected", on ? "true" : "false");
+        if (on && scroll) elx.scrollIntoView({ block: "nearest" });
+      });
+    }
+    function choose(i) {
+      sel.value = sel.options[i].value;
+      sel.dispatchEvent(new Event("change", { bubbles: true }));
+      syncLabel();
+      close();
+    }
+    function buildMenu() {
+      menu = document.createElement("div");
+      menu.className = "cselect-menu";
+      menu.setAttribute("role", "listbox");
+      opts = Array.prototype.map.call(sel.options, function (o, i) { return { value: o.value, text: o.text, idx: i }; });
+      menu.innerHTML = opts.map(function (o) {
+        return '<div class="cselect-opt" role="option" data-idx="' + o.idx + '">' + htmlEscape(o.text) +
+          '<svg class="cs-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></div>';
+      }).join("");
+      const r = trigger.getBoundingClientRect();
+      menu.style.left = r.left + "px";
+      menu.style.top = (r.bottom + 6) + "px";
+      menu.style.minWidth = r.width + "px";
+      document.body.appendChild(menu);
+      menu.querySelectorAll(".cselect-opt").forEach(function (elx) {
+        const idx = parseInt(elx.getAttribute("data-idx"), 10);
+        elx.addEventListener("click", function () { choose(idx); });
+        elx.addEventListener("mousemove", function () { setActive(idx, false); });
+      });
+      setActive(sel.selectedIndex, false);
+    }
+    function open() {
+      if (menu) return;
+      if (_activeCSelect) _activeCSelect();
+      wrap.classList.add("open");
+      trigger.setAttribute("aria-expanded", "true");
+      buildMenu();
+      _activeCSelect = close;
+      document.addEventListener("mousedown", onDocDown, true);
+      document.addEventListener("keydown", onKey, true);
+    }
+    function close() {
+      wrap.classList.remove("open");
+      trigger.setAttribute("aria-expanded", "false");
+      if (menu) { menu.remove(); menu = null; }
+      if (_activeCSelect === close) _activeCSelect = null;
+      document.removeEventListener("mousedown", onDocDown, true);
+      document.removeEventListener("keydown", onKey, true);
+    }
+    function onDocDown(e) {
+      if (menu && !menu.contains(e.target) && e.target !== trigger && !trigger.contains(e.target)) close();
+    }
+    function onKey(e) {
+      if (e.key === "Escape") { e.preventDefault(); close(); }
+      else if (e.key === "ArrowDown") { e.preventDefault(); if (!menu) open(); else setActive(Math.min(opts.length - 1, activeIdx + 1), true); }
+      else if (e.key === "ArrowUp") { e.preventDefault(); setActive(Math.max(0, activeIdx - 1), true); }
+      else if (e.key === "Enter" || e.key === " ") { e.preventDefault(); if (menu) choose(activeIdx); }
+    }
+    trigger.addEventListener("click", function (e) { e.preventDefault(); if (menu) close(); else open(); });
+    syncLabel();
+  });
+}
+
 let _modalSeq = 0;
 
 /* ═══════════════════════════════════════════
@@ -2077,7 +2643,8 @@ const PAYMENT_ACCOUNTS = {
   }
 };
 
-function openPay() {
+function openPay(opts) {
+  opts = opts || {};
   const m = overlay(`
     <button class="modal-close">${iconSvg("close")}</button>
     <div class="payment-popup">
@@ -2148,36 +2715,37 @@ function openPay() {
   const cards = m.querySelectorAll(".payment-card");
   let currentlyOpen = null;
 
+  function expandCard(card) {
+    if (currentlyOpen && currentlyOpen !== card) {
+      const pb = currentlyOpen.querySelector(".payment-card-body");
+      const ph = currentlyOpen.querySelector(".payment-card-header");
+      if (pb) pb.style.maxHeight = "0";
+      if (ph) ph.classList.remove("open");
+    }
+    if (currentlyOpen === card) { currentlyOpen = null; return; }
+    const body = card.querySelector(".payment-card-body");
+    const header = card.querySelector(".payment-card-header");
+    body.style.willChange = "max-height";
+    requestAnimationFrame(() => {
+      const inner = body.querySelector(".payment-card-body-inner");
+      body.style.maxHeight = (inner ? inner.scrollHeight : 400) + "px";
+    });
+    if (header) header.classList.add("open");
+    currentlyOpen = card;
+    const onEnd = () => { body.style.willChange = "auto"; body.removeEventListener("transitionend", onEnd); };
+    body.addEventListener("transitionend", onEnd, { once: true });
+  }
+
   cards.forEach(card => {
     const header = card.querySelector(".payment-card-header");
-    const body = card.querySelector(".payment-card-body");
-    const chevron = card.querySelector(".payment-card-chevron");
-
-    header.addEventListener("click", () => {
-      if (currentlyOpen && currentlyOpen !== card) {
-        const prevBody = currentlyOpen.querySelector(".payment-card-body");
-        const prevHeader = currentlyOpen.querySelector(".payment-card-header");
-        prevBody.style.maxHeight = "0";
-        prevHeader.classList.remove("open");
-      }
-
+    if (header) header.addEventListener("click", () => {
       if (currentlyOpen === card) {
-        body.style.maxHeight = "0";
+        const b = card.querySelector(".payment-card-body");
+        if (b) b.style.maxHeight = "0";
         header.classList.remove("open");
         currentlyOpen = null;
       } else {
-        body.style.willChange = "max-height";
-        requestAnimationFrame(() => {
-          const inner = body.querySelector(".payment-card-body-inner");
-          body.style.maxHeight = inner.scrollHeight + "px";
-        });
-        header.classList.add("open");
-        currentlyOpen = card;
-        const onEnd = () => {
-          body.style.willChange = "auto";
-          body.removeEventListener("transitionend", onEnd);
-        };
-        body.addEventListener("transitionend", onEnd, { once: true });
+        expandCard(card);
       }
     });
 
@@ -2224,6 +2792,11 @@ function openPay() {
       });
     }
   });
+
+  if (opts.account) {
+    const target = m.querySelector('.payment-card[data-account="' + opts.account + '"]');
+    if (target) expandCard(target);
+  }
 }
 
 /* ═══════════════════════════════════════════
@@ -2673,14 +3246,21 @@ function openAdminEditSelector() {
    VIEW TABS
 ═══════════════════════════════════════════ */
 function setView(v) {
-  VIEW = v;
-  el("tabTerm").classList.toggle("active",    v === "term");
-  el("tabOther").classList.toggle("active",   v === "other");
-  el("tabHistory").classList.toggle("active", v === "history");
-  el("tabTerm").setAttribute("aria-selected",    v === "term");
-  el("tabOther").setAttribute("aria-selected",   v === "other");
-  el("tabHistory").setAttribute("aria-selected", v === "history");
+  if (v === "fees") {
+    // Entering the detailed Fees view keeps the last fee sub-tab (Term/Other)
+    // or defaults to Term Fees.
+    if (VIEW !== "term" && VIEW !== "other") VIEW = "term";
+  } else {
+    VIEW = v;
+  }
+  el("tabTerm").classList.toggle("active",    VIEW === "home");
+  el("tabOther").classList.toggle("active",   VIEW === "term" || VIEW === "other");
+  el("tabHistory").classList.toggle("active", VIEW === "history");
+  el("tabTerm").setAttribute("aria-selected",    VIEW === "home");
+  el("tabOther").setAttribute("aria-selected",   VIEW === "term" || VIEW === "other");
+  el("tabHistory").setAttribute("aria-selected", VIEW === "history");
   render();
+  moveIndicator();
 }
 
 /* ═══════════════════════════════════════════
@@ -2717,8 +3297,8 @@ window.addEventListener("DOMContentLoaded", () => {
     location.href = "../index.html";
   };
 
-  el("tabTerm").onclick    = () => setView("term");
-  el("tabOther").onclick   = () => setView("other");
+  el("tabTerm").onclick    = () => setView("home");
+  el("tabOther").onclick   = () => setView("fees");
   el("tabHistory").onclick = () => setView("history");
   el("payBtn").onclick = () => {
     const b = el("payBtn");
@@ -2859,7 +3439,7 @@ const CountdownEngine = {
 const SummaryEngine = {
   compute() {
     const t = calcTermTotals(), o = calcOtherTotals();
-    const py = (VIEW === "other") ? calcPreviousYearTotals() : { total: 0, paid: 0, remaining: 0 };
+    const py = calcPreviousYearTotals();
     const total = t.total + o.total + py.total;
     const paid  = t.paid  + o.paid  + py.paid;
     const remaining = total - paid;
@@ -2953,12 +3533,10 @@ const PopupEngine = {
         ${nearest ? `<div class="due-popup-next"><span>${htmlEscape(nearest.name)}</span><b>${htmlEscape(dueDateStr)} · ${htmlEscape(dueText)}</b></div>` : ""}
         <div class="due-popup-actions">
           <button class="btn-action btn-pay" id="duePay">${iconSvg("payments")} Pay Now</button>
-          <button class="btn-action btn-ghost" id="dueDetails">View Details</button>
         </div>
         <button class="due-popup-dismiss" id="dueDismiss">Maybe later</button>
       </div>`);
     const dp = m.querySelector("#duePay");     if (dp) dp.onclick = () => { closeAllOverlays(); const p = el("payBtn"); if (p) p.click(); };
-    const dd = m.querySelector("#dueDetails"); if (dd) dd.onclick = () => { closeAllOverlays(); const c = el("content"); if (c) c.scrollIntoView({ behavior: "smooth" }); };
     const dx = m.querySelector("#dueDismiss"); if (dx) dx.onclick = () => { try { sessionStorage.setItem(this.KEY, "1"); } catch (e) {} closeAllOverlays(); };
   },
   maybeShow() { try { if (sessionStorage.getItem(this.KEY) === "1") return; } catch (e) {} if (this.shouldShow()) this.show(); }
@@ -2969,7 +3547,11 @@ function updateNotifBadge() {
   const dot = document.querySelector("#topNotify .dot");
   if (!dot) return;
   const S = SummaryEngine.compute();
-  dot.style.display = (S.overdueTerms + S.pendingTerms + S.upcomingTerms > 0) ? "block" : "none";
+  const show = (S.overdueTerms + S.pendingTerms + S.upcomingTerms > 0);
+  if (show && dot.style.display !== "block") {
+    dot.classList.remove("pop"); void dot.offsetWidth; dot.classList.add("pop");
+  }
+  dot.style.display = show ? "block" : "none";
 }
 function injectClock() {
   const school = document.querySelector(".topbar-school");
@@ -3037,8 +3619,8 @@ function academicYearLabel(){
 function renderSidebars(){
   try {
     const t  = calcTermTotals();
-    const o  = calcOtherTotals();
-    const py = (VIEW === "other") ? calcPreviousYearTotals() : { total: 0, paid: 0, remaining: 0 };
+  const o  = calcOtherTotals();
+  const py = calcPreviousYearTotals();
     const total = t.total + o.total + py.total;
     const paid  = t.paid  + o.paid  + py.paid;
     const remaining = total - paid;
@@ -3085,7 +3667,26 @@ function renderSidebars(){
 function updateViewTitle(){
   const t = document.getElementById("viewTitle");
   if (!t) return;
-  t.textContent = VIEW === "term" ? "Term Fees" : VIEW === "other" ? "Other Fees" : "Payment History";
+  t.textContent = VIEW === "home" ? "Dashboard" : VIEW === "term" ? "Term Fees" : VIEW === "other" ? "Other Fees" : "Payment History";
+}
+
+function updateFeeTabs(){
+  const tabs = document.getElementById("feeTabs");
+  const title = document.getElementById("viewTitle");
+  if (VIEW === "history" || VIEW === "home") {
+    if (tabs) tabs.style.display = "none";
+    if (title) { title.style.display = VIEW === "home" ? "none" : ""; title.textContent = VIEW === "home" ? "Dashboard" : "Payment History"; }
+    return;
+  }
+  if (tabs) {
+    tabs.style.display = "flex";
+    tabs.querySelectorAll(".fee-tab").forEach(function (b) {
+      const on = b.getAttribute("data-view") === VIEW;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-selected", on ? "true" : "false");
+    });
+  }
+  if (title) title.style.display = "none";
 }
 
 function openNotifications(){
@@ -3097,7 +3698,7 @@ function openNotifications(){
 
   const m = overlay(`
     <button class="modal-close">${iconSvg("close")}</button>
-    <h3>${iconSvg("warning")} Notifications</h3>
+    <h3>${iconSvg("bell")} Notifications</h3>
     <div class="notif-controls">
       <div class="notif-controls-row">
         <input class="notif-search" id="notifSearch" type="search" placeholder="Search notifications…" aria-label="Search notifications">
@@ -3353,22 +3954,12 @@ function openGlobalSearch() {
   input.focus();
 }
 
-function wireGlobalSearch() {
-  const sb = document.getElementById("topSearch");
-  if (sb) sb.onclick = openGlobalSearch;
-  document.addEventListener("keydown", e => {
-    if (e.key === "/" && !/INPUT|TEXTAREA|SELECT/.test(e.target.tagName || "")) {
-      e.preventDefault(); openGlobalSearch();
-    }
-  });
-}
-
 /* ── MEMOIZE SummaryEngine (dedupe repeated compute within a render) ── */
 SummaryEngine.compute = (function (orig) {
   let cache = { key: null, val: null };
   function key() {
     const t = calcTermTotals(), o = calcOtherTotals();
-    const py = (VIEW === "other") ? calcPreviousYearTotals() : { total: 0, paid: 0, remaining: 0 };
+    const py = calcPreviousYearTotals();
     const receipts = (SD && SD.receipts) ? SD.receipts.length : 0;
     const eca = (SD && SD.ecaFee) ? (SD.ecaFee.total + "|" + SD.ecaFee.paid) : "0|0";
     return [VIEW, t.total, t.paid, o.total, o.paid, py.total, py.paid, receipts, eca].join("|");
@@ -3382,7 +3973,7 @@ SummaryEngine.compute = (function (orig) {
 
 /* ── INIT ─────────────────────────────────────────────────────────── */
 function initProduction() {
-  try { initOffline(); initSession(); wireGlobalSearch(); } catch (e) { Logger.error("initProduction", e); }
+  try { initOffline(); initSession(); } catch (e) { Logger.error("initProduction", e); }
 }
 window.addEventListener("DOMContentLoaded", initProduction);
 
@@ -3397,9 +3988,12 @@ function wireUI(){
   click("topNotify",   openNotifications);
   click("navSettings", openSettings);
   click("navLogout",   () => { const b = $("logoutBtn"); if (b) b.click(); });
-  click("viewDetailsBtn", () => { const c = $("content"); if (c) c.scrollIntoView({ behavior: "smooth", block: "start" }); });
   click("wa-chat-2",   () => window.open(WHATSAPP_URL));
   click("sidebarToggle", () => { const a = $("app"); if (a) a.classList.toggle("sidebar-collapsed"); });
+
+  document.querySelectorAll("#feeTabs .fee-tab").forEach(function (b) {
+    b.addEventListener("click", function () { setView(b.getAttribute("data-view")); });
+  });
 
   document.querySelectorAll("#quickActions .qa-card").forEach(b => {
     b.addEventListener("click", () => {
@@ -3437,22 +4031,49 @@ function renderMobileCards() {
   } catch (e) { Logger.error("renderMobileCards", e); }
 }
 
+function moveIndicator() {
+  const bn = el("bottomnav");
+  if (!bn) return;
+  let targetId = (VIEW === "home") ? "bnHome" : (VIEW === "history") ? "bnHistory" : "bnTerms";
+  if (bn.querySelector("#bnHelp.active")) targetId = "bnHelp";
+  bn.querySelectorAll(".bn-item").forEach(b => b.classList.toggle("active", b.id === targetId));
+  const ind = bn.querySelector(".bn-indicator");
+  if (!ind) return;
+  const t = bn.querySelector("#" + targetId);
+  if (!t) return;
+  ind.style.width = t.offsetWidth + "px";
+  ind.style.transform = "translateX(" + t.offsetLeft + "px)";
+}
+function setBN(active) {
+  document.querySelectorAll("#bottomnav .bn-item").forEach(b => b.classList.toggle("active", b.id === active));
+  moveIndicator();
+}
+function syncBN() {
+  const id = (VIEW === "home") ? "bnHome" : (VIEW === "history") ? "bnHistory" : "bnTerms";
+  document.querySelectorAll("#bottomnav .bn-item").forEach(b => b.classList.toggle("active", b.id === id));
+  moveIndicator();
+}
 function wireBottomNav() {
   const $ = id => document.getElementById(id);
   const click = (id, fn) => { const n = $(id); if (n) n.addEventListener("click", fn); };
-  const setBN = (active) => document.querySelectorAll("#bottomnav .bn-item").forEach(b => b.classList.toggle("active", b.id === active));
-  click("bnHome",    () => { setView("term");    setBN("bnHome"); });
-  click("bnTerms",   () => { setView("other");   setBN("bnTerms"); });
-  click("bnHistory", () => { setView("history"); setBN("bnHistory"); });
-  click("bnHelp",    () => { openHelp(); });
+  const tap = (id) => { const n = $(id); if (n) { n.classList.add("just-tapped"); setTimeout(() => n.classList.remove("just-tapped"), 420); } };
+  click("bnHome",    () => { setView("home");    tap("bnHome"); });
+  click("bnTerms",   () => { setView("fees");   tap("bnTerms"); });
+  click("bnHistory", () => { setView("history"); tap("bnHistory"); });
+  click("bnHelp",    () => {
+    tap("bnHelp");
+    document.querySelectorAll("#bottomnav .bn-item").forEach(b => b.classList.toggle("active", b.id === "bnHelp"));
+    moveIndicator();
+    openHelp();
+  });
   click("payAllBtn", () => { const p = $("payBtn"); if (p) p.click(); });
   click("helpCardBtn", () => { const h = $("helpBtn"); if (h) h.click(); });
-  click("sideSearch", () => { if (typeof openGlobalSearch === "function") openGlobalSearch(); });
+  window.addEventListener("resize", moveIndicator);
 }
 wireBottomNav();
 
 
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1d9fde9dff5b299',t:'MTc4NDQ2Njg5NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1dad9c2dd338826',t:'MTc4NDQ3NTg5OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
