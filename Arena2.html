@@ -150,7 +150,7 @@ h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em;color:var(--text)}
 .progress-block{margin-top:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:11px 15px;box-shadow:var(--sh-xs);display:flex;align-items:center;gap:12px}
 .progress-label{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);white-space:nowrap}
 .progress-track{flex:1;height:9px;background:var(--surface-3);border-radius:99px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(15,23,42,.06)}
-.progress-bar{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--brand-600),var(--brand));transition:width .6s var(--ease-out)}
+.progress-bar{display:block;height:100%;width:100%;border-radius:99px;background:linear-gradient(90deg,var(--brand-600),var(--brand));transform:scaleX(0);transform-origin:left center;transition:transform .6s var(--ease-out);will-change:transform}
 .progress-pct{font-weight:800;font-size:.9rem;color:var(--brand-700);min-width:40px;text-align:right}
 
 /* ── BUTTONS ── */
@@ -189,8 +189,8 @@ h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em;color:var(--text)}
 .term-due-date{display:inline-flex;align-items:center;gap:5px}
 .term-due-date::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--brand)}
 .term-countdown{color:var(--brand-700);font-weight:700}
-.term-right{display:flex;align-items:center;gap:10px;flex:0 0 auto}
-.term-amt{font-weight:800;font-size:1.02rem;text-align:right;line-height:1}
+.term-right{display:flex;align-items:center;gap:10px;flex:0 0 auto;flex-wrap:wrap;justify-content:flex-end;max-width:60%}
+.term-amt{font-weight:800;font-size:1.02rem;text-align:right;line-height:1;white-space:nowrap}
 .term-amt-sub{display:block;font-size:.62rem;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em}
 .term-pay{width:40px;height:40px;border-radius:11px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.15rem;flex:0 0 auto;transition:background var(--dur) var(--ease),transform var(--dur-fast) var(--ease)}
 .term-pay:hover{background:var(--brand-700);transform:translateY(-1px)}
@@ -332,6 +332,12 @@ h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em;color:var(--text)}
   .greet-name{font-size:1.1rem}
   .summary-hero-value{font-size:2.05rem}
   .content-pad{padding:14px 12px 100px}
+  .term-card{padding:12px 13px;gap:10px}
+  .term-ico{width:38px;height:38px;font-size:1.1rem}
+  .term-right{gap:8px;max-width:62%}
+  .term-amt{font-size:.96rem}
+  .term-pay{width:38px;height:38px}
+  .term-status-chip{font-size:.72rem}
 }
 @media (max-width:400px){.content-pad{padding:12px 10px 104px}}
 
@@ -747,7 +753,7 @@ button:focus-visible,.fee-tab:focus-visible,.cselect-trigger:focus-visible{outli
 
 /* ── BOTTOM NAV — sliding indicator ── */
 .bottomnav{position:relative;overflow:hidden}
-.bn-indicator{position:absolute;top:6px;bottom:6px;left:0;width:0;border-radius:13px;background:var(--brand-50);transform:translateX(0);transition:transform .3s cubic-bezier(.34,1.2,.64,1),width .3s cubic-bezier(.34,1.2,.64,1);pointer-events:none;z-index:0}
+.bn-indicator{position:absolute;top:6px;bottom:6px;left:0;width:0;border-radius:13px;background:var(--brand-50);transform:translateX(0);transition:transform .3s cubic-bezier(.34,1.2,.64,1);will-change:transform;pointer-events:none;z-index:0}
 .bn-item{position:relative;z-index:1}
 .bn-item.active{background:transparent;color:var(--brand-700)}
 .bn-item .bn-label{display:inline-block;transition:color var(--dur) var(--ease),transform var(--dur-fast) var(--ease)}
@@ -941,6 +947,7 @@ button:focus-visible,.fee-tab:focus-visible,.cselect-trigger:focus-visible{outli
     <button class="bn-item" id="bnTerms"><span class="bn-ico"><span data-icon="receipt"></span></span><span class="bn-label">Fees</span></button>
     <button class="bn-item" id="bnHistory"><span class="bn-ico"><span data-icon="history"></span></span><span class="bn-label">History</span></button>
     <button class="bn-item" id="bnHelp"><span class="bn-ico"><span data-icon="headset"></span></span><span class="bn-label">Help</span></button>
+    <button class="bn-item" id="bnNotif"><span class="bn-ico"><span data-icon="bell"></span></span><span class="bn-label">Alerts</span></button>
   </nav>
 
 </div>
@@ -1374,8 +1381,7 @@ function countUp(elx, to, fmt) {
 function updateProgress(total, paid) {
   const pct = safe(total) > 0 ? Math.min(100, (safe(paid) / safe(total)) * 100) : 0;
   el("progressBlock").style.display = "block";
-  el("progressBar").style.width     = pct + "%";
-  el("progressBar").style.minWidth  = pct > 0 ? "5px" : "0";
+  el("progressBar").style.transform = "scaleX(" + (pct / 100) + ")";
   countUp(el("progressPct"), Math.round(pct), v => v + "%");
   el("progressLabel").textContent   = VIEW === "term" ? "TERM FEES PAID" : "OTHER FEES PAID";
 }
@@ -1633,7 +1639,7 @@ function renderHomeView(container, S) {
         <div class="home-card-head"><span class="hc-ico">${iconSvg("trending_down")}</span><span class="home-card-title">Current Fee Status</span></div>
         <div class="progress-block" style="margin-top:0;display:flex">
           <div class="progress-label">PAID</div>
-          <div class="progress-track"><span class="progress-bar" id="homeProgressBar" style="width:${S.pct}%"></span></div>
+          <div class="progress-track"><span class="progress-bar" id="homeProgressBar" style="transform:scaleX(${S.pct/100})"></span></div>
           <div class="progress-pct">${S.pct}%</div>
         </div>
         <div class="home-status-line"><span>${fmtRs(S.paid)} paid of ${fmtRs(S.total)}</span><b>${S.remaining > 0 ? fmtRs(S.remaining) + " due" : "All clear"}</b></div>
@@ -1981,7 +1987,11 @@ function renderHistoryView(container) {
 
   filterBar.querySelector("#hist-filter").addEventListener("change", renderCards);
   filterBar.querySelector("#hist-method").addEventListener("change", renderCards);
-  filterBar.querySelector("#hist-search").addEventListener("input", renderCards);
+  let _histSearchT = null;
+  filterBar.querySelector("#hist-search").addEventListener("input", () => {
+    clearTimeout(_histSearchT);
+    _histSearchT = setTimeout(renderCards, 180);
+  });
   renderCards();
 }
 
@@ -3656,10 +3666,6 @@ function renderSidebars(){
         }).join("")
       : `<div class="rb-empty">No recent activity yet.</div>`);
 
-    const ref = document.getElementById("studentRef");
-    if (ref) ref.textContent = (typeof studentId !== "undefined" && studentId) ? studentId.toUpperCase() : "—";
-    const sy = document.getElementById("studentYear");
-    if (sy) sy.textContent = academicYearLabel();
     renderMobileCards();
   } catch (e) { Logger.error("renderSidebars", e); }
 }
@@ -4035,8 +4041,13 @@ function moveIndicator() {
   const bn = el("bottomnav");
   if (!bn) return;
   let targetId = (VIEW === "home") ? "bnHome" : (VIEW === "history") ? "bnHistory" : "bnTerms";
-  if (bn.querySelector("#bnHelp.active")) targetId = "bnHelp";
-  bn.querySelectorAll(".bn-item").forEach(b => b.classList.toggle("active", b.id === targetId));
+  const active = bn.querySelector(".bn-item.active");
+  if (active && (active.id === "bnHelp" || active.id === "bnNotif")) targetId = active.id;
+  bn.querySelectorAll(".bn-item").forEach(b => {
+    const on = b.id === targetId;
+    b.classList.toggle("active", on);
+    b.setAttribute("aria-current", on ? "page" : "false");
+  });
   const ind = bn.querySelector(".bn-indicator");
   if (!ind) return;
   const t = bn.querySelector("#" + targetId);
@@ -4066,14 +4077,24 @@ function wireBottomNav() {
     moveIndicator();
     openHelp();
   });
+  click("bnNotif",   () => {
+    tap("bnNotif");
+    document.querySelectorAll("#bottomnav .bn-item").forEach(b => b.classList.toggle("active", b.id === "bnNotif"));
+    moveIndicator();
+    openNotifications();
+  });
   click("payAllBtn", () => { const p = $("payBtn"); if (p) p.click(); });
   click("helpCardBtn", () => { const h = $("helpBtn"); if (h) h.click(); });
-  window.addEventListener("resize", moveIndicator);
+  let _resizeRAF = null;
+  window.addEventListener("resize", () => {
+    if (_resizeRAF) return;
+    _resizeRAF = requestAnimationFrame(() => { _resizeRAF = null; moveIndicator(); });
+  }, { passive: true });
 }
 wireBottomNav();
 
 
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1dad9c2dd338826',t:'MTc4NDQ3NTg5OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1db34371fb258c9',t:'MTc4NDQ3OTYwNA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
