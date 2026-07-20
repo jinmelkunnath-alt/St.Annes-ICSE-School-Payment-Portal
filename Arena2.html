@@ -1032,9 +1032,7 @@ enableIndexedDbPersistence(db).catch(err => {
 const ADMIN_EMAIL_1 = "immanuelmelbindj@gmail.com";
 const ADMIN_EMAIL_2 = "SCHOOL_OFFICE_EMAIL@gmail.com"; // school office email (deployment config)
 const UPI_ID       = "jinmelkunnath@oksbi";          // legacy – not used in new popup
-const UPI_NAME     = "St.%20Annes%20ICSE";
 const WHATSAPP_URL = "https://wa.me/917012808911";
-const QR_URL       = "https://raw.githubusercontent.com/jinmelkunnath-alt/St.Annes-ICSE-School-Payment-Portal/refs/heads/main/QR_IMG_01.png";
 const MAX_RECEIPTS = 100;
 
 const MONTH_ORDER = ["june","july","august","september","october","november","december","january","february","march"];
@@ -1389,41 +1387,45 @@ function updateProgress(total, paid) {
 /* ═══════════════════════════════════════════
    SUMMARY BAR
 ═══════════════════════════════════════════ */
-function renderSummary(total, paid, remaining) {
+/* Context-aware totals for the Outstanding Balance hero.
+   Home = grand total (Term + Other + Previous-Year).
+   Term Fees = term fees only.
+   Other Fees = other fees + previous-year (previous-year lives under Other). */
+function contextTotals() {
+  const t = calcTermTotals(), o = calcOtherTotals(), py = calcPreviousYearTotals();
+  if (VIEW === "term")   return { kind: "term",  total: t.total,                paid: t.paid,                remaining: t.remaining };
+  if (VIEW === "other")  return { kind: "other", total: o.total + py.total,     paid: o.paid + py.paid,     remaining: o.remaining + py.remaining };
+  return                        { kind: "home",  total: t.total + o.total + py.total, paid: t.paid + o.paid + py.paid, remaining: t.remaining + o.remaining + py.remaining };
+}
+
+function renderSummary(total, paid, remaining, kind) {
   const S = SummaryEngine.compute();
-  const heroClass = "summary-hero" + (S.posture === "paid" ? " is-paid" : S.posture === "overdue" ? " is-overdue" : S.posture === "upcoming" ? " is-upcoming" : "");
-  let sub = "";
-  if (S.posture === "paid") {
+  const posture = (kind === "home") ? S.posture : (remaining <= 0 ? "paid" : "normal");
+  const heroClass = "summary-hero" + (posture === "paid" ? " is-paid" : posture === "overdue" ? " is-overdue" : posture === "upcoming" ? " is-upcoming" : "");
+  const label = kind === "term" ? "Term Fees Outstanding" : kind === "other" ? "Other Fees Outstanding" : "Outstanding Balance";
+  let sub;
+  if (posture === "paid") {
     sub = "You're all caught up. Every fee is paid - thank you!";
-  } else if (S.posture === "overdue") {
-    sub = S.overdueTerms + " term" + (S.overdueTerms === 1 ? "" : "s") + " overdue. Let's get them cleared.";
-  } else if (S.posture === "upcoming") {
-    const ayStart = AcademicYearEngine.startYear();
-    let nearest = null;
-    (TERMS || []).forEach(x => {
-      const due = deriveTermDueDate(x.name, ayStart);
-      const c = CountdownEngine.forDueDate(due);
-      if (c.has && !c.overdue) { if (!nearest || c.daysRemaining < nearest.days) nearest = { days: c.daysRemaining, name: x.name }; }
-    });
-    sub = nearest
-      ? ("Next payment due in " + nearest.days + " day" + (nearest.days === 1 ? "" : "s") + ". No rush.")
-      : ("You have " + fmtRs(S.remaining) + " outstanding.");
+  } else if (kind === "term") {
+    sub = "Term fees outstanding: " + fmtRs(remaining) + ". Pay whenever you're ready.";
+  } else if (kind === "other") {
+    sub = "Other fees outstanding: " + fmtRs(remaining) + ". Pay whenever you're ready.";
   } else {
-    sub = "You have " + fmtRs(S.remaining) + " outstanding. Pay whenever you're ready.";
+    sub = "You have " + fmtRs(remaining) + " outstanding across the account. Pay whenever you're ready.";
   }
   el("summaryBar").innerHTML = `
     <div class="${heroClass}">
       <div class="summary-hero-main">
-        <div class="summary-hero-label">Outstanding Balance</div>
-        <div class="summary-hero-value ${S.remaining > 0 ? "red" : "green"}" id="heroVal">${fmtRs(S.remaining)}</div>
+        <div class="summary-hero-label">${label}</div>
+        <div class="summary-hero-value ${remaining > 0 ? "red" : "green"}" id="heroVal">${fmtRs(remaining)}</div>
         <div class="summary-sub">${htmlEscape(sub)}</div>
         <div class="summary-stats">
-          <div class="summary-stat"><span>Paid</span><strong class="green">${fmtRs(S.paid)}</strong></div>
-          <div class="summary-stat"><span>Total</span><strong>${fmtRs(S.total)}</strong></div>
+          <div class="summary-stat"><span>Paid</span><strong class="green">${fmtRs(paid)}</strong></div>
+          <div class="summary-stat"><span>Total</span><strong>${fmtRs(total)}</strong></div>
         </div>
       </div>
       <div class="summary-hero-side">
-        <div class="summary-chip">${statusChipHTML(S.total, S.paid)}</div>
+        <div class="summary-chip">${statusChipHTML(total, paid)}</div>
         <div class="summary-mini">
           <div class="mini"><span>Pending</span><b>${S.pendingTerms}</b></div>
           <div class="mini"><span>Upcoming</span><b>${S.upcomingTerms}</b></div>
@@ -1683,7 +1685,8 @@ function render() {
   container.innerHTML = "";
 
   const S = SummaryEngine.compute();
-  const g = { total: S.total, paid: S.paid, remaining: S.remaining };
+  const ct = contextTotals();
+  const g = { total: ct.total, paid: ct.paid, remaining: ct.remaining };
 
   if (VIEW === "home") {
     renderHomeView(container, S);
@@ -1694,8 +1697,8 @@ function render() {
     updateProgress(t.total, t.paid);
   } else if (VIEW === "other") {
     renderOtherView(container);
-    const o = calcOtherTotals();
-    updateProgress(o.total, o.paid);
+    const o = calcOtherTotals(), py = calcPreviousYearTotals();
+    updateProgress(o.total + py.total, o.paid + py.paid);
   } else {
     renderHistoryView(container);
     el("progressBlock").style.display = "none";
@@ -1712,12 +1715,13 @@ function render() {
 
   const psEl = el("profileStatus");
   if (psEl) psEl.innerHTML = g.remaining <= 0 ? statusChipHTML(1, 1) : (g.paid > 0 ? statusChipHTML(2, 1) : statusChipHTML(1, 0));
-  renderSummary(g.total, g.paid, g.remaining);
+  renderSummary(g.total, g.paid, g.remaining, ct.kind);
   countUp(el("heroVal"), g.remaining, v => fmtRs(v));
   renderSidebars();
   updateViewTitle();
   updateFeeTabs();
   automationRefresh();
+  PopupEngine.sync();
   setHeroActions(g);
   moveIndicator();
 }
@@ -1868,8 +1872,8 @@ function renderOtherView(container) {
     const remaining = totalT - totalP;
 
     const iconHtml = remaining > 0
-      ? `${iconSvg('warning', 'blink-warn')}`
-      : `<span style="color:var(--green)">${iconSvg("check_circle")}</span>`;
+      ? iconSvg('history')
+      : iconSvg('check_circle');
 
     const card = buildExpCard({
       id: "previous-year",
@@ -3512,44 +3516,87 @@ const NotificationEngine = {
 /* ── POPUP ENGINE (automatic due popup, once per session) ─────────── */
 const PopupEngine = {
   KEY: "fee_due_popup_dismissed",
-  shouldShow() {
-    const S = SummaryEngine.compute();
-    if (S.remaining <= 0) return false;
-    return (S.pendingTerms > 0 || S.overdueTerms > 0 || S.upcomingTerms > 0);
-  },
-  show() {
-    const S = SummaryEngine.compute(), ayStart = AcademicYearEngine.startYear();
-    let nearest = null;
+  /* Only the immediate, actionable payments — never later terms or future
+     bus months. Everything is derived live from the automation engines. */
+  items() {
+    const ayStart = AcademicYearEngine.startYear();
+    const out = [];
+    if (SD && SD.previousYearFees) {
+      let pyRem = 0;
+      if (SD.previousYearFees.tuition) pyRem += safe(SD.previousYearFees.tuition.total) - safe(SD.previousYearFees.tuition.paid);
+      if (SD.previousYearFees.bus)     pyRem += safe(SD.previousYearFees.bus.total)     - safe(SD.previousYearFees.bus.paid);
+      if (pyRem > 0) out.push({ label: "Previous Year Pending", amount: pyRem, meta: "Arrears" });
+    }
+    let firstTerm = null;
     (TERMS || []).forEach(x => {
       const due = deriveTermDueDate(x.name, ayStart);
-      const st = StatusEngine.compute(x.total, x.paid, due);
-      if (st.key === "overdue" || st.key === "due" || st.key === "upcoming") {
+      const rem = safe(x.total) - safe(x.paid);
+      if (rem > 0 && due) {
         const c = CountdownEngine.forDueDate(due);
-        const score = c.overdue ? -c.daysOverdue : c.daysRemaining;
-        if (!nearest || score < nearest.score) nearest = { name: x.name, st, c, due, score };
+        if (!c.overdue) {
+          const score = c.daysRemaining;
+          if (!firstTerm || score < firstTerm.score) firstTerm = { name: x.name, amount: rem, due, days: c.daysRemaining, score };
+        }
       }
     });
-    const dueText = nearest ? (nearest.c.overdue ? nearest.c.daysOverdue + " days overdue" : nearest.c.daysRemaining + " days remaining") : "";
-    const dueDateStr = nearest ? formatDue(nearest.due) : "";
+    if (firstTerm) out.push({ label: firstTerm.name, amount: firstTerm.amount, meta: formatDue(firstTerm.due) + (firstTerm.days != null ? " · " + firstTerm.days + "d left" : "") });
+    if (SD && SD.busFee) {
+      let firstBus = null;
+      MONTH_ORDER.forEach(m => {
+        const v = SD.busFee.monthly[m];
+        if (!v) return;
+        const rem = safe(v.total) - safe(v.paid);
+        if (rem > 0 && !firstBus) firstBus = { name: m, amount: rem };
+      });
+      if (firstBus) out.push({ label: "Bus Fee – " + capF(firstBus.name), amount: firstBus.amount, meta: "Monthly" });
+    }
+    return out;
+  },
+  shouldShow() { return this.items().length > 0; },
+  total() { return this.items().reduce((a, it) => a + it.amount, 0); },
+  itemsHTML() {
+    return this.items().map(it =>
+      `<div class="due-popup-next"><span>${htmlEscape(it.label)}</span><b>${htmlEscape(it.meta || "")} · ${fmtRs(it.amount)}</b></div>`
+    ).join("");
+  },
+  statsHTML() {
+    return `<div><span>Outstanding</span><b>${fmtRs(this.total())}</b></div><div><span>Items</span><b>${this.items().length}</b></div>`;
+  },
+  show() {
     const m = overlay(`
-      <div class="due-popup ${S.overdueTerms > 0 ? "warn" : "info"}">
-        <div class="due-popup-ico">${iconSvg(S.overdueTerms > 0 ? "warning" : "schedule")}</div>
+      <div class="due-popup info">
+        <div class="due-popup-ico">${iconSvg("schedule")}</div>
         <h3>A quick reminder</h3>
-        <p class="due-popup-sub">You have a few fees to settle this academic year — we're here to help.</p>
-        <div class="due-popup-stats">
-          <div><span>Outstanding</span><b>${fmtRs(S.remaining)}</b></div>
-          <div><span>Pending Terms</span><b>${S.pendingTerms}</b></div>
-        </div>
-        ${nearest ? `<div class="due-popup-next"><span>${htmlEscape(nearest.name)}</span><b>${htmlEscape(dueDateStr)} · ${htmlEscape(dueText)}</b></div>` : ""}
+        <p class="due-popup-sub">Here's what needs your attention right now.</p>
+        <div class="due-popup-stats">${this.statsHTML()}</div>
+        <div id="dueItems">${this.itemsHTML()}</div>
         <div class="due-popup-actions">
           <button class="btn-action btn-pay" id="duePay">${iconSvg("payments")} Pay Now</button>
         </div>
         <button class="due-popup-dismiss" id="dueDismiss">Maybe later</button>
       </div>`);
-    const dp = m.querySelector("#duePay");     if (dp) dp.onclick = () => { closeAllOverlays(); const p = el("payBtn"); if (p) p.click(); };
-    const dx = m.querySelector("#dueDismiss"); if (dx) dx.onclick = () => { try { sessionStorage.setItem(this.KEY, "1"); } catch (e) {} closeAllOverlays(); };
+    const dp = m.querySelector("#duePay");
+    if (dp) dp.onclick = () => { try { sessionStorage.setItem(this.KEY, "1"); } catch (e) {} closeAllOverlays(); const p = el("payBtn"); if (p) p.click(); };
+    const dx = m.querySelector("#dueDismiss");
+    if (dx) dx.onclick = () => { try { sessionStorage.setItem(this.KEY, "1"); } catch (e) {} closeAllOverlays(); };
   },
-  maybeShow() { try { if (sessionStorage.getItem(this.KEY) === "1") return; } catch (e) {} if (this.shouldShow()) this.show(); }
+  /* Real-time: called by render() (after a payment) and refreshLive (every
+     minute). Updates content if open; closes immediately if nothing is
+     actionable; otherwise shows once per session. */
+  sync() {
+    const items = this.items();
+    const open = document.querySelector(".overlay #dueItems");
+    if (open) {
+      if (!items.length) { closeAllOverlays(); return; }
+      open.innerHTML = this.itemsHTML();
+      const stats = open.closest(".due-popup").querySelector(".due-popup-stats");
+      if (stats) stats.innerHTML = this.statsHTML();
+      return;
+    }
+    try { if (sessionStorage.getItem(this.KEY) === "1") return; } catch (e) {}
+    if (items.length) this.show();
+  },
+  maybeShow() { this.sync(); }
 };
 
 /* ── LIVE CLOCK · AUTO-REFRESH · BADGE ────────────────────────────── */
@@ -3563,20 +3610,7 @@ function updateNotifBadge() {
   }
   dot.style.display = show ? "block" : "none";
 }
-function injectClock() {
-  const school = document.querySelector(".topbar-school");
-  if (school && !el("liveClock")) {
-    const d = document.createElement("div");
-    d.className = "topbar-clock"; d.id = "liveClock";
-    school.appendChild(d);
-  }
-}
-let _clockTimer = null, _liveTimer = null;
-function startClock() {
-  const tick = () => { const c = el("liveClock"); if (c) c.textContent = DateEngine.day() + ", " + DateEngine.date() + " · " + DateEngine.time(); };
-  tick();
-  if (!_clockTimer) _clockTimer = setInterval(tick, 1000);
-}
+let _liveTimer = null;
 function refreshLive() {
   try {
     document.querySelectorAll(".countdown-live[data-due]").forEach(span => {
@@ -3587,8 +3621,9 @@ function refreshLive() {
       const t = sp.getAttribute("data-total"), p = sp.getAttribute("data-paid"), d = sp.getAttribute("data-due");
       sp.outerHTML = statusChipSmart(t, p, d);
     });
-    if (el("summaryBar")) renderSummary();
+    if (el("summaryBar")) { const c = contextTotals(); renderSummary(c.total, c.paid, c.remaining, c.kind); }
     if (el("rightbar"))   renderSidebars();
+    PopupEngine.sync();
     updateNotifBadge();
   } catch (e) { Logger.error("refreshLive", e); }
 }
@@ -3596,10 +3631,8 @@ function automationRefresh() { try { NotificationEngine.generate(); updateNotifB
 
 function initAutomation() {
   try {
-    injectClock();
     NotificationEngine.generate();
     updateNotifBadge();
-    startClock();
     PopupEngine.maybeShow();
     if (!_liveTimer) _liveTimer = setInterval(refreshLive, 60000);
     // inject extra receipt metadata rows (once)
@@ -4096,5 +4129,5 @@ wireBottomNav();
 
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1db34371fb258c9',t:'MTc4NDQ3OTYwNA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1defb3858388031',t:'MTc4NDUxOTIxMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
