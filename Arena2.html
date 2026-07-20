@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1055,6 +1054,11 @@ const FEE_ICONS = {
   uniform:   "checkroom", tuition:   "school",
   exam:      "edit_note", id:        "badge",
   picnic:    "park", trip:      "park",
+  /* Previous-Year / arrears fees — explicit icons so the card never falls
+     back to an undefined key. "previous" substring matches the fee title. */
+  previous:        "history", arrears:        "history",
+  previousyear:    "history", previousyearpending: "history",
+  previous_year:   "history",
   default:   "receipt_long"
 };const ICON_PATHS = {
   'bus': '<path d="M8 6v6" /> <path d="M15 6v6" /> <path d="M2 12h19.6" /> <path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3" /> <circle cx="7" cy="18" r="2" /> <path d="M9 18h5" /> <circle cx="16" cy="18" r="2" />',
@@ -1871,13 +1875,17 @@ function renderOtherView(container) {
     const totalP = rows.reduce((a, r) => a + r.paid, 0);
     const remaining = totalT - totalP;
 
-    const iconHtml = remaining > 0
-      ? iconSvg('history')
-      : iconSvg('check_circle');
+    /* Resolve to a real ICON_PATHS key (not a pre-rendered SVG) so buildExpCard
+       hydrates it through the same iconSvg() path as every other fee card.
+       Explicit FEE_ICONS mapping guarantees it never falls back to an undefined
+       key. When fully cleared, show the paid checkmark. */
+    const pyIconKey = remaining > 0
+      ? iconFor("Previous Year Pending Fees")   // -> "history" (arrears)
+      : "check_circle";
 
     const card = buildExpCard({
       id: "previous-year",
-      icon: iconHtml,
+      icon: pyIconKey,
       title: "Previous Year Pending Fees",
       subtitle: remaining > 0 ? "Arrears pending" : "All arrears cleared",
       rows
@@ -4129,5 +4137,5 @@ wireBottomNav();
 
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1defb3858388031',t:'MTc4NDUxOTIxMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
