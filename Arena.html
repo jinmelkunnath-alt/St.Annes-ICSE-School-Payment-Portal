@@ -3191,7 +3191,7 @@ window.addEventListener("blur", () => {
    UNIFIED ADMIN AUTH MODAL (Firebase) – PASSWORD ONLY
 ═══════════════════════════════════════════ */
 function openAdminAuth(mode) {
-  // ALWAYS ask for password — never bypass, never cache, never remember
+  // ── ALWAYS ask for password. Every invocation. No bypass. No cache. No session. ──
   const m = overlay(`
     <button class="modal-close">${iconSvg("close")}</button>
     <h3>${iconSvg("lock")} Administrator Access</h3>
@@ -3199,8 +3199,8 @@ function openAdminAuth(mode) {
     <div class="field">
       <label for="admin-pass">Administrator Password</label>
       <div style="position:relative;">
-        <input type="password" id="admin-pass" placeholder="Enter administrator password" autocomplete="off" spellcheck="false" style="width:100%;padding:12px 46px 12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface-2);color:var(--text);font-weight:600;font-size:.94rem;box-shadow:var(--sh-xs);transition:border-color var(--dur) var(--ease),box-shadow var(--dur) var(--ease);outline:none;">
-        <button type="button" id="passToggle" aria-label="Show password" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-3);cursor:pointer;padding:8px;display:flex;align-items:center;justify-content:center;border-radius:8px;transition:color var(--dur) var(--ease),background var(--dur) var(--ease);">
+        <input type="password" id="admin-pass" placeholder="Enter administrator password" autocomplete="off" spellcheck="false" style="width:100%;padding:12px 48px 12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface-2);color:var(--text);font-weight:600;font-size:.94rem;box-shadow:var(--sh-xs);outline:none;box-sizing:border-box;">
+        <button type="button" id="passToggle" aria-label="Show password" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-3);cursor:pointer;width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:8px;transition:color .2s ease,background .2s ease;">
           <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
           <svg class="eye-closed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" style="display:none"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 3.09-.5"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
         </button>
@@ -3211,7 +3211,7 @@ function openAdminAuth(mode) {
       <button class="btn-modal btn-modal-ok" id="m-ok">Continue</button>
     </div>`);
 
-  // Apply admin-overlay class to center the modal
+  // Center this modal
   m.parentElement.classList.add("admin-overlay");
 
   const passInput = m.querySelector("#admin-pass");
@@ -3219,13 +3219,15 @@ function openAdminAuth(mode) {
   const eyeOpen   = toggleBtn.querySelector(".eye-open");
   const eyeClosed = toggleBtn.querySelector(".eye-closed");
   const okBtn     = m.querySelector("#m-ok");
+  let _typed = ""; // password only lives in this closure variable
 
-  // Focus the password input
-  requestAnimationFrame(() => passInput.focus());
+  // Auto-focus the password field
+  requestAnimationFrame(() => { passInput.focus(); });
 
-  // Eye icon toggle — properly aligned, no jumping
+  // ── Eye toggle ──
   toggleBtn.addEventListener("click", (e) => {
     e.preventDefault();
+    e.stopPropagation();
     if (passInput.type === "password") {
       passInput.type = "text";
       eyeOpen.style.display = "none";
@@ -3239,18 +3241,6 @@ function openAdminAuth(mode) {
     }
     passInput.focus();
   });
-
-  // Focus ring on the password input
-  passInput.addEventListener("focus", () => {
-    passInput.style.borderColor = "var(--brand)";
-    passInput.style.boxShadow = "0 0 0 3px var(--brand-50)";
-  });
-  passInput.addEventListener("blur", () => {
-    passInput.style.borderColor = "var(--line)";
-    passInput.style.boxShadow = "var(--sh-xs)";
-  });
-
-  // Clear password on hover of toggle
   toggleBtn.addEventListener("mouseenter", () => {
     toggleBtn.style.color = "var(--brand)";
     toggleBtn.style.background = "var(--brand-50)";
@@ -3260,21 +3250,36 @@ function openAdminAuth(mode) {
     toggleBtn.style.background = "none";
   });
 
+  // ── Focus ring ──
+  passInput.addEventListener("focus", () => {
+    passInput.style.borderColor = "var(--brand)";
+    passInput.style.boxShadow = "0 0 0 3px rgba(41,94,239,.12)";
+  });
+  passInput.addEventListener("blur", () => {
+    passInput.style.borderColor = "";
+    passInput.style.boxShadow = "";
+  });
+
+  // ── Clear password from all surfaces ──
   const clearPassword = () => {
     passInput.value = "";
+    _typed = "";
     passInput.type = "password";
     eyeOpen.style.display = "block";
     eyeClosed.style.display = "none";
     toggleBtn.setAttribute("aria-label", "Show password");
   };
 
+  // ── Track input to keep _typed in sync without persisting value ──
+  passInput.addEventListener("input", () => { _typed = passInput.value; });
+
+  // ── Submit ──
   const attempt = () => {
     const password = (passInput.value || "").trim();
     if (password === "ADMIN@STANNES") {
-      // Immediately clear password from memory
+      // Immediately wipe from input and memory
       clearPassword();
       closeAllOverlays();
-      // Open the target flow
       if (mode === "add") {
         adminSelectFeeType();
       } else {
@@ -3292,8 +3297,14 @@ function openAdminAuth(mode) {
   m.querySelector("#m-cancel").onclick = () => { clearPassword(); closeAllOverlays(); };
   okBtn.onclick = attempt;
   passInput.addEventListener("keydown", e => {
-    if (e.key === "Enter") { e.preventDefault(); attempt(); }
+    if (e.key === "Enter") { e.preventDefault(); e.stopPropagation(); attempt(); }
   });
+
+  // Cleanup on overlay close
+  const observer = new MutationObserver(() => {
+    if (!document.contains(m)) { clearPassword(); observer.disconnect(); }
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
 }
 
 /* ═══════════════════════════════════════════
@@ -4228,5 +4239,5 @@ wireBottomNav();
 </script>
 
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1dfaf1bbdaec08d',t:'MTc4NDUyNjU4MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1e9f8e17dbcc87a',t:'MTc4NDYzNDQ2MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1ea06c2ed4fc87a',t:'MTc4NDYzNTAyOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1e9f8e17dbcc87a',t:'MTc4NDYzNDQ2MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1ea5e91191a7fad',t:'MTc4NDYzODYyNQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
