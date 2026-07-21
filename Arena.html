@@ -40,7 +40,7 @@
 }
 
 *{box-sizing:border-box}
-html,body{margin:0;padding:0}
+html,body{margin:0;padding:0;height:100%;overflow:hidden;overscroll-behavior:none}
 html{-webkit-text-size-adjust:100%}
 body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 a{color:inherit;text-decoration:none}
@@ -129,7 +129,7 @@ h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em;color:var(--text)}
 .btn-logout svg{width:17px;height:17px;stroke-width:2.2}
 
 /* ── MAIN ── */
-.main{grid-area:main;min-height:0;overflow-y:auto;overflow-x:hidden;scroll-behavior:smooth;background:var(--bg)}
+.main{grid-area:main;min-height:0;overflow-y:auto;overflow-x:hidden;scroll-behavior:smooth;background:var(--bg);-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y}
 .main::-webkit-scrollbar{width:10px}
 .main::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:99px;border:3px solid var(--bg)}
 .content-pad{padding:18px 20px 40px;max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
@@ -727,10 +727,9 @@ button:focus-visible,.fee-tab:focus-visible,.cselect-trigger:focus-visible{outli
 /* ── RECEIPT VIEWER + DOCUMENT ── */
 .receipt-viewer{display:flex;flex-direction:column;align-items:center;gap:14px}
 .receipt-doc{width:100%;max-width:360px;margin:0 auto;background:#fff;color:#0f172a;border-radius:18px;overflow:hidden;box-shadow:var(--sh-md);font-family:var(--font)}
-.receipt-doc .rd-head{background:linear-gradient(135deg,#1E40AF,#295EEF);color:#fff;padding:18px 20px;display:flex;align-items:center;gap:12px}
-.receipt-doc .rd-logo{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.15rem;letter-spacing:-.02em;flex:0 0 auto}
+.receipt-doc .rd-head{background:linear-gradient(135deg,#1E40AF,#295EEF);color:#fff;padding:18px 20px;text-align:center}
 .receipt-doc .rd-school{font-weight:800;font-size:1.02rem;line-height:1.1;letter-spacing:-.01em}
-.receipt-doc .rd-sub{font-size:.7rem;opacity:.88;margin-top:1px}
+.receipt-doc .rd-sub{font-size:.7rem;opacity:.88;margin-top:4px}
 .receipt-doc .rd-amount{text-align:center;padding:20px 16px 8px}
 .receipt-doc .rd-amount .lbl{font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:#94a3b8;font-weight:700}
 .receipt-doc .rd-amount .val{font-size:2.05rem;font-weight:800;color:#295EEF;letter-spacing:-.02em;line-height:1.1;margin-top:3px}
@@ -748,10 +747,9 @@ button:focus-visible,.fee-tab:focus-visible,.cselect-trigger:focus-visible{outli
 
 /* Off-screen template (also rendered to PNG for download) */
 #receipt-tpl{max-width:360px;border-radius:18px}
-#receipt-tpl .rt-head{background:linear-gradient(135deg,#1E40AF,#295EEF);color:#fff;padding:18px 20px;border-bottom:none;border-radius:18px 18px 0 0;display:flex;align-items:center;gap:12px;text-align:left}
-#receipt-tpl .rt-logo{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.15rem;flex:0 0 auto}
-#receipt-tpl .rt-head h2{color:#fff;font-size:1.02rem;text-align:left;line-height:1.1}
-#receipt-tpl .rt-head p{color:rgba(255,255,255,.88);margin:1px 0 0;font-size:.7rem}
+#receipt-tpl .rt-head{background:linear-gradient(135deg,#1E40AF,#295EEF);color:#fff;padding:18px 20px;border-bottom:none;border-radius:18px 18px 0 0;text-align:center}
+#receipt-tpl .rt-head h2{color:#fff;font-size:1.02rem;text-align:center;line-height:1.1;margin:0}
+#receipt-tpl .rt-head p{color:rgba(255,255,255,.88);margin:4px 0 0;font-size:.7rem;text-align:center}
 #receipt-tpl .rt-body{padding:18px 20px 6px}
 #receipt-tpl .rt-amount{text-align:center;margin:6px 0 16px;padding:14px;border-radius:14px;background:var(--brand-50);border:1px solid var(--brand-100)}
 #receipt-tpl .rt-amount .lbl{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:#475569;font-weight:800}
@@ -978,11 +976,8 @@ button:focus-visible,.fee-tab:focus-visible,.cselect-trigger:focus-visible{outli
 <!-- Receipt template (off-screen, rendered to image) -->
 <div id="receipt-tpl">
   <div class="rt-head">
-    <div class="rt-logo"><img src="https://github.com/jinmelkunnath-alt/St.Annes-ICSE-School-Payment-Portal/blob/main/LOGO.jpg?raw=true" alt="SA" style="width:100%;height:100%;object-fit:contain;border-radius:8px;"></div>
-    <div>
-      <h2>St. Anne's ICSE School</h2>
-      <p>Official Fee Receipt</p>
-    </div>
+    <h2>St. Anne's ICSE School</h2>
+    <p>Official Fee Receipt</p>
   </div>
   <div class="rt-body">
     <div class="rt-amount">
@@ -996,7 +991,6 @@ button:focus-visible,.fee-tab:focus-visible,.cselect-trigger:focus-visible{outli
       <div><span>Fee Type</span><strong id="rt-fee"></strong></div>
       <div><span>Academic Year</span><strong id="rt-ay"></strong></div>
       <div><span>Term</span><strong id="rt-term"></strong></div>
-      <div><span>Amount Paid</span><strong id="rt-amount"></strong></div>
       <div><span>Payment Method</span><strong id="rt-method"></strong></div>
       <div><span>Receipt Number</span><strong id="rt-code"></strong></div>
       <div><span>Transaction Reference</span><strong id="rt-ref"></strong></div>
@@ -2143,11 +2137,8 @@ function buildReceiptDoc(r) {
   return `
     <div class="receipt-doc" id="rdDoc">
       <div class="rd-head">
-        <div class="rd-logo">SA</div>
-        <div>
-          <div class="rd-school">St. Anne's ICSE School</div>
-          <div class="rd-sub">Official Fee Receipt</div>
-        </div>
+        <div class="rd-school">St. Anne's ICSE School</div>
+        <div class="rd-sub">Official Fee Receipt</div>
       </div>
       <div class="rd-amount">
         <div class="lbl">Amount Paid</div>
@@ -4239,5 +4230,5 @@ wireBottomNav();
 </script>
 
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1dfaf1bbdaec08d',t:'MTc4NDUyNjU4MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1e9f8e17dbcc87a',t:'MTc4NDYzNDQ2MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1ea5e91191a7fad',t:'MTc4NDYzODYyNQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1e9f8e17dbcc87a',t:'MTc4NDYzNDQ2MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1ebaa6a8d0c802c',t:'MTc4NDY1MjIxOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
