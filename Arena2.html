@@ -1,4 +1,6 @@
 
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -78,11 +80,11 @@ h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em;color:var(--text)}
 .sidebar{grid-area:sidebar;min-height:0;background:var(--surface);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:18px 14px;gap:6px;position:relative}
 .brand{display:flex;align-items:center;gap:11px;padding:4px 6px 16px}
 /* ── PREMIUM LOGO BADGE (Apple/Google Wallet · Stripe style) ── */
-.brand-mark{width:60px;height:60px;border-radius:17px;flex:0 0 auto;background:#fff;border:1px solid var(--line);box-shadow:0 1px 2px rgba(15,23,42,.06),0 6px 16px -10px rgba(15,23,42,.18);display:flex;align-items:center;justify-content:center;overflow:hidden;padding:0}
+.brand-mark{width:70px;height:70px;border-radius:17px;flex:0 0 auto;background:#fff;border:1px solid var(--line);box-shadow:0 1px 2px rgba(15,23,42,.06),0 6px 16px -10px rgba(15,23,42,.18);display:flex;align-items:center;justify-content:center;overflow:hidden;padding:0}
 /* Open animation: fade in + subtle scale 0.96 -> 1.00 (ease-out, no bounce).
    Scoped to #app.visible so it plays when the app opens, not while hidden. */
 #app.visible .brand-mark{animation:logoIn .28s var(--ease-out) both}
-.brand-logo-img{width:100%;height:100%;object-fit:contain;padding:15%;display:block}
+.brand-logo-img{width:100%;height:100%;object-fit:contain;padding:4%;display:block}
 .brand-mark .brand-logo-fallback{display:none}
 .brand-mark.logo-failed .brand-logo-img{display:none}
 .brand-mark.logo-failed .brand-logo-fallback{display:block}
@@ -90,8 +92,8 @@ h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em;color:var(--text)}
 .brand-text{display:flex;flex-direction:column;gap:2px;min-width:0}
 .brand-name{font-weight:800;font-size:.98rem;letter-spacing:normal;line-height:1.18;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
 .brand-sub{font-size:.72rem;color:var(--text-3);font-weight:500;letter-spacing:.01em;text-transform:none;line-height:1.1}
-@media (max-width:1023px){.brand-mark{width:54px;height:54px;border-radius:16px}}
-@media (max-width:640px){.brand-mark{width:48px;height:48px;border-radius:16px}}
+@media (max-width:1023px){.brand-mark{width:58px;height:58px;border-radius:16px}}
+@media (max-width:640px){.brand-mark{width:52px;height:52px;border-radius:16px}}
 /* Compact brand text inside the mobile topbar */
 .topbar .brand-name{font-size:.92rem;line-height:1.14}
 .topbar .brand-sub{font-size:.68rem;line-height:1.1}
@@ -195,7 +197,7 @@ h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em;color:var(--text)}
 .term-card:hover{box-shadow:var(--sh-sm);border-color:var(--line-strong)}
 .term-ico{width:42px;height:42px;border-radius:12px;flex:0 0 auto;background:var(--brand-50);color:var(--brand);display:flex;align-items:center;justify-content:center;font-size:1.2rem}
 .term-main{flex:1;min-width:0}
-.term-title{font-weight:700;font-size:.98rem;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.term-title{font-weight:700;font-size:.98rem;letter-spacing:-.01em;white-space:normal;overflow:visible;word-break:normal;min-width:0}
 .term-meta{display:flex;gap:8px;margin-top:3px;font-size:.76rem;color:var(--text-3);font-weight:600;flex-wrap:wrap;align-items:center}
 .term-due-date{display:inline-flex;align-items:center;gap:5px}
 .term-due-date::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--brand)}
@@ -362,7 +364,10 @@ h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em;color:var(--text)}
 /* ── OVERLAY / MODAL ── */
 .overlay{position:fixed;inset:0;z-index:8000;display:flex;align-items:flex-end;justify-content:center;padding:0;background:rgba(15,23,42,.46);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;animation:fadeIn var(--dur) var(--ease) forwards}
 @keyframes fadeIn{to{opacity:1}}
-.overlay.closing{animation:overlayFade .2s var(--ease) both}
+.overlay.admin-overlay{align-items:center;justify-content:center;padding:20px;background:rgba(15,23,42,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.overlay.admin-overlay .modal{border-radius:24px;max-height:88vh;animation:adminModalIn .32s var(--ease-out) both;transform:none;margin:0}
+.overlay.admin-overlay .modal::before{display:none}
+@keyframes adminModalIn{from{opacity:0;transform:scale(.96) translateY(10px)}to{opacity:1;transform:none}}
 .overlay.closing .modal{animation:sheetDown .24s var(--ease) both}
 @keyframes overlayFade{from{opacity:1}to{opacity:0}}
 @keyframes sheetDown{to{transform:translateY(100%)}}
@@ -723,10 +728,9 @@ button:focus-visible,.fee-tab:focus-visible,.cselect-trigger:focus-visible{outli
 /* ── RECEIPT VIEWER + DOCUMENT ── */
 .receipt-viewer{display:flex;flex-direction:column;align-items:center;gap:14px}
 .receipt-doc{width:100%;max-width:360px;margin:0 auto;background:#fff;color:#0f172a;border-radius:18px;overflow:hidden;box-shadow:var(--sh-md);font-family:var(--font)}
-.receipt-doc .rd-head{background:linear-gradient(135deg,#1E40AF,#295EEF);color:#fff;padding:18px 20px;display:flex;align-items:center;gap:12px}
-.receipt-doc .rd-logo{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.15rem;letter-spacing:-.02em;flex:0 0 auto}
+.receipt-doc .rd-head{background:linear-gradient(135deg,#1E40AF,#295EEF);color:#fff;padding:18px 20px;text-align:center}
 .receipt-doc .rd-school{font-weight:800;font-size:1.02rem;line-height:1.1;letter-spacing:-.01em}
-.receipt-doc .rd-sub{font-size:.7rem;opacity:.88;margin-top:1px}
+.receipt-doc .rd-sub{font-size:.7rem;opacity:.88;margin-top:4px}
 .receipt-doc .rd-amount{text-align:center;padding:20px 16px 8px}
 .receipt-doc .rd-amount .lbl{font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:#94a3b8;font-weight:700}
 .receipt-doc .rd-amount .val{font-size:2.05rem;font-weight:800;color:#295EEF;letter-spacing:-.02em;line-height:1.1;margin-top:3px}
@@ -744,23 +748,27 @@ button:focus-visible,.fee-tab:focus-visible,.cselect-trigger:focus-visible{outli
 
 /* Off-screen template (also rendered to PNG for download) */
 #receipt-tpl{max-width:360px;border-radius:18px}
-#receipt-tpl .rt-head{background:linear-gradient(135deg,#1E40AF,#295EEF);color:#fff;padding:18px 20px;border-bottom:none;border-radius:18px 18px 0 0;display:flex;align-items:center;gap:12px;text-align:left}
-#receipt-tpl .rt-logo{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.15rem;flex:0 0 auto}
-#receipt-tpl .rt-head h2{color:#fff;font-size:1.02rem;text-align:left;line-height:1.1}
-#receipt-tpl .rt-head p{color:rgba(255,255,255,.88);margin:1px 0 0;font-size:.7rem}
+#receipt-tpl .rt-head{background:linear-gradient(135deg,#1E40AF,#295EEF);color:#fff;padding:18px 20px;border-bottom:none;border-radius:18px 18px 0 0;text-align:center}
+#receipt-tpl .rt-head h2{color:#fff;font-size:1.02rem;text-align:center;line-height:1.1;margin:0}
+#receipt-tpl .rt-head p{color:rgba(255,255,255,.88);margin:4px 0 0;font-size:.7rem;text-align:center}
 #receipt-tpl .rt-body{padding:18px 20px 6px}
-#receipt-tpl .rt-amount{text-align:center;margin:2px 0 14px}
-#receipt-tpl .rt-amount .lbl{font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:#94a3b8;font-weight:700}
-#receipt-tpl .rt-amount .val{font-size:2.05rem;font-weight:800;color:#295EEF;letter-spacing:-.02em;line-height:1.1;margin-top:3px}
-#receipt-tpl .rt-amount .rd-status{display:inline-flex;align-items:center;gap:6px;background:#dcfce7;color:#15803d;font-weight:700;font-size:.74rem;padding:5px 12px;border-radius:99px;margin-top:8px}
+#receipt-tpl .rt-amount{text-align:center;margin:6px 0 16px;padding:14px;border-radius:14px;background:var(--brand-50);border:1px solid var(--brand-100)}
+#receipt-tpl .rt-amount .lbl{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:#475569;font-weight:800}
+#receipt-tpl .rt-amount .val{font-size:2.1rem;font-weight:900;color:#295EEF;letter-spacing:-.03em;line-height:1;margin-top:6px}
+#receipt-tpl .rt-amount .val.green{color:#15803d}
+#receipt-tpl .rt-amount .rd-status{display:inline-flex;align-items:center;gap:6px;background:#dcfce7;color:#15803d;font-weight:800;font-size:.8rem;padding:6px 14px;border-radius:99px;margin-top:10px;border:1px solid rgba(22,163,74,.15)}
+#receipt-tpl .rt-amount .rd-status svg{width:16px;height:16px;stroke-width:2.6}
 #receipt-tpl .rt-rows{display:flex;flex-direction:column;gap:0;font-size:.85rem}
 #receipt-tpl .rt-rows > div,#receipt-tpl .rt-meta-line{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #eef2f7}
 #receipt-tpl .rt-rows > div:last-child,#receipt-tpl .rt-meta-line:last-child{border-bottom:none}
 #receipt-tpl .rt-rows span,#receipt-tpl .rt-meta-line span{color:#64748b;font-weight:600}
 #receipt-tpl .rt-rows strong,#receipt-tpl .rt-meta-line strong{font-weight:700;text-align:right}
 #receipt-tpl .rt-code{text-align:center;font-family:ui-monospace,monospace;font-weight:700;margin-top:10px;color:#295EEF;font-size:.92rem}
-#receipt-tpl .rt-footer{text-align:center;font-size:.68rem;color:#94a3b8;margin-top:12px;border-top:1px solid #e2e8f0;padding:12px 0 4px;background:#f8fafc;border-radius:0 0 18px 18px;line-height:1.5}
-#receipt-tpl .rt-footer b{color:#475569}
+#receipt-tpl .rt-footer{background:#0f172a;color:#e2e8f0;text-align:center;font-size:.75rem;padding:14px 16px;border-radius:0 0 18px 18px;border-top:1px solid rgba(255,255,255,.08);line-height:1.55;font-weight:600}
+#receipt-tpl .rt-footer b{color:#fff}
+#receipt-tpl .rt-footer .verify{display:inline-flex;align-items:center;gap:8px;margin-top:8px;color:#22c55e;font-weight:800;font-size:.82rem;letter-spacing:.02em}
+#receipt-tpl .rt-footer .verify svg{width:16px;height:16px;stroke-width:2.6}
+#receipt-tpl .rt-footer .verify-sub{display:block;color:#94a3b8;font-size:.7rem;font-weight:500;margin-top:2px}
 
 /* ── BOTTOM NAV — sliding indicator ── */
 .bottomnav{position:relative;overflow:hidden}
@@ -969,11 +977,8 @@ button:focus-visible,.fee-tab:focus-visible,.cselect-trigger:focus-visible{outli
 <!-- Receipt template (off-screen, rendered to image) -->
 <div id="receipt-tpl">
   <div class="rt-head">
-    <div class="rt-logo">SA</div>
-    <div>
-      <h2>St. Anne's ICSE School</h2>
-      <p>Official Fee Receipt</p>
-    </div>
+    <h2>St. Anne's ICSE School</h2>
+    <p>Official Fee Receipt</p>
   </div>
   <div class="rt-body">
     <div class="rt-amount">
@@ -984,16 +989,19 @@ button:focus-visible,.fee-tab:focus-visible,.cselect-trigger:focus-visible{outli
     <div class="rt-rows">
       <div><span>Student</span><strong id="rt-name"></strong></div>
       <div><span>Class</span><strong id="rt-class"></strong></div>
-      <div><span>Fee</span><strong id="rt-fee"></strong></div>
-      <div><span>Date</span><strong id="rt-date"></strong></div>
-      <div><span>Time</span><strong id="rt-time"></strong></div>
-      <div><span>Method</span><strong id="rt-method"></strong></div>
-      <div><span>Term</span><strong id="rt-term"></strong></div>
+      <div><span>Fee Type</span><strong id="rt-fee"></strong></div>
       <div><span>Academic Year</span><strong id="rt-ay"></strong></div>
-      <div><span>Receipt No.</span><strong id="rt-code"></strong></div>
-      <div><span>Txn Reference</span><strong id="rt-ref"></strong></div>
+      <div><span>Term</span><strong id="rt-term"></strong></div>
+      <div><span>Payment Method</span><strong id="rt-method"></strong></div>
+      <div><span>Receipt Number</span><strong id="rt-code"></strong></div>
+      <div><span>Transaction Reference</span><strong id="rt-ref"></strong></div>
+      <div><span>Payment Date</span><strong id="rt-date"></strong></div>
     </div>
-    <div class="rt-footer">Digitally verified · St. Anne's Secure System<br><b>Thank you for your payment</b></div>
+    <div class="rt-footer">
+      <div class="verify"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z"/><path d="m9 12 2 2 4-4"/></svg> Digitally Verified Receipt</div>
+      <span class="verify-sub">Generated securely by St. Anne's ICSE School Fee Portal</span>
+      <b>Thank you for your payment</b>
+    </div>
   </div>
 </div>
 <script type="module">
@@ -1046,15 +1054,15 @@ enableIndexedDbPersistence(db).catch(err => {
 const ADMIN_EMAIL_1 = "immanuelmelbindj@gmail.com";
 const ADMIN_EMAIL_2 = "SCHOOL_OFFICE_EMAIL@gmail.com"; // school office email (deployment config)
 const UPI_ID       = "jinmelkunnath@oksbi";          // legacy – not used in new popup
-const WHATSAPP_URL = "https://wa.me/917012808911";
+const WHATSAPP_URL = "https://wa.me/918547987577";
 const MAX_RECEIPTS = 100;
 
 const MONTH_ORDER = ["june","july","august","september","october","november","december","january","february","march"];
 
 const TERM_NAMES = [
-  "Term 1 (June – August)",
-  "Term 2 (September – November)",
-  "Term 3 (December – March)"
+  "June – August",
+  "September – November",
+  "December – March"
 ];
 
 const FEE_ICONS = {
@@ -1147,7 +1155,21 @@ const safe  = v => { const n = Number(v); return isNaN(n) ? 0 : n; };
 const el    = id  => document.getElementById(id);
 const capF  = s   => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 const fmtRs = n   => "₹" + safe(n).toLocaleString("en-IN");
-const today = ()  => new Date().toISOString().slice(0, 10);
+const today = ()  => {
+  const d = new Date();
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0, 10);
+};
+
+function getPaymentDate(receipt) {
+  return (receipt && (receipt.paymentDate || receipt.date)) || today();
+}
+
+function isValidPaymentDate(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value || "") || value > today()) return false;
+  const d = new Date(value + "T00:00:00Z");
+  return !isNaN(d.getTime()) && d.toISOString().slice(0, 10) === value;
+}
 
 function htmlEscape(str) {
   if (str == null) return "";
@@ -1773,7 +1795,7 @@ function showLatestReceipt() {
     .sort((a, b) => (b.date || "").localeCompare(a.date || ""));
   if (!recs.length) { toast("No receipts available yet."); return; }
   const r = recs[0];
-  showSuccess(r.subType, Math.abs(safe(r.amount)), r.code, { mode: r.mode || "upi", term: r.subType, ay: AcademicYearEngine.current() });
+  showSuccess(r.subType, Math.abs(safe(r.amount)), r.code, { mode: r.mode || "upi", term: r.subType, ay: AcademicYearEngine.current(), paymentDate: getPaymentDate(r) });
 }
 
 function renderTermView(container) {
@@ -2067,7 +2089,6 @@ async function renderReceiptImg(data) {
   s("rt-amount", data.amount);
   s("rt-fee",    data.fee);
   s("rt-date",   data.date);
-  s("rt-time",   data.time || "—");
   s("rt-code",   data.code);
   s("rt-method", data.mode === "cash" ? "Cash" : "UPI");
   s("rt-term",   data.term || "—");
@@ -2088,7 +2109,7 @@ async function showSuccess(subType, amount, code, opts) {
   const o = opts || {};
   const imgUrl = await renderReceiptImg({
     name: SD.name, class: SD.class,
-    amount, fee: subType, date: today(), time: DateEngine.time(), code,
+    amount, fee: subType, date: o.paymentDate || today(), code,
     mode: o.mode || "upi", term: o.term || subType, ay: o.ay || AcademicYearEngine.current(), ref: o.ref || code
   });
   const m = overlay(`
@@ -2123,17 +2144,13 @@ async function showSuccess(subType, amount, code, opts) {
 function buildReceiptDoc(r) {
   const amt = Math.abs(safe(r.amount));
   const method = (r.mode || "upi") === "cash" ? "Cash" : "UPI";
-  const time = r.time || (r.date || "");
   const ay = AcademicYearEngine.current();
   const ref = r.code || "—";
   return `
     <div class="receipt-doc" id="rdDoc">
       <div class="rd-head">
-        <div class="rd-logo">SA</div>
-        <div>
-          <div class="rd-school">St. Anne's ICSE School</div>
-          <div class="rd-sub">Official Fee Receipt</div>
-        </div>
+        <div class="rd-school">St. Anne's ICSE School</div>
+        <div class="rd-sub">Official Fee Receipt</div>
       </div>
       <div class="rd-amount">
         <div class="lbl">Amount Paid</div>
@@ -2144,15 +2161,21 @@ function buildReceiptDoc(r) {
         <div><span>Student</span><strong>${htmlEscape(SD.name || "—")}</strong></div>
         <div><span>Class</span><strong>${htmlEscape(SD.class || "—")}</strong></div>
         <div><span>Fee</span><strong>${htmlEscape(r.subType || "—")}</strong></div>
-        <div><span>Date</span><strong>${htmlEscape(r.date || "—")}</strong></div>
-        <div><span>Time</span><strong>${htmlEscape(time)}</strong></div>
+        <div><span>Payment Date</span><strong>${htmlEscape(getPaymentDate(r))}</strong></div>
         <div><span>Method</span><strong>${htmlEscape(method)}</strong></div>
         <div><span>Term</span><strong>${htmlEscape(r.subType || "—")}</strong></div>
         <div><span>Academic Year</span><strong>${htmlEscape(ay)}</strong></div>
         <div><span>Receipt No.</span><strong>${htmlEscape(r.code || "—")}</strong></div>
         <div><span>Txn Reference</span><strong>${htmlEscape(ref)}</strong></div>
       </div>
-      <div class="rd-foot">Digitally verified · St. Anne's Secure System<br><b>Thank you for your payment</b></div>
+      <div class="rd-foot">
+        <div style="display:inline-flex;align-items:center;gap:6px;color:#22c55e;font-weight:800;font-size:.78rem;letter-spacing:.02em;margin-bottom:4px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z"/><path d="m9 12 2 2 4-4"/></svg>
+          Digitally Verified Receipt
+        </div>
+        <span style="display:block;color:#94a3b8;font-size:.7rem;font-weight:500;">Generated securely by St. Anne's ICSE School Fee Portal</span>
+        <b style="color:#475569;display:block;margin-top:4px;">Thank you for your payment</b>
+      </div>
     </div>`;
 }
 
@@ -2179,9 +2202,9 @@ async function downloadReceipt(r) {
     const amt = Math.abs(safe(r.amount));
     const img = await renderReceiptImg({
       name: SD.name, class: SD.class,
-      amount: amt, fee: r.subType, date: r.date || today(),
+      amount: amt, fee: r.subType, date: getPaymentDate(r),
       code: r.code, mode: r.mode || "upi", term: r.subType,
-      ay: AcademicYearEngine.current(), ref: r.code, time: r.time || ""
+      ay: AcademicYearEngine.current(), ref: r.code
     });
     dlReceipt(img, r.code);
     toast("Receipt downloaded");
@@ -2190,7 +2213,7 @@ async function downloadReceipt(r) {
 
 async function shareReceipt(r) {
   const amt = Math.abs(safe(r.amount));
-  const text = `St. Anne's ICSE School\nPayment Receipt\nFee: ${r.subType || ""}\nAmount: ${fmtRs(amt)}\nDate: ${r.date || ""}\nReceipt No: ${r.code || ""}`;
+  const text = `St. Anne's ICSE School\nPayment Receipt\nFee: ${r.subType || ""}\nAmount: ${fmtRs(amt)}\nDate: ${getPaymentDate(r)}\nReceipt No: ${r.code || ""}`;
   if (navigator.share) {
     try { await navigator.share({ title: "Fee Receipt", text }); return; } catch (e) {}
   }
@@ -2203,9 +2226,13 @@ function printReceipt(r) {
   setTimeout(() => window.print(), 140);
 }
 
-async function applyPayment(feeType, identifier, amount, isFull, mode = "upi") {
+async function applyPayment(feeType, identifier, amount, isFull, mode = "upi", paymentDate = today()) {
   if (!adminUser) {
     toast("Admin login required.");
+    return false;
+  }
+  if (!isValidPaymentDate(paymentDate)) {
+    toast("Please select a valid payment date. Future dates are not allowed.");
     return false;
   }
   enforceDefaults();
@@ -2282,7 +2309,7 @@ async function applyPayment(feeType, identifier, amount, isFull, mode = "upi") {
 
   const absAmount = Math.abs(delta);
   const code      = receiptCode(SD.name, SD.class, subType, absAmount);
-  const recObj    = { code, amount: delta, type: feeType, subType, date: today(), time: DateEngine.time(), status: "active", mode };
+  const recObj    = { code, amount: delta, type: feeType, subType, paymentDate, date: paymentDate, time: DateEngine.time(), status: "active", mode };
 
   if (!Array.isArray(SD.receipts)) SD.receipts = [];
   SD.receipts.push(recObj);
@@ -2308,7 +2335,7 @@ async function applyPayment(feeType, identifier, amount, isFull, mode = "upi") {
   }
 
   render();
-  await showSuccess(subType, absAmount, code, { mode: mode, term: subType, ay: AcademicYearEngine.current() });
+  await showSuccess(subType, absAmount, code, { mode: mode, term: subType, ay: AcademicYearEngine.current(), paymentDate });
   return true;
 }
 
@@ -2364,8 +2391,9 @@ function editPayment(code) {
   const oldAmt       = safe(receipt.amount);
   const currentPaid  = safe(item.paid);
   const total        = safe(item.total);
-  const revertedPaid = Math.max(0, currentPaid - oldAmt);
-  const maxAllowed   = Math.max(0, total - revertedPaid);
+  const revertedPaid     = Math.max(0, currentPaid - oldAmt);
+  const maxAllowed       = Math.max(0, total - revertedPaid);
+  const oldPaymentDate   = getPaymentDate(receipt);
 
   const resetAdmin = () => { isAdminMode = false; };
 
@@ -2374,7 +2402,7 @@ function editPayment(code) {
     <h3>${iconSvg("edit")} Edit Payment</h3>
     <div class="edit-info-box">
       <div class="edit-info-fee">${htmlEscape(receipt.subType || "—")}</div>
-      <div class="edit-info-meta">Recorded: ${fmtRs(oldAmt)} &nbsp;·&nbsp; Date: ${htmlEscape(receipt.date || "—")}</div>
+      <div class="edit-info-meta">Recorded: ${fmtRs(oldAmt)} &nbsp;·&nbsp; Date: ${htmlEscape(oldPaymentDate)}</div>
       <div class="edit-info-code">${htmlEscape(receipt.code)}</div>
     </div>
     <div class="field">
@@ -2393,13 +2421,19 @@ function editPayment(code) {
       <option value="cash">Cash</option>
     </select>
     </div>
+    <div class="field">
+      <label for="edit-date">Payment Date</label>
+      <input type="date" id="edit-date" value="${htmlEscape(oldPaymentDate)}" max="${today()}">
+    </div>
     <div class="modal-actions">
       <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
       <button class="btn-modal btn-modal-ok"     id="m-ok">Update</button>
     </div>`, resetAdmin);
+  m.parentElement.classList.add("admin-overlay");
 
   const amtInput  = m.querySelector("#edit-amt");
   const modeInput = m.querySelector("#edit-mode");
+  const dateInput = m.querySelector("#edit-date");
   modeInput.value = receipt.mode || "upi";
   amtInput.focus();
 
@@ -2413,20 +2447,30 @@ function editPayment(code) {
     if (isNaN(val))        { toast("Invalid amount. Enter a number."); return; }
     if (val <= 0)          { toast("Amount must be greater than 0."); return; }
     if (val > maxAllowed)  { toast(`Cannot exceed max allowed: ${fmtRs(maxAllowed)}`); return; }
-    if (val === oldAmt && modeInput.value === (receipt.mode || "upi")) {
-      toast("No change — amount and mode are the same.");
+    const newPaymentDate = dateInput.value;
+    if (!isValidPaymentDate(newPaymentDate)) {
+      toast("Please select a valid payment date. Future dates are not allowed.");
+      return;
+    }
+    if (val === oldAmt && modeInput.value === (receipt.mode || "upi") && newPaymentDate === oldPaymentDate) {
+      toast("No change — amount, mode and payment date are the same.");
       return;
     }
     okBtn.disabled = true;
     const newMode = modeInput.value;
     closeAllOverlays();
-    await applyEdit(receipt, val, newMode);
+    await applyEdit(receipt, val, newMode, newPaymentDate);
   };
 }
 
-async function applyEdit(oldReceipt, newAmount, newMode = "upi") {
+async function applyEdit(oldReceipt, newAmount, newMode = "upi", paymentDate = today()) {
   if (!isAdminMode) { toast("Unauthorized access."); return; }
   if (!adminUser) { toast("Admin login required."); isAdminMode = false; return; }
+  if (!isValidPaymentDate(paymentDate)) {
+    toast("Please select a valid payment date. Future dates are not allowed.");
+    isAdminMode = false;
+    return;
+  }
   enforceDefaults();
 
   const feeRef = getFeeItemByReceipt(oldReceipt);
@@ -2449,7 +2493,8 @@ async function applyEdit(oldReceipt, newAmount, newMode = "upi") {
       amount:  newAmount,
       type:    oldReceipt.type,
       subType: oldReceipt.subType,
-      date:    today(),
+      paymentDate,
+      date:    paymentDate,
       time:    DateEngine.time(),
       status:  "active",
       mode:    newMode
@@ -2464,7 +2509,7 @@ async function applyEdit(oldReceipt, newAmount, newMode = "upi") {
     await saveAll();
 
     render();
-    await showSuccess(oldReceipt.subType, newAmount, newCode);
+    await showSuccess(oldReceipt.subType, newAmount, newCode, { paymentDate });
 
   } catch (err) {
     item.paid   = prevItemPaid;
@@ -2665,18 +2710,18 @@ let _modalSeq = 0;
 const PAYMENT_ACCOUNTS = {
   tuition: {
     name: "Tuition Fees",
-    upiId: "jinmelkunnath@oksbi",        // Replace with actual tuition UPI ID
-    qr: "https://github.com/jinmelkunnath-alt/St.Annes-ICSE-School-Payment-Portal/blob/main/QR_IMG_01.png?raw=true"            // Replace with actual tuition QR code
+    upiId: "21766745100830@cnrb",        // Replace with actual tuition UPI ID
+    qr: "https://github.com/jinmelkunnath-alt/St.Annes-ICSE-School-Payment-Portal/blob/main/TUITIONFEE.jpg?raw=true"            // Replace with actual tuition QR code
   },
   bus: {
     name: "Bus Fees",
-    upiId: "jinmelkunnath@oksbi",            // Replace with actual bus UPI ID
-    qr: "https://github.com/jinmelkunnath-alt/St.Annes-ICSE-School-Payment-Portal/blob/main/QR_IMG_01.png?raw=trueL"                // Replace with actual bus QR code
+    upiId: "217667451033741@cnrb",            // Replace with actual bus UPI ID
+    qr: "https://github.com/jinmelkunnath-alt/St.Annes-ICSE-School-Payment-Portal/blob/main/BUSFEEQR.jpg?raw=true"                // Replace with actual bus QR code
   },
   other: {
     name: "Other Fees",
-    upiId: "jinmelkunnath@oksbi",          // Replace with actual other fees UPI ID
-    qr: "https://github.com/jinmelkunnath-alt/St.Annes-ICSE-School-Payment-Portal/blob/main/QR_IMG_01.png?raw=trueL"              // Replace with actual other fees QR code
+    upiId: "21766745100830@cnrb",          // Replace with actual other fees UPI ID
+    qr: "https://github.com/jinmelkunnath-alt/St.Annes-ICSE-School-Payment-Portal/blob/main/TUITIONFEE.jpg?raw=true"              // Replace with actual other fees QR code
   }
 };
 
@@ -2867,6 +2912,7 @@ function adminSelectFeeType() {
       <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
       <button class="btn-modal btn-modal-ok"     id="m-ok">Next</button>
     </div>`);
+  m.parentElement.classList.add("admin-overlay");
 
   m.querySelector("#m-cancel").onclick = closeAllOverlays;
   m.querySelector("#m-ok").onclick = () => {
@@ -2896,6 +2942,7 @@ function adminTermFlow() {
       <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
       <button class="btn-modal btn-modal-ok"     id="m-ok">Next</button>
     </div>`);
+  m.parentElement.classList.add("admin-overlay");
 
   m.querySelector("#m-cancel").onclick = closeAllOverlays;
   m.querySelector("#m-ok").onclick = () => {
@@ -2922,6 +2969,7 @@ function adminMonthlyFlow(feeType, feeLabel) {
       <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
       <button class="btn-modal btn-modal-ok"     id="m-ok">Next</button>
     </div>`);
+  modal.parentElement.classList.add("admin-overlay");
 
   modal.querySelector("#m-cancel").onclick = closeAllOverlays;
   modal.querySelector("#m-ok").onclick = () => {
@@ -2944,6 +2992,7 @@ function adminOtherFlow() {
       <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
       <button class="btn-modal btn-modal-ok"     id="m-ok">Next</button>
     </div>`);
+  m.parentElement.classList.add("admin-overlay");
 
   m.querySelector("#m-cancel").onclick = closeAllOverlays;
   m.querySelector("#m-ok").onclick = () => {
@@ -2966,6 +3015,7 @@ function adminOtherFlow() {
           <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
           <button class="btn-modal btn-modal-ok"     id="m-ok">Next</button>
         </div>`);
+      m2.parentElement.classList.add("admin-overlay");
       m2.querySelector("#m-cancel").onclick = closeAllOverlays;
       m2.querySelector("#m-ok").onclick = () => {
         const month = m2.querySelector("#month-sel").value;
@@ -2996,6 +3046,10 @@ function adminActionFlow(feeType, identifier, label) {
       <option value="cash">Cash</option>
     </select>
     </div>
+    <div class="field">
+      <label for="payment-date">Payment Date</label>
+      <input type="date" id="payment-date" value="${today()}" max="${today()}">
+    </div>
     <div id="amt-row" style="display:none;margin-top:0.6rem">
       <div class="field">
       <input type="number" id="amt-inp" placeholder="e.g. 500 or -200">
@@ -3006,6 +3060,7 @@ function adminActionFlow(feeType, identifier, label) {
       <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
       <button class="btn-modal btn-modal-ok"     id="m-ok">Confirm</button>
     </div>`);
+  m.parentElement.classList.add("admin-overlay");
 
   const sel    = m.querySelector("#action-sel");
   const amtRow = m.querySelector("#amt-row");
@@ -3019,13 +3074,19 @@ function adminActionFlow(feeType, identifier, label) {
   m.querySelector("#m-cancel").onclick = closeAllOverlays;
 
   okBtn.onclick = async () => {
-    const action = sel.value;
-    const mode   = m.querySelector("#mode-sel").value;
+    const action      = sel.value;
+    const mode        = m.querySelector("#mode-sel").value;
+    const paymentDate = m.querySelector("#payment-date").value;
+
+    if (!isValidPaymentDate(paymentDate)) {
+      toast("Please select a valid payment date. Future dates are not allowed.");
+      return;
+    }
 
     if (action === "full") {
       okBtn.disabled = true;
       closeAllOverlays();
-      await applyPayment(feeType, identifier, 0, true, mode);
+      await applyPayment(feeType, identifier, 0, true, mode, paymentDate);
       return;
     }
 
@@ -3037,7 +3098,7 @@ function adminActionFlow(feeType, identifier, label) {
 
     okBtn.disabled = true;
     closeAllOverlays();
-    await applyPayment(feeType, identifier, amount, false, mode);
+    await applyPayment(feeType, identifier, amount, false, mode, paymentDate);
   };
 }
 
@@ -3064,7 +3125,7 @@ function openHelp() {
       <div class="help-contact">
         <div class="help-contact-row">
           <div class="help-contact-ico">${iconSvg("call")}</div>
-          <div class="help-contact-main"><div class="help-contact-label">Phone</div><div class="help-contact-val"><a href="tel:+917012808911">+91 70128 08911</a></div></div>
+          <div class="help-contact-main"><div class="help-contact-label">Phone</div><div class="help-contact-val"><a href="tel:+918547987577">+91 85479 87577</a></div></div>
         </div>
         <div class="help-contact-row">
           <div class="help-contact-ico">${iconSvg("mail")}</div>
@@ -3163,66 +3224,120 @@ window.addEventListener("blur", () => {
    UNIFIED ADMIN AUTH MODAL (Firebase) – PASSWORD ONLY
 ═══════════════════════════════════════════ */
 function openAdminAuth(mode) {
-  if (adminUser) {
-    if (mode === "add") {
-      adminSelectFeeType();
-    } else {
-      isAdminMode = true;
-      openAdminEditSelector();
-    }
-    return;
-  }
-
+  // ── ALWAYS ask for password. Every invocation. No bypass. No cache. No session. ──
   const m = overlay(`
     <button class="modal-close">${iconSvg("close")}</button>
-    <h3>${iconSvg("lock")} Admin Login</h3>
+    <h3>${iconSvg("lock")} Administrator Access</h3>
+    <p class="subtitle">Enter the administrator password to continue.</p>
     <div class="field">
-      <input type="password" id="admin-pass" placeholder="Enter password" autocomplete="current-password">
-      <label for="admin-pass">Password</label>
+      <label for="admin-pass">Administrator Password</label>
+      <div style="position:relative;">
+        <input type="password" id="admin-pass" placeholder="Enter administrator password" autocomplete="off" spellcheck="false" style="width:100%;padding:12px 48px 12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface-2);color:var(--text);font-weight:600;font-size:.94rem;box-shadow:var(--sh-xs);outline:none;box-sizing:border-box;">
+        <button type="button" id="passToggle" aria-label="Show password" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-3);cursor:pointer;width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:8px;transition:color .2s ease,background .2s ease;">
+          <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+          <svg class="eye-closed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" style="display:none"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 3.09-.5"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+        </button>
+      </div>
     </div>
     <div class="modal-actions">
       <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
-      <button class="btn-modal btn-modal-ok"     id="m-ok">Login</button>
+      <button class="btn-modal btn-modal-ok" id="m-ok">Continue</button>
     </div>`);
 
-  const passInput = m.querySelector("#admin-pass");
-  const okBtn     = m.querySelector("#m-ok");
-  passInput.focus();
+  // Center this modal
+  m.parentElement.classList.add("admin-overlay");
 
-  const attempt = async () => {
-    const password = passInput.value;
-    if (!password) {
-      toast("Please enter password.");
-      return;
-    }
-    okBtn.disabled = true;
-    try {
-      await signInWithEmailAndPassword(auth, ADMIN_EMAIL_1, password);
-    } catch (err1) {
-      try {
-        await signInWithEmailAndPassword(auth, ADMIN_EMAIL_2, password);
-      } catch (err2) {
-        toast("Wrong password");
-        okBtn.disabled = false;
-        passInput.value = "";
-        passInput.focus();
-        return;
-      }
-    }
-    closeAllOverlays();
-    if (mode === "add") {
-      adminSelectFeeType();
+  const passInput = m.querySelector("#admin-pass");
+  const toggleBtn = m.querySelector("#passToggle");
+  const eyeOpen   = toggleBtn.querySelector(".eye-open");
+  const eyeClosed = toggleBtn.querySelector(".eye-closed");
+  const okBtn     = m.querySelector("#m-ok");
+  let _typed = ""; // password only lives in this closure variable
+
+  // Auto-focus the password field
+  requestAnimationFrame(() => { passInput.focus(); });
+
+  // ── Eye toggle ──
+  toggleBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (passInput.type === "password") {
+      passInput.type = "text";
+      eyeOpen.style.display = "none";
+      eyeClosed.style.display = "block";
+      toggleBtn.setAttribute("aria-label", "Hide password");
     } else {
-      isAdminMode = true;
-      openAdminEditSelector();
+      passInput.type = "password";
+      eyeOpen.style.display = "block";
+      eyeClosed.style.display = "none";
+      toggleBtn.setAttribute("aria-label", "Show password");
+    }
+    passInput.focus();
+  });
+  toggleBtn.addEventListener("mouseenter", () => {
+    toggleBtn.style.color = "var(--brand)";
+    toggleBtn.style.background = "var(--brand-50)";
+  });
+  toggleBtn.addEventListener("mouseleave", () => {
+    toggleBtn.style.color = "var(--text-3)";
+    toggleBtn.style.background = "none";
+  });
+
+  // ── Focus ring ──
+  passInput.addEventListener("focus", () => {
+    passInput.style.borderColor = "var(--brand)";
+    passInput.style.boxShadow = "0 0 0 3px rgba(41,94,239,.12)";
+  });
+  passInput.addEventListener("blur", () => {
+    passInput.style.borderColor = "";
+    passInput.style.boxShadow = "";
+  });
+
+  // ── Clear password from all surfaces ──
+  const clearPassword = () => {
+    passInput.value = "";
+    _typed = "";
+    passInput.type = "password";
+    eyeOpen.style.display = "block";
+    eyeClosed.style.display = "none";
+    toggleBtn.setAttribute("aria-label", "Show password");
+  };
+
+  // ── Track input to keep _typed in sync without persisting value ──
+  passInput.addEventListener("input", () => { _typed = passInput.value; });
+
+  // ── Submit ──
+  const attempt = () => {
+    const password = (passInput.value || "").trim();
+    if (password === "ADMIN@STANNES") {
+      // Immediately wipe from input and memory
+      clearPassword();
+      closeAllOverlays();
+      if (mode === "add") {
+        adminSelectFeeType();
+      } else {
+        isAdminMode = true;
+        openAdminEditSelector();
+      }
+    } else {
+      toast("Incorrect administrator password.");
+      okBtn.disabled = false;
+      clearPassword();
+      passInput.focus();
     }
   };
 
-  m.querySelector("#m-cancel").onclick = closeAllOverlays;
+  m.querySelector("#m-cancel").onclick = () => { clearPassword(); closeAllOverlays(); };
   okBtn.onclick = attempt;
   passInput.addEventListener("keydown", e => {
-    if (e.key === "Enter") attempt();
+    if (e.key === "Enter") { e.preventDefault(); e.stopPropagation(); attempt(); }
   });
+
+  // Cleanup on overlay close
+  const observer = new MutationObserver(() => {
+    if (!document.contains(m)) { clearPassword(); observer.disconnect(); }
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
 }
 
 /* ═══════════════════════════════════════════
@@ -3262,6 +3377,7 @@ function openAdminEditSelector() {
         <button class="btn-modal btn-modal-ok"     id="m-ok">Edit</button>
       </div>
     </div>`, resetAdmin);
+  m.parentElement.classList.add("admin-overlay");
 
   m.querySelector("#m-cancel").onclick = () => { resetAdmin(); closeAllOverlays(); };
 
@@ -3331,7 +3447,10 @@ window.addEventListener("DOMContentLoaded", () => {
     if (adminUser) {
       await signOut(auth);
     }
-    location.href = "../index.html";
+    // Clear session data
+    try { sessionStorage.clear(); } catch (e) {}
+    try { localStorage.removeItem("fee_notif_state_v1"); } catch (e) {}
+    window.location.href = "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/index.html";
   };
 
   el("tabTerm").onclick    = () => setView("home");
@@ -3834,7 +3953,7 @@ function openSettings(){
     <div class="settings-section">
       <div class="settings-sec-head">${iconSvg("school")} School</div>
       <div class="settings-row"><div class="settings-row-main"><div class="settings-label">Name</div></div><div class="settings-value">St. Anne's ICSE School</div></div>
-      <div class="settings-row"><div class="settings-row-main"><div class="settings-label">Contact</div></div><div class="settings-value">+91 70128 08911</div></div>
+      <div class="settings-row"><div class="settings-row-main"><div class="settings-label">Contact</div></div><div class="settings-value">+91 85479 87577</div></div>
     </div>
 
     <div class="settings-section">
@@ -4152,5 +4271,6 @@ wireBottomNav();
 
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1dfaf1bbdaec08d',t:'MTc4NDUyNjU4MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1dfaf1bbdaec08d',t:'MTc4NDUyNjU4MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1e9f8e17dbcc87a',t:'MTc4NDYzNDQ2MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1eb5288e88aef77',t:'MTc4NDY0ODYxOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2008ca01d6cbe0a',t:'MTc4NDg3MTE5OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
