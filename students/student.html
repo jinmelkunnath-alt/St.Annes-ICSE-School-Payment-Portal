@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -661,6 +662,48 @@ button:focus-visible,.fee-tab:focus-visible,.cselect-trigger:focus-visible{outli
 .cselect-opt .cs-check{margin-left:auto;width:17px;height:17px;opacity:0;flex:0 0 auto}
 .cselect-opt[aria-selected="true"] .cs-check{opacity:1}
 
+/* ── PREMIUM DATE PICKER ── */
+.date-picker{position:relative;width:100%}
+.date-picker-native{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:0!important;opacity:0!important;pointer-events:none!important;clip-path:inset(50%);overflow:hidden}
+.date-picker-trigger{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:46px;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface-2);color:var(--text);font-family:var(--font);font-size:1rem;font-weight:600;line-height:1.35;text-align:left;box-shadow:var(--sh-xs);transition:border-color var(--dur) var(--ease),background var(--dur) var(--ease),box-shadow var(--dur) var(--ease),color var(--dur) var(--ease)}
+.date-picker-trigger:hover{border-color:var(--line-strong);background:var(--surface)}
+.date-picker-trigger:focus-visible,.date-picker.open .date-picker-trigger{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-50)}
+.date-picker-value{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.date-picker-icon{width:18px;height:18px;flex:0 0 auto;color:var(--text-3);opacity:.9;transition:color var(--dur) var(--ease),transform var(--dur-fast) var(--ease)}
+.date-picker-trigger:hover .date-picker-icon,.date-picker.open .date-picker-icon{color:var(--brand)}
+.date-picker.open .date-picker-icon{transform:scale(1.06)}
+.date-picker-native:disabled + .date-picker-trigger{background:var(--surface-3);color:var(--muted);border-color:var(--line);box-shadow:none;cursor:not-allowed;opacity:.72}
+.date-picker-trigger[aria-invalid="true"],.date-picker:has(.date-picker-native:invalid) .date-picker-trigger{border-color:var(--red);box-shadow:0 0 0 3px var(--red-soft)}
+.date-picker-menu{position:fixed;z-index:9700;width:320px;max-width:calc(100vw - 24px);padding:12px;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:18px;box-shadow:0 18px 48px -20px rgba(15,23,42,.32),var(--sh-md);transform-origin:top center;animation:datePickerIn .22s var(--ease-out) both;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+@keyframes datePickerIn{from{opacity:0;transform:translateY(-7px) scale(.975)}to{opacity:1;transform:none}}
+.date-picker-head{display:grid;grid-template-columns:38px 1fr 38px;align-items:center;gap:6px;margin-bottom:8px}
+.date-picker-title{text-align:center;font-size:.92rem;font-weight:800;letter-spacing:-.01em;color:var(--text)}
+.date-picker-nav{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;color:var(--text-2);background:transparent;border:1px solid transparent;transition:background var(--dur-fast) var(--ease),color var(--dur-fast) var(--ease),border-color var(--dur-fast) var(--ease),transform var(--dur-fast) var(--ease)}
+.date-picker-nav:hover:not(:disabled){background:var(--brand-50);color:var(--brand-700);border-color:var(--brand-100)}
+.date-picker-nav:active:not(:disabled){transform:scale(.92)}
+.date-picker-nav:focus-visible{outline:2px solid var(--brand);outline-offset:1px}
+.date-picker-nav:disabled{color:var(--muted);opacity:.35;cursor:not-allowed}
+.date-picker-nav svg{width:17px;height:17px;stroke-width:2.2}
+.date-picker-weekdays,.date-picker-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.date-picker-weekdays{margin-bottom:3px}
+.date-picker-weekdays span{height:28px;display:flex;align-items:center;justify-content:center;font-size:.64rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--text-3)}
+.date-picker-day{position:relative;aspect-ratio:1;border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--text-2);font-size:.8rem;font-weight:700;border:1px solid transparent;background:transparent;transition:background var(--dur-fast) var(--ease),color var(--dur-fast) var(--ease),border-color var(--dur-fast) var(--ease),transform var(--dur-fast) var(--ease)}
+.date-picker-day:hover:not(:disabled){background:var(--brand-50);color:var(--brand-700);border-color:var(--brand-100)}
+.date-picker-day:active:not(:disabled){transform:scale(.9)}
+.date-picker-day.outside{color:var(--text-3);opacity:.56}
+.date-picker-day.today:not(.selected)::after{content:"";position:absolute;bottom:4px;width:4px;height:4px;border-radius:50%;background:var(--brand)}
+.date-picker-day.active{border-color:var(--brand-200);background:var(--brand-50);color:var(--brand-700)}
+.date-picker-day.selected{background:var(--brand);color:#fff;border-color:var(--brand);box-shadow:0 5px 12px -6px rgba(41,94,239,.7)}
+.date-picker-day.selected::after{background:#fff}
+.date-picker-day:disabled{color:var(--muted);opacity:.28;cursor:not-allowed}
+.date-picker-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:9px;padding-top:9px;border-top:1px solid var(--line-soft)}
+.date-picker-hint{font-size:.68rem;color:var(--text-3);font-weight:600}
+.date-picker-today{padding:7px 11px;border-radius:9px;background:var(--brand-50);color:var(--brand-700);border:1px solid var(--brand-100);font-size:.76rem;font-weight:800;transition:background var(--dur-fast) var(--ease),transform var(--dur-fast) var(--ease)}
+.date-picker-today:hover:not(:disabled){background:var(--brand-100)}
+.date-picker-today:active:not(:disabled){transform:scale(.94)}
+.date-picker-today:disabled{color:var(--muted);background:var(--surface-3);border-color:var(--line);opacity:.55;cursor:not-allowed}
+@media (max-width:480px){.date-picker-menu{padding:11px;border-radius:17px}.date-picker-day{font-size:.82rem}.date-picker-hint{display:none}}
+
 /* ═══════════════════════════════════════════════════════════════════
    PHASE 8 — HOME DASHBOARD · HISTORY · RECEIPT · NAV MOTION · MICRO
    (presentation / interaction only; no business or payment logic touched)
@@ -994,8 +1037,7 @@ button:focus-visible,.fee-tab:focus-visible,.cselect-trigger:focus-visible{outli
       <div><span>Payment Method</span><strong id="rt-method"></strong></div>
       <div><span>Receipt Number</span><strong id="rt-code"></strong></div>
       <div><span>Transaction Reference</span><strong id="rt-ref"></strong></div>
-      <div><span>Date</span><strong id="rt-date"></strong></div>
-      <div><span>Time</span><strong id="rt-time"></strong></div>
+      <div><span>Payment Date</span><strong id="rt-date"></strong></div>
     </div>
     <div class="rt-footer">
       <div class="verify"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z"/><path d="m9 12 2 2 4-4"/></svg> Digitally Verified Receipt</div>
@@ -1155,7 +1197,21 @@ const safe  = v => { const n = Number(v); return isNaN(n) ? 0 : n; };
 const el    = id  => document.getElementById(id);
 const capF  = s   => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 const fmtRs = n   => "₹" + safe(n).toLocaleString("en-IN");
-const today = ()  => new Date().toISOString().slice(0, 10);
+const today = ()  => {
+  const d = new Date();
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0, 10);
+};
+
+function getPaymentDate(receipt) {
+  return (receipt && (receipt.paymentDate || receipt.date)) || today();
+}
+
+function isValidPaymentDate(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value || "") || value > today()) return false;
+  const d = new Date(value + "T00:00:00Z");
+  return !isNaN(d.getTime()) && d.toISOString().slice(0, 10) === value;
+}
 
 function htmlEscape(str) {
   if (str == null) return "";
@@ -1781,7 +1837,7 @@ function showLatestReceipt() {
     .sort((a, b) => (b.date || "").localeCompare(a.date || ""));
   if (!recs.length) { toast("No receipts available yet."); return; }
   const r = recs[0];
-  showSuccess(r.subType, Math.abs(safe(r.amount)), r.code, { mode: r.mode || "upi", term: r.subType, ay: AcademicYearEngine.current() });
+  showSuccess(r.subType, Math.abs(safe(r.amount)), r.code, { mode: r.mode || "upi", term: r.subType, ay: AcademicYearEngine.current(), paymentDate: getPaymentDate(r) });
 }
 
 function renderTermView(container) {
@@ -2075,7 +2131,6 @@ async function renderReceiptImg(data) {
   s("rt-amount", data.amount);
   s("rt-fee",    data.fee);
   s("rt-date",   data.date);
-  s("rt-time",   data.time || "—");
   s("rt-code",   data.code);
   s("rt-method", data.mode === "cash" ? "Cash" : "UPI");
   s("rt-term",   data.term || "—");
@@ -2096,7 +2151,7 @@ async function showSuccess(subType, amount, code, opts) {
   const o = opts || {};
   const imgUrl = await renderReceiptImg({
     name: SD.name, class: SD.class,
-    amount, fee: subType, date: today(), time: DateEngine.time(), code,
+    amount, fee: subType, date: o.paymentDate || today(), code,
     mode: o.mode || "upi", term: o.term || subType, ay: o.ay || AcademicYearEngine.current(), ref: o.ref || code
   });
   const m = overlay(`
@@ -2131,7 +2186,6 @@ async function showSuccess(subType, amount, code, opts) {
 function buildReceiptDoc(r) {
   const amt = Math.abs(safe(r.amount));
   const method = (r.mode || "upi") === "cash" ? "Cash" : "UPI";
-  const time = r.time || (r.date || "");
   const ay = AcademicYearEngine.current();
   const ref = r.code || "—";
   return `
@@ -2149,8 +2203,7 @@ function buildReceiptDoc(r) {
         <div><span>Student</span><strong>${htmlEscape(SD.name || "—")}</strong></div>
         <div><span>Class</span><strong>${htmlEscape(SD.class || "—")}</strong></div>
         <div><span>Fee</span><strong>${htmlEscape(r.subType || "—")}</strong></div>
-        <div><span>Date</span><strong>${htmlEscape(r.date || "—")}</strong></div>
-        <div><span>Time</span><strong>${htmlEscape(time)}</strong></div>
+        <div><span>Payment Date</span><strong>${htmlEscape(getPaymentDate(r))}</strong></div>
         <div><span>Method</span><strong>${htmlEscape(method)}</strong></div>
         <div><span>Term</span><strong>${htmlEscape(r.subType || "—")}</strong></div>
         <div><span>Academic Year</span><strong>${htmlEscape(ay)}</strong></div>
@@ -2191,9 +2244,9 @@ async function downloadReceipt(r) {
     const amt = Math.abs(safe(r.amount));
     const img = await renderReceiptImg({
       name: SD.name, class: SD.class,
-      amount: amt, fee: r.subType, date: r.date || today(),
+      amount: amt, fee: r.subType, date: getPaymentDate(r),
       code: r.code, mode: r.mode || "upi", term: r.subType,
-      ay: AcademicYearEngine.current(), ref: r.code, time: r.time || ""
+      ay: AcademicYearEngine.current(), ref: r.code
     });
     dlReceipt(img, r.code);
     toast("Receipt downloaded");
@@ -2202,7 +2255,7 @@ async function downloadReceipt(r) {
 
 async function shareReceipt(r) {
   const amt = Math.abs(safe(r.amount));
-  const text = `St. Anne's ICSE School\nPayment Receipt\nFee: ${r.subType || ""}\nAmount: ${fmtRs(amt)}\nDate: ${r.date || ""}\nReceipt No: ${r.code || ""}`;
+  const text = `St. Anne's ICSE School\nPayment Receipt\nFee: ${r.subType || ""}\nAmount: ${fmtRs(amt)}\nDate: ${getPaymentDate(r)}\nReceipt No: ${r.code || ""}`;
   if (navigator.share) {
     try { await navigator.share({ title: "Fee Receipt", text }); return; } catch (e) {}
   }
@@ -2215,9 +2268,13 @@ function printReceipt(r) {
   setTimeout(() => window.print(), 140);
 }
 
-async function applyPayment(feeType, identifier, amount, isFull, mode = "upi") {
+async function applyPayment(feeType, identifier, amount, isFull, mode = "upi", paymentDate = today()) {
   if (!adminUser) {
     toast("Admin login required.");
+    return false;
+  }
+  if (!isValidPaymentDate(paymentDate)) {
+    toast("Please select a valid payment date. Future dates are not allowed.");
     return false;
   }
   enforceDefaults();
@@ -2294,7 +2351,7 @@ async function applyPayment(feeType, identifier, amount, isFull, mode = "upi") {
 
   const absAmount = Math.abs(delta);
   const code      = receiptCode(SD.name, SD.class, subType, absAmount);
-  const recObj    = { code, amount: delta, type: feeType, subType, date: today(), time: DateEngine.time(), status: "active", mode };
+  const recObj    = { code, amount: delta, type: feeType, subType, paymentDate, date: paymentDate, time: DateEngine.time(), status: "active", mode };
 
   if (!Array.isArray(SD.receipts)) SD.receipts = [];
   SD.receipts.push(recObj);
@@ -2320,7 +2377,7 @@ async function applyPayment(feeType, identifier, amount, isFull, mode = "upi") {
   }
 
   render();
-  await showSuccess(subType, absAmount, code, { mode: mode, term: subType, ay: AcademicYearEngine.current() });
+  await showSuccess(subType, absAmount, code, { mode: mode, term: subType, ay: AcademicYearEngine.current(), paymentDate });
   return true;
 }
 
@@ -2376,8 +2433,9 @@ function editPayment(code) {
   const oldAmt       = safe(receipt.amount);
   const currentPaid  = safe(item.paid);
   const total        = safe(item.total);
-  const revertedPaid = Math.max(0, currentPaid - oldAmt);
-  const maxAllowed   = Math.max(0, total - revertedPaid);
+  const revertedPaid     = Math.max(0, currentPaid - oldAmt);
+  const maxAllowed       = Math.max(0, total - revertedPaid);
+  const oldPaymentDate   = getPaymentDate(receipt);
 
   const resetAdmin = () => { isAdminMode = false; };
 
@@ -2386,7 +2444,7 @@ function editPayment(code) {
     <h3>${iconSvg("edit")} Edit Payment</h3>
     <div class="edit-info-box">
       <div class="edit-info-fee">${htmlEscape(receipt.subType || "—")}</div>
-      <div class="edit-info-meta">Recorded: ${fmtRs(oldAmt)} &nbsp;·&nbsp; Date: ${htmlEscape(receipt.date || "—")}</div>
+      <div class="edit-info-meta">Recorded: ${fmtRs(oldAmt)} &nbsp;·&nbsp; Date: ${htmlEscape(oldPaymentDate)}</div>
       <div class="edit-info-code">${htmlEscape(receipt.code)}</div>
     </div>
     <div class="field">
@@ -2405,6 +2463,10 @@ function editPayment(code) {
       <option value="cash">Cash</option>
     </select>
     </div>
+    <div class="field">
+      <label for="edit-date">Payment Date</label>
+      <input type="date" id="edit-date" value="${htmlEscape(oldPaymentDate)}" max="${today()}">
+    </div>
     <div class="modal-actions">
       <button class="btn-modal btn-modal-cancel" id="m-cancel">Cancel</button>
       <button class="btn-modal btn-modal-ok"     id="m-ok">Update</button>
@@ -2413,6 +2475,7 @@ function editPayment(code) {
 
   const amtInput  = m.querySelector("#edit-amt");
   const modeInput = m.querySelector("#edit-mode");
+  const dateInput = m.querySelector("#edit-date");
   modeInput.value = receipt.mode || "upi";
   amtInput.focus();
 
@@ -2426,20 +2489,30 @@ function editPayment(code) {
     if (isNaN(val))        { toast("Invalid amount. Enter a number."); return; }
     if (val <= 0)          { toast("Amount must be greater than 0."); return; }
     if (val > maxAllowed)  { toast(`Cannot exceed max allowed: ${fmtRs(maxAllowed)}`); return; }
-    if (val === oldAmt && modeInput.value === (receipt.mode || "upi")) {
-      toast("No change — amount and mode are the same.");
+    const newPaymentDate = dateInput.value;
+    if (!isValidPaymentDate(newPaymentDate)) {
+      toast("Please select a valid payment date. Future dates are not allowed.");
+      return;
+    }
+    if (val === oldAmt && modeInput.value === (receipt.mode || "upi") && newPaymentDate === oldPaymentDate) {
+      toast("No change — amount, mode and payment date are the same.");
       return;
     }
     okBtn.disabled = true;
     const newMode = modeInput.value;
     closeAllOverlays();
-    await applyEdit(receipt, val, newMode);
+    await applyEdit(receipt, val, newMode, newPaymentDate);
   };
 }
 
-async function applyEdit(oldReceipt, newAmount, newMode = "upi") {
+async function applyEdit(oldReceipt, newAmount, newMode = "upi", paymentDate = today()) {
   if (!isAdminMode) { toast("Unauthorized access."); return; }
   if (!adminUser) { toast("Admin login required."); isAdminMode = false; return; }
+  if (!isValidPaymentDate(paymentDate)) {
+    toast("Please select a valid payment date. Future dates are not allowed.");
+    isAdminMode = false;
+    return;
+  }
   enforceDefaults();
 
   const feeRef = getFeeItemByReceipt(oldReceipt);
@@ -2462,7 +2535,8 @@ async function applyEdit(oldReceipt, newAmount, newMode = "upi") {
       amount:  newAmount,
       type:    oldReceipt.type,
       subType: oldReceipt.subType,
-      date:    today(),
+      paymentDate,
+      date:    paymentDate,
       time:    DateEngine.time(),
       status:  "active",
       mode:    newMode
@@ -2477,7 +2551,7 @@ async function applyEdit(oldReceipt, newAmount, newMode = "upi") {
     await saveAll();
 
     render();
-    await showSuccess(oldReceipt.subType, newAmount, newCode);
+    await showSuccess(oldReceipt.subType, newAmount, newCode, { paymentDate });
 
   } catch (err) {
     item.paid   = prevItemPaid;
@@ -2510,6 +2584,7 @@ function appAlert(title, msg) {
 
 function closeAllOverlays() {
   closeOpenCSelect();
+  closeOpenDatePicker();
   const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const overlays = document.querySelectorAll(".overlay");
   overlays.forEach(o => {
@@ -2535,6 +2610,7 @@ function overlay(html, onDismiss) {
   m.setAttribute("aria-modal", "true");
   m.innerHTML = html;
   upgradeSelects(m);
+  upgradeDatePickers(m);
   const h3 = m.querySelector("h3");
   if (h3 && !h3.id) { h3.id = "modalTitle_" + (++_modalSeq); m.setAttribute("aria-labelledby", h3.id); }
   ov.appendChild(m);
@@ -2667,6 +2743,260 @@ function upgradeSelects(root) {
     }
     trigger.addEventListener("click", function (e) { e.preventDefault(); if (menu) close(); else open(); });
     syncLabel();
+  });
+}
+
+/* ── PREMIUM DATE PICKER
+   The native date input remains the single source of truth. This layer only
+   replaces its browser chrome and keeps the existing value/max/validation
+   contract fully intact. ── */
+let _activeDatePicker = null;
+function closeOpenDatePicker() { if (typeof _activeDatePicker === "function") _activeDatePicker(false); }
+function upgradeDatePickers(root) {
+  (root || document).querySelectorAll('input[type="date"]:not([data-dpicker])').forEach(function (input) {
+    if (!input.id) input.id = "dp-" + Math.random().toString(36).slice(2, 8);
+    input.setAttribute("data-dpicker", "1");
+    input.classList.add("date-picker-native");
+    input.setAttribute("tabindex", "-1");
+    input.setAttribute("aria-hidden", "true");
+
+    const wrap = document.createElement("div");
+    wrap.className = "date-picker";
+    input.parentNode.insertBefore(wrap, input);
+    wrap.appendChild(input);
+
+    const trigger = document.createElement("button");
+    trigger.type = "button";
+    trigger.id = input.id + "-trigger";
+    trigger.className = "date-picker-trigger";
+    trigger.setAttribute("role", "combobox");
+    trigger.setAttribute("aria-haspopup", "dialog");
+    trigger.setAttribute("aria-expanded", "false");
+    trigger.innerHTML = '<span class="date-picker-value"></span>' +
+      '<svg class="date-picker-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v4M16 2v4"/><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 10h18"/></svg>';
+    wrap.appendChild(trigger);
+
+    const field = wrap.closest(".field");
+    const label = field ? field.querySelector('label[for="' + input.id + '"]') : null;
+    if (label) label.setAttribute("for", trigger.id);
+
+    const valueEl = trigger.querySelector(".date-picker-value");
+    const pad = n => String(n).padStart(2, "0");
+    const toISO = d => d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+    const parseISO = value => {
+      const p = String(value || "").split("-").map(Number);
+      return p.length === 3 && p.every(Number.isFinite)
+        ? new Date(p[0], p[1] - 1, p[2], 12)
+        : new Date();
+    };
+    const minISO = () => input.min || "0001-01-01";
+    const maxISO = () => input.max || "9999-12-31";
+    const allowed = value => value >= minISO() && value <= maxISO();
+    const clampDate = d => {
+      const value = toISO(d);
+      if (value < minISO()) return parseISO(minISO());
+      if (value > maxISO()) return parseISO(maxISO());
+      return d;
+    };
+    const formatValue = value => {
+      if (!value) return "Select date";
+      const d = parseISO(value);
+      return d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+    };
+
+    let popup = null;
+    let activeDate = null;
+    let viewDate = null;
+
+    function syncTrigger() {
+      valueEl.textContent = formatValue(input.value);
+      trigger.disabled = input.disabled;
+      trigger.setAttribute("aria-invalid", input.validity && !input.validity.valid ? "true" : "false");
+      trigger.setAttribute("aria-label", (label ? label.textContent.trim() : "Payment Date") + ": " + formatValue(input.value));
+    }
+
+    function monthAllows(year, month) {
+      const first = toISO(new Date(year, month, 1, 12));
+      const last = toISO(new Date(year, month + 1, 0, 12));
+      return last >= minISO() && first <= maxISO();
+    }
+
+    function choose(value) {
+      if (!allowed(value)) return;
+      input.value = value;
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+      syncTrigger();
+      close(true);
+    }
+
+    function shiftActive(days) {
+      const d = new Date(activeDate);
+      d.setDate(d.getDate() + days);
+      activeDate = clampDate(d);
+      viewDate = new Date(activeDate.getFullYear(), activeDate.getMonth(), 1, 12);
+      renderCalendar();
+    }
+
+    function shiftMonth(delta) {
+      const target = new Date(viewDate.getFullYear(), viewDate.getMonth() + delta, 1, 12);
+      if (!monthAllows(target.getFullYear(), target.getMonth())) return;
+      const day = activeDate ? activeDate.getDate() : 1;
+      const last = new Date(target.getFullYear(), target.getMonth() + 1, 0, 12).getDate();
+      activeDate = clampDate(new Date(target.getFullYear(), target.getMonth(), Math.min(day, last), 12));
+      viewDate = new Date(target.getFullYear(), target.getMonth(), 1, 12);
+      renderCalendar();
+      trigger.focus({ preventScroll: true });
+    }
+
+    function renderCalendar() {
+      if (!popup) return;
+      const year = viewDate.getFullYear();
+      const month = viewDate.getMonth();
+      const selectedISO = input.value;
+      const activeISO = toISO(activeDate);
+      const todayISO = today();
+      const title = new Date(year, month, 1, 12).toLocaleDateString("en-IN", { month: "long", year: "numeric" });
+      const uid = input.id + "-calendar";
+
+      popup.innerHTML = `
+        <div class="date-picker-head">
+          <button class="date-picker-nav" type="button" data-nav="prev" aria-label="Previous month"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
+          <div class="date-picker-title" id="${uid}-title">${htmlEscape(title)}</div>
+          <button class="date-picker-nav" type="button" data-nav="next" aria-label="Next month"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
+        </div>
+        <div class="date-picker-weekdays" aria-hidden="true"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
+        <div class="date-picker-grid" role="grid" aria-labelledby="${uid}-title"></div>
+        <div class="date-picker-foot"><span class="date-picker-hint">Arrow keys to navigate</span><button class="date-picker-today" type="button">Today</button></div>`;
+
+      const prev = popup.querySelector('[data-nav="prev"]');
+      const next = popup.querySelector('[data-nav="next"]');
+      const prevMonth = new Date(year, month - 1, 1, 12);
+      const nextMonth = new Date(year, month + 1, 1, 12);
+      prev.disabled = !monthAllows(prevMonth.getFullYear(), prevMonth.getMonth());
+      next.disabled = !monthAllows(nextMonth.getFullYear(), nextMonth.getMonth());
+      prev.onclick = () => shiftMonth(-1);
+      next.onclick = () => shiftMonth(1);
+
+      const grid = popup.querySelector(".date-picker-grid");
+      const first = new Date(year, month, 1, 12);
+      const offset = (first.getDay() + 6) % 7;
+      const start = new Date(year, month, 1 - offset, 12);
+      for (let i = 0; i < 42; i++) {
+        const d = new Date(start);
+        d.setDate(start.getDate() + i);
+        const value = toISO(d);
+        const day = document.createElement("button");
+        day.type = "button";
+        day.className = "date-picker-day";
+        day.textContent = d.getDate();
+        day.id = uid + "-day-" + value;
+        day.setAttribute("role", "gridcell");
+        day.setAttribute("aria-label", d.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" }));
+        day.setAttribute("aria-selected", value === selectedISO ? "true" : "false");
+        day.tabIndex = -1;
+        if (d.getMonth() !== month) day.classList.add("outside");
+        if (value === todayISO) day.classList.add("today");
+        if (value === selectedISO) day.classList.add("selected");
+        if (value === activeISO) day.classList.add("active");
+        if (!allowed(value)) day.disabled = true;
+        else day.onclick = () => choose(value);
+        grid.appendChild(day);
+      }
+      trigger.setAttribute("aria-activedescendant", uid + "-day-" + activeISO);
+
+      const todayBtn = popup.querySelector(".date-picker-today");
+      todayBtn.disabled = !allowed(todayISO);
+      todayBtn.onclick = () => choose(todayISO);
+    }
+
+    function positionPopup() {
+      if (!popup) return;
+      const r = trigger.getBoundingClientRect();
+      const width = Math.min(320, window.innerWidth - 24, Math.max(280, r.width));
+      popup.style.width = width + "px";
+      const box = popup.getBoundingClientRect();
+      const left = Math.min(Math.max(12, r.left), window.innerWidth - width - 12);
+      const fitsBelow = window.innerHeight - r.bottom >= box.height + 12;
+      const top = fitsBelow || r.top < box.height + 20
+        ? Math.min(window.innerHeight - box.height - 12, r.bottom + 8)
+        : Math.max(12, r.top - box.height - 8);
+      popup.style.left = left + "px";
+      popup.style.top = Math.max(12, top) + "px";
+      popup.style.transformOrigin = fitsBelow ? "top center" : "bottom center";
+    }
+
+    function onDocumentDown(e) {
+      if (popup && !popup.contains(e.target) && !trigger.contains(e.target)) close(false);
+    }
+    function onViewportChange() { positionPopup(); }
+
+    function open() {
+      if (popup || input.disabled) return;
+      closeOpenCSelect();
+      closeOpenDatePicker();
+      activeDate = clampDate(parseISO(input.value || today()));
+      viewDate = new Date(activeDate.getFullYear(), activeDate.getMonth(), 1, 12);
+      popup = document.createElement("div");
+      popup.id = input.id + "-calendar-popup";
+      popup.className = "date-picker-menu";
+      popup.setAttribute("role", "dialog");
+      popup.setAttribute("aria-modal", "false");
+      popup.setAttribute("aria-label", "Choose payment date");
+      document.body.appendChild(popup);
+      wrap.classList.add("open");
+      trigger.setAttribute("aria-expanded", "true");
+      trigger.setAttribute("aria-controls", popup.id);
+      renderCalendar();
+      positionPopup();
+      _activeDatePicker = close;
+      document.addEventListener("mousedown", onDocumentDown, true);
+      window.addEventListener("resize", onViewportChange, { passive: true });
+      window.addEventListener("scroll", onViewportChange, true);
+    }
+
+    function close(restoreFocus) {
+      if (!popup) return;
+      popup.remove();
+      popup = null;
+      wrap.classList.remove("open");
+      trigger.setAttribute("aria-expanded", "false");
+      trigger.removeAttribute("aria-controls");
+      trigger.removeAttribute("aria-activedescendant");
+      document.removeEventListener("mousedown", onDocumentDown, true);
+      window.removeEventListener("resize", onViewportChange);
+      window.removeEventListener("scroll", onViewportChange, true);
+      if (_activeDatePicker === close) _activeDatePicker = null;
+      if (restoreFocus) requestAnimationFrame(() => trigger.focus({ preventScroll: true }));
+    }
+
+    trigger.addEventListener("click", e => {
+      e.preventDefault();
+      if (popup) close(false); else open();
+    });
+    trigger.addEventListener("keydown", e => {
+      if (!popup) {
+        if (e.key === "Enter" || e.key === " " || e.key === "ArrowDown") {
+          e.preventDefault();
+          open();
+        }
+        return;
+      }
+      if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); close(true); }
+      else if (e.key === "Tab") close(false);
+      else if (e.key === "ArrowLeft") { e.preventDefault(); shiftActive(-1); }
+      else if (e.key === "ArrowRight") { e.preventDefault(); shiftActive(1); }
+      else if (e.key === "ArrowUp") { e.preventDefault(); shiftActive(-7); }
+      else if (e.key === "ArrowDown") { e.preventDefault(); shiftActive(7); }
+      else if (e.key === "PageUp") { e.preventDefault(); shiftMonth(-1); }
+      else if (e.key === "PageDown") { e.preventDefault(); shiftMonth(1); }
+      else if (e.key === "Home") { e.preventDefault(); shiftActive(-((activeDate.getDay() + 6) % 7)); }
+      else if (e.key === "End") { e.preventDefault(); shiftActive(6 - ((activeDate.getDay() + 6) % 7)); }
+      else if (e.key === "Enter" || e.key === " ") { e.preventDefault(); choose(toISO(activeDate)); }
+    });
+    input.addEventListener("input", syncTrigger);
+    input.addEventListener("change", syncTrigger);
+    syncTrigger();
   });
 }
 
@@ -3014,6 +3344,10 @@ function adminActionFlow(feeType, identifier, label) {
       <option value="cash">Cash</option>
     </select>
     </div>
+    <div class="field">
+      <label for="payment-date">Payment Date</label>
+      <input type="date" id="payment-date" value="${today()}" max="${today()}">
+    </div>
     <div id="amt-row" style="display:none;margin-top:0.6rem">
       <div class="field">
       <input type="number" id="amt-inp" placeholder="e.g. 500 or -200">
@@ -3038,13 +3372,19 @@ function adminActionFlow(feeType, identifier, label) {
   m.querySelector("#m-cancel").onclick = closeAllOverlays;
 
   okBtn.onclick = async () => {
-    const action = sel.value;
-    const mode   = m.querySelector("#mode-sel").value;
+    const action      = sel.value;
+    const mode        = m.querySelector("#mode-sel").value;
+    const paymentDate = m.querySelector("#payment-date").value;
+
+    if (!isValidPaymentDate(paymentDate)) {
+      toast("Please select a valid payment date. Future dates are not allowed.");
+      return;
+    }
 
     if (action === "full") {
       okBtn.disabled = true;
       closeAllOverlays();
-      await applyPayment(feeType, identifier, 0, true, mode);
+      await applyPayment(feeType, identifier, 0, true, mode, paymentDate);
       return;
     }
 
@@ -3056,7 +3396,7 @@ function adminActionFlow(feeType, identifier, label) {
 
     okBtn.disabled = true;
     closeAllOverlays();
-    await applyPayment(feeType, identifier, amount, false, mode);
+    await applyPayment(feeType, identifier, amount, false, mode, paymentDate);
   };
 }
 
@@ -4230,5 +4570,5 @@ wireBottomNav();
 </script>
 
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1dfaf1bbdaec08d',t:'MTc4NDUyNjU4MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1e9f8e17dbcc87a',t:'MTc4NDYzNDQ2MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1eb5288e88aef77',t:'MTc4NDY0ODYxOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1e9f8e17dbcc87a',t:'MTc4NDYzNDQ2MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1eb5288e88aef77',t:'MTc4NDY0ODYxOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a200ab9c59337eb8',t:'MTc4NDg3MjQ2Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
