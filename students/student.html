@@ -1,6 +1,3 @@
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1033,7 +1030,7 @@ button:focus-visible,.fee-tab:focus-visible,.cselect-trigger:focus-visible{outli
       <div><span>Class</span><strong id="rt-class"></strong></div>
       <div><span>Fee Type</span><strong id="rt-fee"></strong></div>
       <div><span>Academic Year</span><strong id="rt-ay"></strong></div>
-      <div><span>Term</span><strong id="rt-term"></strong></div>
+      <div><span id="rt-period-label">Term</span><strong id="rt-term"></strong></div>
       <div><span>Payment Method</span><strong id="rt-method"></strong></div>
       <div><span>Receipt Number</span><strong id="rt-code"></strong></div>
       <div><span>Transaction Reference</span><strong id="rt-ref"></strong></div>
@@ -1100,6 +1097,7 @@ const WHATSAPP_URL = "https://wa.me/918547987577";
 const MAX_RECEIPTS = 100;
 
 const MONTH_ORDER = ["june","july","august","september","october","november","december","january","february","march"];
+const PLAY_SCHOOL_MONTHS = MONTH_ORDER.map(m => m.charAt(0).toUpperCase() + m.slice(1));
 
 const TERM_NAMES = [
   "June – August",
@@ -1213,6 +1211,40 @@ function isValidPaymentDate(value) {
   return !isNaN(d.getTime()) && d.toISOString().slice(0, 10) === value;
 }
 
+function isPlaySchoolClass(value) {
+  const normalized = String(value || "")
+    .trim()
+    .replace(/[-_]+/g, " ")
+    .replace(/\s+/g, " ")
+    .toUpperCase();
+  return normalized === "PLAY SCHOOL" || normalized === "PLAYSCHOOL";
+}
+
+function isPlaySchoolStudent() {
+  return isPlaySchoolClass(SD.class);
+}
+
+function playSchoolMonthLabel(value) {
+  const label = String(value || "").trim();
+  const clean = label.replace(/\s+fee$/i, "");
+  let idx = PLAY_SCHOOL_MONTHS.findIndex(m => m.toLowerCase() === clean.toLowerCase());
+  if (idx === -1) idx = TERM_NAMES.findIndex(name => name.toLowerCase() === clean.toLowerCase());
+  if (idx === -1) {
+    const match = clean.match(/^term\s*(\d+)/i);
+    if (match) idx = parseInt(match[1], 10) - 1;
+  }
+  return PLAY_SCHOOL_MONTHS[idx] || clean || "—";
+}
+
+function paymentPresentation(type, subType) {
+  const label = subType || "—";
+  if (isPlaySchoolStudent() && type === "term") {
+    const month = playSchoolMonthLabel(label);
+    return { title: month + " Fee", feeType: "Monthly Fee", periodLabel: "Month", period: month };
+  }
+  return { title: label, feeType: label, periodLabel: "Term", period: label };
+}
+
 function htmlEscape(str) {
   if (str == null) return "";
   return String(str)
@@ -1250,8 +1282,18 @@ function hideLoader() {
 /* ═══════════════════════════════════════════
    NORMALISATION
 ═══════════════════════════════════════════ */
-function normalizeTerms(raw) {
+function normalizeTerms(raw, monthly = false) {
   const arr = Array.isArray(raw) ? raw : [];
+  if (monthly) {
+    return PLAY_SCHOOL_MONTHS.map((name, i) => {
+      const t = arr[i] || {};
+      return {
+        name,
+        total: safe(t.total ?? 0),
+        paid:  safe(t.paid  ?? 0)
+      };
+    });
+  }
   if (!arr.length) return TERM_NAMES.map(name => ({ name, total: 0, paid: 0 }));
   return arr.map((t, i) => ({
     name:  TERM_NAMES[i] || `Term ${i + 1}`,
@@ -1330,7 +1372,7 @@ function normalizePreviousYearFees(raw) {
 }
 
 function enforceDefaults() {
-  if (!SD.terms)     SD.terms     = normalizeTerms([]);
+  if (!SD.terms)     SD.terms     = normalizeTerms([], isPlaySchoolStudent());
   if (!SD.ecaFee)    SD.ecaFee    = { total: 1250, paid: 0 };
   if (!SD.otherFees) SD.otherFees = [];
   if (!SD.receipts)  SD.receipts  = [];
@@ -1358,12 +1400,13 @@ async function loadStudent() {
       return;
     }
     const raw = snap.data();
+    const playSchool = isPlaySchoolClass(raw.class);
     SD = {
       name:      raw.name  || "Unknown",
       class:     String(raw.class || "—").toUpperCase(),
       phone:     raw.phone || "",
       receipts:  Array.isArray(raw.receipts) ? raw.receipts : [],
-      terms:     normalizeTerms(raw.terms),
+      terms:     normalizeTerms(raw.terms, playSchool),
       busFee:    normalizeBusFee(raw.busFee),
       ecaFee:    normalizeEcaFee(raw.ecaFee || raw.eca),
       annualFee: normalizeAnnualFee(raw.annualFee),
@@ -1464,7 +1507,7 @@ function updateProgress(total, paid) {
   el("progressBlock").style.display = "block";
   el("progressBar").style.transform = "scaleX(" + (pct / 100) + ")";
   countUp(el("progressPct"), Math.round(pct), v => v + "%");
-  el("progressLabel").textContent   = VIEW === "term" ? "TERM FEES PAID" : "OTHER FEES PAID";
+  el("progressLabel").textContent   = VIEW === "term" ? (isPlaySchoolStudent() ? "MONTHLY FEES PAID" : "TERM FEES PAID") : "OTHER FEES PAID";
 }
 
 /* ═══════════════════════════════════════════
@@ -1485,12 +1528,12 @@ function renderSummary(total, paid, remaining, kind) {
   const S = SummaryEngine.compute();
   const posture = (kind === "home") ? S.posture : (remaining <= 0 ? "paid" : "normal");
   const heroClass = "summary-hero" + (posture === "paid" ? " is-paid" : posture === "overdue" ? " is-overdue" : posture === "upcoming" ? " is-upcoming" : "");
-  const label = kind === "term" ? "Term Fees Outstanding" : kind === "other" ? "Other Fees Outstanding" : "Outstanding Balance";
+  const label = kind === "term" ? (isPlaySchoolStudent() ? "Monthly Fees Outstanding" : "Term Fees Outstanding") : kind === "other" ? "Other Fees Outstanding" : "Outstanding Balance";
   let sub;
   if (posture === "paid") {
     sub = "You're all caught up. Every fee is paid - thank you!";
   } else if (kind === "term") {
-    sub = "Term fees outstanding: " + fmtRs(remaining) + ". Pay whenever you're ready.";
+    sub = (isPlaySchoolStudent() ? "Monthly fees outstanding: " : "Term fees outstanding: ") + fmtRs(remaining) + ". Pay whenever you're ready.";
   } else if (kind === "other") {
     sub = "Other fees outstanding: " + fmtRs(remaining) + ". Pay whenever you're ready.";
   } else {
@@ -1644,12 +1687,15 @@ function updateCardSummary(card, rows, id) {
 ═══════════════════════════════════════════ */
 function renderHomeView(container, S) {
   const ayStart = AcademicYearEngine.startYear();
+  const monthly = isPlaySchoolStudent();
   // Nearest upcoming/overdue unpaid term -> "Next Due Date"
   let nextDue = null;
   (TERMS || []).forEach(x => {
     const due = deriveTermDueDate(x.name, ayStart);
     const rem = safe(x.total) - safe(x.paid);
-    if (rem > 0 && due) {
+    if (monthly && rem > 0 && !nextDue) {
+      nextDue = { name: x.name, rem, monthly: true, total: x.total, paid: x.paid };
+    } else if (!monthly && rem > 0 && due) {
       if (!nextDue || new Date(due) < new Date(nextDue.due)) {
         const cd = CountdownEngine.forDueDate(due);
         nextDue = { name: x.name, due, cd, rem };
@@ -1668,27 +1714,41 @@ function renderHomeView(container, S) {
   let ann = null;
   try { ann = (NotificationEngine.generate() || []).find(n => n.cat === "announcement"); } catch (e) {}
 
-  const dueCard = nextDue
-    ? `<div class="home-card">
-        <div class="home-flag">
-          <div class="hf-ico ${nextDue.cd.overdue ? "warn" : ""}">${iconSvg(nextDue.cd.overdue ? "warning" : "schedule")}</div>
-          <div class="hf-main">
-            <div class="hf-label">Next Due Date</div>
-            <div class="hf-value">${htmlEscape(formatDue(nextDue.due))}</div>
-            <div class="hf-sub">${htmlEscape(nextDue.name)} · ${htmlEscape(nextDue.cd.text)}</div>
+  const dueCard = monthly
+    ? (nextDue
+      ? `<div class="home-card">
+          <div class="home-flag">
+            <div class="hf-ico">${iconSvg("schedule")}</div>
+            <div class="hf-main">
+              <div class="hf-label">Next Pending Month</div>
+              <div class="hf-value">${htmlEscape(nextDue.name)}</div>
+              <div class="hf-sub">Monthly Fee · ${htmlEscape(feeStatus(nextDue.total, nextDue.paid).label)}</div>
+            </div>
+            <div style="font-weight:800;font-size:1rem;color:var(--text)">${fmtRs(nextDue.rem)}</div>
           </div>
-          <div style="font-weight:800;font-size:1rem;color:${nextDue.cd.overdue ? "var(--red-text)" : "var(--text)"}">${fmtRs(nextDue.rem)}</div>
-        </div>
-      </div>`
-    : `<div class="home-card"><div class="home-flag"><div class="hf-ico ok">${iconSvg("check_circle")}</div><div class="hf-main"><div class="hf-label">Next Due Date</div><div class="hf-value">All clear</div><div class="hf-sub">No pending dues</div></div></div></div>`;
+        </div>`
+      : `<div class="home-card"><div class="home-flag"><div class="hf-ico ok">${iconSvg("check_circle")}</div><div class="hf-main"><div class="hf-label">Next Pending Month</div><div class="hf-value">All clear</div><div class="hf-sub">No pending monthly fees</div></div></div></div>`)
+    : (nextDue
+      ? `<div class="home-card">
+          <div class="home-flag">
+            <div class="hf-ico ${nextDue.cd.overdue ? "warn" : ""}">${iconSvg(nextDue.cd.overdue ? "warning" : "schedule")}</div>
+            <div class="hf-main">
+              <div class="hf-label">Next Due Date</div>
+              <div class="hf-value">${htmlEscape(formatDue(nextDue.due))}</div>
+              <div class="hf-sub">${htmlEscape(nextDue.name)} · ${htmlEscape(nextDue.cd.text)}</div>
+            </div>
+            <div style="font-weight:800;font-size:1rem;color:${nextDue.cd.overdue ? "var(--red-text)" : "var(--text)"}">${fmtRs(nextDue.rem)}</div>
+          </div>
+        </div>`
+      : `<div class="home-card"><div class="home-flag"><div class="hf-ico ok">${iconSvg("check_circle")}</div><div class="hf-main"><div class="hf-label">Next Due Date</div><div class="hf-value">All clear</div><div class="hf-sub">No pending dues</div></div></div></div>`);
 
   const pendingCard = `<div class="home-card">
       <div class="home-flag">
         <div class="hf-ico ${pendingTerms.length ? "" : "ok"}">${iconSvg(pendingTerms.length ? "school" : "check_circle")}</div>
         <div class="hf-main">
-          <div class="hf-label">Pending Terms</div>
+          <div class="hf-label">${monthly ? "Pending Months" : "Pending Terms"}</div>
           <div class="hf-value">${pendingTerms.length} of ${TERMS.length}</div>
-          <div class="hf-sub">${pendingTerms.length ? htmlEscape(pendingTerms[0].name) + " next" : "All terms cleared"}</div>
+          <div class="hf-sub">${pendingTerms.length ? htmlEscape(pendingTerms[0].name) + " next" : (monthly ? "All months cleared" : "All terms cleared")}</div>
         </div>
       </div>
     </div>`;
@@ -1700,7 +1760,7 @@ function renderHomeView(container, S) {
         return `<div class="home-act" data-code="${htmlEscape(r.code || "")}">
           <div class="ha-ico">${iconSvg("arrow_downward")}</div>
           <div class="ha-main">
-            <div class="ha-title">${htmlEscape(r.subType || "—")}</div>
+            <div class="ha-title">${htmlEscape(paymentPresentation(r.type, r.subType).title)}</div>
             <div class="ha-meta">${htmlEscape(r.date || "—")} · ${method}</div>
           </div>
           <div class="ha-amt">${fmtRs(amt)}</div>
@@ -1837,12 +1897,13 @@ function showLatestReceipt() {
     .sort((a, b) => (b.date || "").localeCompare(a.date || ""));
   if (!recs.length) { toast("No receipts available yet."); return; }
   const r = recs[0];
-  showSuccess(r.subType, Math.abs(safe(r.amount)), r.code, { mode: r.mode || "upi", term: r.subType, ay: AcademicYearEngine.current(), paymentDate: getPaymentDate(r) });
+  showSuccess(r.subType, Math.abs(safe(r.amount)), r.code, { mode: r.mode || "upi", type: r.type, term: r.subType, ay: AcademicYearEngine.current(), paymentDate: getPaymentDate(r) });
 }
 
 function renderTermView(container) {
+  const monthly = isPlaySchoolStudent();
   if (!TERMS.length) {
-    container.appendChild(emptyState("school", "No term fees yet", "Term fee details will appear here once the school publishes them."));
+    container.appendChild(emptyState("school", monthly ? "No monthly fees yet" : "No term fees yet", monthly ? "Monthly fee details will appear here once the school publishes them." : "Term fee details will appear here once the school publishes them."));
     return;
   }
   TERMS.forEach((t, i) => {
@@ -1852,7 +1913,7 @@ function renderTermView(container) {
     card.className = "term-card";
     const dueISO = deriveTermDueDate(t.name, AcademicYearEngine.startYear());
     const cd = CountdownEngine.forDueDate(dueISO);
-    const dueLabel = dueISO ? formatDue(dueISO) : "Flexible";
+    const dueLabel = dueISO ? formatDue(dueISO) : (monthly ? "Monthly Fee" : "Flexible");
     const cdText = cd.has ? cd.text : "";
     card.innerHTML = `
       <span class="term-ico">${iconSvg("school")}</span>
@@ -1987,7 +2048,7 @@ function renderHistoryView(container) {
     <span class="filter-label">Filter:</span>
     <select class="filter-select" id="hist-filter">
       <option value="all">All Types</option>
-      <option value="term">Term</option>
+      <option value="term">${isPlaySchoolStudent() ? "Monthly" : "Term"}</option>
       <option value="bus">Bus</option>
       <option value="eca">ECA</option>
       <option value="annual">Annual</option>
@@ -2021,6 +2082,7 @@ function renderHistoryView(container) {
     }
     if (fMethod !== "all") filtered = filtered.filter(r => (r.mode || "upi") === fMethod);
     if (q) filtered = filtered.filter(r =>
+      paymentPresentation(r.type, r.subType).title.toLowerCase().includes(q) ||
       (r.subType || "").toLowerCase().includes(q) ||
       (r.code || "").toLowerCase().includes(q) ||
       (r.date || "").toLowerCase().includes(q));
@@ -2042,7 +2104,7 @@ function renderHistoryView(container) {
       return `<div class="txn-card" data-code="${htmlEscape(r.code || "")}">
         <div class="txn-icon ${positive ? "txn-pos" : "txn-neg"}">${iconSvg(positive ? "arrow_downward" : "edit")}</div>
         <div class="txn-main">
-          <div class="txn-title">${htmlEscape(r.subType || "—")}</div>
+          <div class="txn-title">${htmlEscape(paymentPresentation(r.type, r.subType).title)}</div>
           <div class="txn-sub">${htmlEscape(r.code || "—")}</div>
           <div class="txn-meta">${htmlEscape(r.date || "—")} · ${htmlEscape(time)} · ${method}</div>
           <div class="txn-tags">
@@ -2133,6 +2195,7 @@ async function renderReceiptImg(data) {
   s("rt-date",   data.date);
   s("rt-code",   data.code);
   s("rt-method", data.mode === "cash" ? "Cash" : "UPI");
+  s("rt-period-label", data.periodLabel || "Term");
   s("rt-term",   data.term || "—");
   s("rt-ay",     data.ay || AcademicYearEngine.current());
   s("rt-ref",    data.ref || data.code || "—");
@@ -2149,10 +2212,11 @@ function dlReceipt(url, code) {
 async function showSuccess(subType, amount, code, opts) {
   closeAllOverlays();
   const o = opts || {};
+  const presentation = paymentPresentation(o.type, subType);
   const imgUrl = await renderReceiptImg({
     name: SD.name, class: SD.class,
-    amount, fee: subType, date: o.paymentDate || today(), code,
-    mode: o.mode || "upi", term: o.term || subType, ay: o.ay || AcademicYearEngine.current(), ref: o.ref || code
+    amount, fee: presentation.feeType, date: o.paymentDate || today(), code,
+    mode: o.mode || "upi", term: presentation.period, periodLabel: presentation.periodLabel, ay: o.ay || AcademicYearEngine.current(), ref: o.ref || code
   });
   const m = overlay(`
     <button class="modal-close">${iconSvg("close")}</button>
@@ -2164,7 +2228,7 @@ async function showSuccess(subType, amount, code, opts) {
           <path   class="tick-path"   d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
         </svg>
       </div>
-      <p style="font-weight:700;margin-bottom:6px">${htmlEscape(subType)} · ${fmtRs(amount)}</p>
+      <p style="font-weight:700;margin-bottom:6px">${htmlEscape(presentation.title)} · ${fmtRs(amount)}</p>
       <img src="${imgUrl}" alt="Receipt">
       <div class="receipt-code">${htmlEscape(code)}</div>
       <div class="receipt-btns">
@@ -2175,7 +2239,7 @@ async function showSuccess(subType, amount, code, opts) {
   m.querySelector("#rcpt-dl").onclick = () => dlReceipt(imgUrl, code);
   m.querySelector("#rcpt-wa").onclick = () =>
     window.open(`https://wa.me/${SD.phone}?text=${encodeURIComponent(
-      `Dear Parent,\n\nPayment of ${fmtRs(amount)} for ${subType} has been updated.\nReceipt: ${code}\n\nSt. Anne's ICSE School`
+      `Dear Parent,\n\nPayment of ${fmtRs(amount)} for ${presentation.title} has been updated.\nReceipt: ${code}\n\nSt. Anne's ICSE School`
     )}`);
 }
 
@@ -2186,6 +2250,7 @@ async function showSuccess(subType, amount, code, opts) {
 function buildReceiptDoc(r) {
   const amt = Math.abs(safe(r.amount));
   const method = (r.mode || "upi") === "cash" ? "Cash" : "UPI";
+  const presentation = paymentPresentation(r.type, r.subType);
   const ay = AcademicYearEngine.current();
   const ref = r.code || "—";
   return `
@@ -2202,10 +2267,10 @@ function buildReceiptDoc(r) {
       <div class="rd-rows">
         <div><span>Student</span><strong>${htmlEscape(SD.name || "—")}</strong></div>
         <div><span>Class</span><strong>${htmlEscape(SD.class || "—")}</strong></div>
-        <div><span>Fee</span><strong>${htmlEscape(r.subType || "—")}</strong></div>
+        <div><span>${isPlaySchoolStudent() && r.type === "term" ? "Fee Type" : "Fee"}</span><strong>${htmlEscape(presentation.feeType)}</strong></div>
         <div><span>Payment Date</span><strong>${htmlEscape(getPaymentDate(r))}</strong></div>
         <div><span>Method</span><strong>${htmlEscape(method)}</strong></div>
-        <div><span>Term</span><strong>${htmlEscape(r.subType || "—")}</strong></div>
+        <div><span>${htmlEscape(presentation.periodLabel)}</span><strong>${htmlEscape(presentation.period)}</strong></div>
         <div><span>Academic Year</span><strong>${htmlEscape(ay)}</strong></div>
         <div><span>Receipt No.</span><strong>${htmlEscape(r.code || "—")}</strong></div>
         <div><span>Txn Reference</span><strong>${htmlEscape(ref)}</strong></div>
@@ -2242,10 +2307,11 @@ function openReceiptViewer(r) {
 async function downloadReceipt(r) {
   try {
     const amt = Math.abs(safe(r.amount));
+    const presentation = paymentPresentation(r.type, r.subType);
     const img = await renderReceiptImg({
       name: SD.name, class: SD.class,
-      amount: amt, fee: r.subType, date: getPaymentDate(r),
-      code: r.code, mode: r.mode || "upi", term: r.subType,
+      amount: amt, fee: presentation.feeType, date: getPaymentDate(r),
+      code: r.code, mode: r.mode || "upi", term: presentation.period, periodLabel: presentation.periodLabel,
       ay: AcademicYearEngine.current(), ref: r.code
     });
     dlReceipt(img, r.code);
@@ -2255,7 +2321,11 @@ async function downloadReceipt(r) {
 
 async function shareReceipt(r) {
   const amt = Math.abs(safe(r.amount));
-  const text = `St. Anne's ICSE School\nPayment Receipt\nFee: ${r.subType || ""}\nAmount: ${fmtRs(amt)}\nDate: ${getPaymentDate(r)}\nReceipt No: ${r.code || ""}`;
+  const presentation = paymentPresentation(r.type, r.subType);
+  const feeText = isPlaySchoolStudent() && r.type === "term"
+    ? `Fee Type: ${presentation.feeType}\nMonth: ${presentation.period}`
+    : `Fee: ${r.subType || ""}`;
+  const text = `St. Anne's ICSE School\nPayment Receipt\n${feeText}\nAmount: ${fmtRs(amt)}\nDate: ${getPaymentDate(r)}\nReceipt No: ${r.code || ""}`;
   if (navigator.share) {
     try { await navigator.share({ title: "Fee Receipt", text }); return; } catch (e) {}
   }
@@ -2282,7 +2352,7 @@ async function applyPayment(feeType, identifier, amount, isFull, mode = "upi", p
 
   if (feeType === "term") {
     const idx = parseInt(identifier);
-    if (isNaN(idx) || !TERMS[idx]) { appAlert("Notice", "Invalid term"); return false; }
+    if (isNaN(idx) || !TERMS[idx]) { appAlert("Notice", isPlaySchoolStudent() ? "Invalid month" : "Invalid term"); return false; }
     item = TERMS[idx]; subType = item.name;
 
   } else if (feeType === "bus") {
@@ -2377,7 +2447,7 @@ async function applyPayment(feeType, identifier, amount, isFull, mode = "upi", p
   }
 
   render();
-  await showSuccess(subType, absAmount, code, { mode: mode, term: subType, ay: AcademicYearEngine.current(), paymentDate });
+  await showSuccess(subType, absAmount, code, { mode: mode, type: feeType, term: subType, ay: AcademicYearEngine.current(), paymentDate });
   return true;
 }
 
@@ -2388,7 +2458,11 @@ function getFeeItemByReceipt(receipt) {
   const { type, subType } = receipt;
 
   if (type === "term") {
-    const term = TERMS.find(t => t.name === subType);
+    let term = TERMS.find(t => t.name === subType);
+    if (!term && isPlaySchoolStudent()) {
+      const idx = PLAY_SCHOOL_MONTHS.indexOf(playSchoolMonthLabel(subType));
+      term = idx >= 0 ? TERMS[idx] : null;
+    }
     return term ? { item: term } : null;
   }
   if (type === "bus") {
@@ -2443,7 +2517,7 @@ function editPayment(code) {
     <button class="modal-close">${iconSvg("close")}</button>
     <h3>${iconSvg("edit")} Edit Payment</h3>
     <div class="edit-info-box">
-      <div class="edit-info-fee">${htmlEscape(receipt.subType || "—")}</div>
+      <div class="edit-info-fee">${htmlEscape(paymentPresentation(receipt.type, receipt.subType).title)}</div>
       <div class="edit-info-meta">Recorded: ${fmtRs(oldAmt)} &nbsp;·&nbsp; Date: ${htmlEscape(oldPaymentDate)}</div>
       <div class="edit-info-code">${htmlEscape(receipt.code)}</div>
     </div>
@@ -2551,7 +2625,7 @@ async function applyEdit(oldReceipt, newAmount, newMode = "upi", paymentDate = t
     await saveAll();
 
     render();
-    await showSuccess(oldReceipt.subType, newAmount, newCode, { paymentDate });
+    await showSuccess(oldReceipt.subType, newAmount, newCode, { type: oldReceipt.type, paymentDate });
 
   } catch (err) {
     item.paid   = prevItemPaid;
@@ -3183,7 +3257,7 @@ function openPay(opts) {
    ADMIN ADD FLOW
 ═══════════════════════════════════════════ */
 function adminSelectFeeType() {
-  const opts = [`<option value="term">Term Fee</option>`];
+  const opts = [`<option value="term">${isPlaySchoolStudent() ? "Monthly Fee" : "Term Fee"}</option>`];
   if (SD.busFee)           opts.push(`<option value="bus">Bus Fee</option>`);
   opts.push(`<option value="eca">ECA Fee</option>`);
   if (SD.annualFee)        opts.push(`<option value="annual">Annual Day Fee</option>`);
@@ -3228,12 +3302,13 @@ function adminSelectFeeType() {
 }
 
 function adminTermFlow() {
+  const monthly = isPlaySchoolStudent();
   const opts = TERMS.map((t, i) => `<option value="${i}">${htmlEscape(t.name)}</option>`).join("");
   const m = overlay(`
     <button class="modal-close">${iconSvg("close")}</button>
-    <h3>Select Term</h3>
+    <h3>Select ${monthly ? "Month" : "Term"}</h3>
     <div class="field">
-      <label for="term-sel">Term</label>
+      <label for="term-sel">${monthly ? "Month" : "Term"}</label>
       <select id="term-sel">${opts}</select>
     </div>
     <div class="modal-actions">
@@ -3246,7 +3321,8 @@ function adminTermFlow() {
   m.querySelector("#m-ok").onclick = () => {
     const idx = m.querySelector("#term-sel").value;
     closeAllOverlays();
-    adminActionFlow("term", idx, TERMS[parseInt(idx)]?.name || "Term");
+    const label = TERMS[parseInt(idx)]?.name || (monthly ? "Month" : "Term");
+    adminActionFlow("term", idx, monthly ? label + " Fee" : label);
   };
 }
 
@@ -3412,7 +3488,7 @@ function openHelp() {
       <div class="help-sec-head">${iconSvg("help")} Quick Answers</div>
       <div class="faq">
         <details><summary>How do I pay my fees?</summary><p>Use <strong>Pay Now</strong> and choose the correct category (Tuition, Bus, or Other). Scan the QR or copy the UPI ID to pay via any UPI app.</p></details>
-        <details><summary>When is a term fee due?</summary><p>Each term shows a due date on its card. We'll send a gentle reminder before it's due, and simply highlight anything overdue.</p></details>
+        <details><summary>${isPlaySchoolStudent() ? "How do monthly fees work?" : "When is a term fee due?"}</summary><p>${isPlaySchoolStudent() ? "Each academic month has its own fee status, including paid, partial, and pending amounts." : "Each term shows a due date on its card. We'll send a gentle reminder before it's due, and simply highlight anything overdue."}</p></details>
         <details><summary>My payment isn't showing up.</summary><p>Payments are reflected within 36 working hours. If it still hasn't appeared, message the school office with your receipt code.</p></details>
         <details><summary>Can I download a receipt?</summary><p>Yes. Open <strong>Payment History</strong>, tap any transaction, then choose <strong>Download</strong> or <strong>Send</strong>.</p></details>
       </div>
@@ -3655,7 +3731,7 @@ function openAdminEditSelector() {
 
   const options = receipts.map(r => {
     const safeCode = htmlEscape(r.code || "");
-    const safeText = `${htmlEscape(r.subType || "—")} — ${fmtRs(r.amount)} (${htmlEscape(r.date || "—")})`;
+    const safeText = `${htmlEscape(paymentPresentation(r.type, r.subType).title)} — ${fmtRs(r.amount)} (${htmlEscape(r.date || "—")})`;
     return `<option value="${safeCode}">${safeText}</option>`;
   }).join("");
 
@@ -3940,7 +4016,7 @@ const NotificationEngine = {
     ReminderEngine.generate().forEach(r => list.push({ title: r.title, desc: r.msg, cat: "reminder", prio: r.type === "overdue" ? "high" : "normal", ts: DateEngine.iso() }));
     const receipts = (SD && SD.receipts ? SD.receipts : []).filter(r => !r.status || r.status === "active");
     receipts.slice(0, 5).forEach(r => list.push({
-      title: "Payment Successful", desc: (r.subType || "Fee") + " · " + fmtRs(safe(r.amount)) + " via " + ((r.mode || "upi") === "cash" ? "Cash" : "UPI"),
+      title: "Payment Successful", desc: (isPlaySchoolStudent() && r.type === "term" ? paymentPresentation(r.type, r.subType).title : (r.subType || "Fee")) + " · " + fmtRs(safe(r.amount)) + " via " + ((r.mode || "upi") === "cash" ? "Cash" : "UPI"),
       cat: "receipt", prio: "normal", ts: r.date || DateEngine.iso(), code: r.code
     }));
     list.push({ title: "Fee Update Schedule", desc: "Recorded payments reflect within 36 working hours.", cat: "announcement", prio: "low", ts: DateEngine.iso() });
@@ -3971,7 +4047,9 @@ const PopupEngine = {
     (TERMS || []).forEach(x => {
       const due = deriveTermDueDate(x.name, ayStart);
       const rem = safe(x.total) - safe(x.paid);
-      if (rem > 0 && due) {
+      if (isPlaySchoolStudent() && rem > 0 && !firstTerm) {
+        firstTerm = { name: x.name, amount: rem, monthly: true };
+      } else if (!isPlaySchoolStudent() && rem > 0 && due) {
         const c = CountdownEngine.forDueDate(due);
         if (!c.overdue) {
           const score = c.daysRemaining;
@@ -3979,7 +4057,7 @@ const PopupEngine = {
         }
       }
     });
-    if (firstTerm) out.push({ label: firstTerm.name, amount: firstTerm.amount, meta: formatDue(firstTerm.due) + (firstTerm.days != null ? " · " + firstTerm.days + "d left" : "") });
+    if (firstTerm) out.push({ label: firstTerm.name, amount: firstTerm.amount, meta: firstTerm.monthly ? "Monthly Fee" : formatDue(firstTerm.due) + (firstTerm.days != null ? " · " + firstTerm.days + "d left" : "") });
     if (SD && SD.busFee) {
       let firstBus = null;
       MONTH_ORDER.forEach(m => {
@@ -4108,6 +4186,8 @@ function renderSidebars(){
     const paid  = t.paid  + o.paid  + py.paid;
     const remaining = total - paid;
     const pct = total > 0 ? Math.round((paid / total) * 100) : 0;
+    const upcomingHead = document.querySelector("#rbUpcoming")?.closest(".rb-panel")?.querySelector(".rb-head span");
+    if (upcomingHead) upcomingHead.textContent = isPlaySchoolStudent() ? "Pending Months" : "Upcoming Due Dates";
 
     rbSet("rbSummary",
       `<div class="rb-row"><span class="rb-name">Total Fees</span><span class="rb-val">${fmtRs(total)}</span></div>` +
@@ -4124,7 +4204,7 @@ function renderSidebars(){
     const pend = (TERMS || []).filter(x => safe(x.total) - safe(x.paid) > 0);
     rbSet("rbPending", pend.length
       ? pend.map(x => `<div class="rb-row"><span class="rb-name">${htmlEscape(x.name)}</span><span class="rb-val">${statusChipHTML(x.total, x.paid)}</span></div>`).join("")
-      : `<div class="rb-empty">All terms cleared</div>`);
+      : `<div class="rb-empty">${isPlaySchoolStudent() ? "All months cleared" : "All terms cleared"}</div>`);
 
     const acts = (SD && SD.receipts ? SD.receipts : [])
       .filter(r => !r.status || r.status === "active").slice().reverse().slice(0, 4);
@@ -4133,7 +4213,7 @@ function renderSidebars(){
           const amt = safe(r.amount), positive = amt >= 0;
           const method = (r.mode || "upi") === "cash" ? "Cash" : "UPI";
           return `<div class="rb-act"><div class="rb-act-ico">${iconSvg(positive ? "arrow_downward" : "edit")}</div>` +
-            `<div class="rb-act-main"><div class="rb-act-title">${htmlEscape(r.subType || "—")}</div>` +
+            `<div class="rb-act-main"><div class="rb-act-title">${htmlEscape(paymentPresentation(r.type, r.subType).title)}</div>` +
             `<div class="rb-act-meta">${htmlEscape(r.date || "—")} · ${method}</div></div>` +
             `<div class="rb-act-amt">${fmtRs(amt)}</div></div>`;
         }).join("")
@@ -4146,12 +4226,17 @@ function renderSidebars(){
 function updateViewTitle(){
   const t = document.getElementById("viewTitle");
   if (!t) return;
-  t.textContent = VIEW === "home" ? "Dashboard" : VIEW === "term" ? "Term Fees" : VIEW === "other" ? "Other Fees" : "Payment History";
+  t.textContent = VIEW === "home" ? "Dashboard" : VIEW === "term" ? (isPlaySchoolStudent() ? "Monthly Fees" : "Term Fees") : VIEW === "other" ? "Other Fees" : "Payment History";
 }
 
 function updateFeeTabs(){
   const tabs = document.getElementById("feeTabs");
   const title = document.getElementById("viewTitle");
+  const monthly = isPlaySchoolStudent();
+  const termTab = document.getElementById("tabTermFees");
+  const navLabel = document.querySelector("#tabOther .nav-label");
+  if (termTab) termTab.textContent = monthly ? "Monthly Fees" : "Term Fees";
+  if (navLabel) navLabel.textContent = monthly ? "Monthly Fees" : "Terms & Fees";
   if (VIEW === "history" || VIEW === "home") {
     if (tabs) tabs.style.display = "none";
     if (title) { title.style.display = VIEW === "home" ? "none" : ""; title.textContent = VIEW === "home" ? "Dashboard" : "Payment History"; }
@@ -4393,7 +4478,7 @@ function openGlobalSearch() {
   if (SD && SD.name) {
     results.push({ cat: "Student", title: SD.name, sub: (SD.class || "") + ((typeof studentId !== "undefined" && studentId) ? " · " + studentId.toUpperCase() : ""), act: () => { const c = document.getElementById("studentCard"); if (c) c.scrollIntoView({ behavior: "smooth", block: "start" }); closeAllOverlays(); } });
   }
-  (TERMS || []).forEach(t => results.push({ cat: "Term", title: t.name, sub: "Outstanding " + fmtRs(safe(t.total) - safe(t.paid)), act: () => { setView("term"); closeAllOverlays(); } }));
+  (TERMS || []).forEach(t => results.push({ cat: isPlaySchoolStudent() ? "Month" : "Term", title: t.name, sub: "Outstanding " + fmtRs(safe(t.total) - safe(t.paid)), act: () => { setView("term"); closeAllOverlays(); } }));
   const others = [];
   if (SD && SD.busFee) others.push("Bus Fees");
   if (SD && SD.ecaFee) others.push("ECA Fees");
@@ -4402,14 +4487,14 @@ function openGlobalSearch() {
   others.forEach(o => results.push({ cat: "Other Fee", title: o, sub: "View in Other Fees", act: () => { setView("other"); closeAllOverlays(); } }));
   (SD && SD.receipts ? SD.receipts : []).forEach(r => {
     if (r.status && r.status !== "active") return;
-    results.push({ cat: "Payment", title: (r.subType || "Fee"), sub: fmtRs(safe(r.amount)) + " · " + (r.date || ""), act: () => { setView("history"); closeAllOverlays(); } });
+    results.push({ cat: "Payment", title: isPlaySchoolStudent() && r.type === "term" ? paymentPresentation(r.type, r.subType).title : (r.subType || "Fee"), sub: fmtRs(safe(r.amount)) + " · " + (r.date || ""), act: () => { setView("history"); closeAllOverlays(); } });
   });
   NotificationEngine.generate().forEach(n => results.push({ cat: "Notification", title: n.title, sub: n.desc, act: () => { closeAllOverlays(); openNotifications(); } }));
 
   const m = overlay(`
     <button class="modal-close">${iconSvg("close")}</button>
     <h3>${iconSvg("search")} Search</h3>
-    <input class="gs-input" id="gsInput" type="search" placeholder="Search terms, fees, payments, notifications…" aria-label="Search">
+    <input class="gs-input" id="gsInput" type="search" placeholder="${isPlaySchoolStudent() ? "Search months, fees, payments, notifications…" : "Search terms, fees, payments, notifications…"}" aria-label="Search">
     <div class="gs-results" id="gsResults" role="listbox"></div>
     <div class="gs-hint">${iconSvg("lightbulb")} Press <kbd>Esc</kbd> to close · <kbd>/</kbd> to open</div>`);
   const input = m.querySelector("#gsInput");
@@ -4504,7 +4589,7 @@ function renderMobileCards() {
         const pend = (TERMS || []).filter(x => safe(x.total) - safe(x.paid) > 0).slice(0, 4);
         ps.innerHTML = pend.length
           ? pend.map(x => '<div class="ms-row"><span class="ms-name">' + htmlEscape(x.name) + '</span><span class="ms-amt">' + fmtRs(safe(x.total) - safe(x.paid)) + '</span></div>').join("")
-          : '<div class="ms-row"><span>No pending terms</span></div>';
+          : '<div class="ms-row"><span>' + (isPlaySchoolStudent() ? 'No pending months' : 'No pending terms') + '</span></div>';
       }
     }
   } catch (e) { Logger.error("renderMobileCards", e); }
@@ -4570,5 +4655,5 @@ wireBottomNav();
 </script>
 
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1dfaf1bbdaec08d',t:'MTc4NDUyNjU4MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1e9f8e17dbcc87a',t:'MTc4NDYzNDQ2MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1eb5288e88aef77',t:'MTc4NDY0ODYxOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a200ab9c59337eb8',t:'MTc4NDg3MjQ2Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1e9f8e17dbcc87a',t:'MTc4NDYzNDQ2MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1eb5288e88aef77',t:'MTc4NDY0ODYxOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a200f3e56ed8178d',t:'MTc4NDg3NTQyOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
