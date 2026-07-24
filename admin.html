@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1800,10 +1798,14 @@ addStudentClassSelect.addEventListener('change', () => {
         term1FeeLabel.textContent = TERM1_LABEL_PLAY;
         term2FeeGroup.style.display = 'none';
         term3FeeGroup.style.display = 'none';
+        document.getElementById('term2Fee').removeAttribute('required');
+        document.getElementById('term3Fee').removeAttribute('required');
     } else {
         term1FeeLabel.textContent = TERM1_LABEL_DEFAULT;
         term2FeeGroup.style.display = '';
         term3FeeGroup.style.display = '';
+        document.getElementById('term2Fee').setAttribute('required', '');
+        document.getElementById('term3Fee').setAttribute('required', '');
     }
 });
 autoFillBusBtn.addEventListener('click', () => { const juneVal = document.getElementById('busJune').value; if (!juneVal) { toast("Enter June amount first", true); return; } ['busJuly','busAug','busSep','busOct','busNov','busDec','busJan','busFeb','busMar'].forEach(id => { document.getElementById(id).value = juneVal; }); });
@@ -1922,7 +1924,7 @@ const passwordModal = document.getElementById('passwordModal');
 const addPasswordInput = document.getElementById('addPassword');
 const pwdError = document.getElementById('pwdError');
 function openAddStudentPassword() { showModal(passwordModal); addPasswordInput.value = ''; pwdError.style.display = 'none'; }
-document.getElementById('confirmPwdBtn').addEventListener('click', () => { if (addPasswordInput.value === PASSWORDS.ADD) { hideModal(passwordModal); document.getElementById('addStudentForm').reset(); busFeeFields.style.display = 'none'; prevYearFeeFields.style.display = 'none'; term2FeeGroup.style.display = ''; term3FeeGroup.style.display = ''; term1FeeLabel.textContent = TERM1_LABEL_DEFAULT; showModal(addStudentModal); } else { pwdError.style.display = 'block'; addPasswordInput.value = ''; } });
+document.getElementById('confirmPwdBtn').addEventListener('click', () => { if (addPasswordInput.value === PASSWORDS.ADD) { hideModal(passwordModal); document.getElementById('addStudentForm').reset(); busFeeFields.style.display = 'none'; prevYearFeeFields.style.display = 'none'; term2FeeGroup.style.display = ''; term3FeeGroup.style.display = ''; term1FeeLabel.textContent = TERM1_LABEL_DEFAULT; document.getElementById('term2Fee').setAttribute('required', ''); document.getElementById('term3Fee').setAttribute('required', ''); showModal(addStudentModal); } else { pwdError.style.display = 'block'; addPasswordInput.value = ''; } });
 document.getElementById('closePwdModal').onclick = () => hideModal(passwordModal);
 document.getElementById('cancelPwdBtn').onclick = () => hideModal(passwordModal);
 
@@ -2262,5 +2264,5 @@ async function initMain() {
 function generateParticles() { const container = document.getElementById('particles'); for (let i = 0; i < 25; i++) { const p = document.createElement('div'); p.className = 'particle'; const size = Math.random() * 80 + 40; p.style.width = size + 'px'; p.style.height = size + 'px'; p.style.left = Math.random() * 100 + '%'; p.style.top = Math.random() * 100 + '%'; p.style.animationDelay = Math.random() * 14 + 's'; container.appendChild(p); } }
 window.addEventListener('load', () => { loginOverlay.style.display = 'flex'; adminHeader.style.display = 'none'; appContainer.style.display = 'none'; footer.style.display = 'none'; });
 </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a14b890409e3968e',t:'MTc4Mjk3MzEyOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a20120073a25993d',t:'MTc4NDg3NzIzNg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a14b890409e3968e',t:'MTc4Mjk3MzEyOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a201ef6478b47f50',t:'MTc4NDg4NTcyOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
