@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1751,7 +1752,25 @@ window.addEventListener('popstate', () => {
 });
 
 async function createStudent({ id, name, cls, phone, term1, term2, term3, busEnabled, busMonths, ecaTotal, annualTotal, prevYear }, batch = null) {
-    const data = { name, class: cls, phone, terms: [{ name: "Term 1 (June – August)", total: safeFloat(term1), paid: 0 },{ name: "Term 2 (September – November)", total: safeFloat(term2), paid: 0 },{ name: "Term 3 (December – February)", total: safeFloat(term3), paid: 0 }], ecaFee: { total: safeFloat(ecaTotal) || 1250, paid: 0 }, otherFees: [], receipts: [], previousYearFees: prevYear || null };
+    const isPlayschool = (cls || '').toLowerCase().trim() === 'playschool';
+    const PLAY_MONTHS = ["June", "July", "August", "September", "October", "November", "December", "January", "February", "March"];
+
+    let terms;
+    let feeMode;
+    if (isPlayschool) {
+        feeMode = "monthly";
+        const monthlyFee = safeFloat(term1);
+        terms = PLAY_MONTHS.map(month => ({ name: month, total: monthlyFee, paid: 0 }));
+    } else {
+        feeMode = "term";
+        terms = [
+            { name: "Term 1 (June – August)", total: safeFloat(term1), paid: 0 },
+            { name: "Term 2 (September – November)", total: safeFloat(term2), paid: 0 },
+            { name: "Term 3 (December – February)", total: safeFloat(term3), paid: 0 }
+        ];
+    }
+
+    const data = { name, class: cls, phone, feeMode, terms, ecaFee: { total: safeFloat(ecaTotal) || 1250, paid: 0 }, otherFees: [], receipts: [], previousYearFees: prevYear || null };
     if (safeFloat(annualTotal) > 0) data.annualFee = { total: safeFloat(annualTotal), paid: 0 };
     if (busEnabled && busMonths) data.busFee = { monthly: busMonths, paidMonths: [], partialPayments: [] };
     const studentRef = doc(db, "students", id);
@@ -1767,6 +1786,26 @@ const enablePrevYearCheck = document.getElementById('enablePrevYearFee');
 const prevYearFeeFields = document.getElementById('prevYearFeeFields');
 enableBusFeeCheck.addEventListener('change', () => { busFeeFields.style.display = enableBusFeeCheck.checked ? 'block' : 'none'; });
 enablePrevYearCheck.addEventListener('change', () => { prevYearFeeFields.style.display = enablePrevYearCheck.checked ? 'block' : 'none'; });
+
+// ── Playschool Monthly Fee: dynamically adapt fee fields ──
+const addStudentClassSelect = document.getElementById('studentClass');
+const term1FeeLabel = document.getElementById('term1Fee').closest('.form-group').querySelector('label');
+const term2FeeGroup = document.getElementById('term2Fee').closest('.form-group');
+const term3FeeGroup = document.getElementById('term3Fee').closest('.form-group');
+const TERM1_LABEL_DEFAULT = 'Term 1 Fee — June–August (₹) *';
+const TERM1_LABEL_PLAY = 'Monthly Fee (₹) *';
+addStudentClassSelect.addEventListener('change', () => {
+    const isPlay = addStudentClassSelect.value === 'Playschool';
+    if (isPlay) {
+        term1FeeLabel.textContent = TERM1_LABEL_PLAY;
+        term2FeeGroup.style.display = 'none';
+        term3FeeGroup.style.display = 'none';
+    } else {
+        term1FeeLabel.textContent = TERM1_LABEL_DEFAULT;
+        term2FeeGroup.style.display = '';
+        term3FeeGroup.style.display = '';
+    }
+});
 autoFillBusBtn.addEventListener('click', () => { const juneVal = document.getElementById('busJune').value; if (!juneVal) { toast("Enter June amount first", true); return; } ['busJuly','busAug','busSep','busOct','busNov','busDec','busJan','busFeb','busMar'].forEach(id => { document.getElementById(id).value = juneVal; }); });
 
 document.getElementById('addStudentForm').addEventListener('submit', async e => {
@@ -1781,7 +1820,11 @@ document.getElementById('addStudentForm').addEventListener('submit', async e => 
     const ecaTotal = document.getElementById('ecaFee').value;
     const annualTotal = document.getElementById('annualDayFee').value;
     if (!studentId || !name || !cls || !phone) { toast("Fill all required fields", true); return; }
-    if (!term1 || !term2 || !term3) { toast("Enter all three term fees", true); return; }
+    if (cls === 'Playschool') {
+        if (!term1) { toast("Enter monthly fee", true); return; }
+    } else {
+        if (!term1 || !term2 || !term3) { toast("Enter all three term fees", true); return; }
+    }
     const busEnabled = enableBusFeeCheck.checked; let busMonths = null;
     if (busEnabled) { busMonths = {}; const ids = ['busJune','busJuly','busAug','busSep','busOct','busNov','busDec','busJan','busFeb','busMar']; BUS_MONTHS.forEach((m, i) => { busMonths[m] = safeFloat(document.getElementById(ids[i]).value); }); if (Object.values(busMonths).every(v => v === 0)) { toast("Enter at least one bus month amount", true); return; } }
     const prevEnabled = enablePrevYearCheck.checked; let prevYear = null;
@@ -1802,7 +1845,22 @@ async function openEditStudent() {
     const data = snap.data(); if (!data.ecaFee) data.ecaFee = { total: 1250, paid: 0 }; if (!data.otherFees || !Array.isArray(data.otherFees)) data.otherFees = [];
     document.getElementById('editStudentId').value = studentId; document.getElementById('editStudentName').value = data.name || ''; document.getElementById('editStudentClass').value = mapClass(data.class || ''); document.getElementById('editStudentPhone').value = data.phone || '';
     const terms = data.terms || [];
-    document.getElementById('editTerm1Total').value = safeFloat(terms[0]?.total); document.getElementById('editTerm2Total').value = safeFloat(terms[1]?.total); document.getElementById('editTerm3Total').value = safeFloat(terms[2]?.total);
+    const isMonthlyStudent = (data.feeMode === 'monthly') || terms.length === 10;
+    const editTerm1Group = document.getElementById('editTerm1Total').closest('.form-group');
+    const editTerm1Label = editTerm1Group.querySelector('label');
+    const editTerm2Group = document.getElementById('editTerm2Total').closest('.form-group');
+    const editTerm3Group = document.getElementById('editTerm3Total').closest('.form-group');
+    if (isMonthlyStudent) {
+        editTerm1Label.textContent = 'Monthly Fee (₹)';
+        editTerm2Group.style.display = 'none';
+        editTerm3Group.style.display = 'none';
+        document.getElementById('editTerm1Total').value = safeFloat(terms[0]?.total);
+    } else {
+        editTerm1Label.textContent = 'Term 1 Total — June–August (₹)';
+        editTerm2Group.style.display = '';
+        editTerm3Group.style.display = '';
+        document.getElementById('editTerm1Total').value = safeFloat(terms[0]?.total); document.getElementById('editTerm2Total').value = safeFloat(terms[1]?.total); document.getElementById('editTerm3Total').value = safeFloat(terms[2]?.total);
+    }
     document.getElementById('editEcaFee').value = safeFloat(data.ecaFee?.total) || 1250; document.getElementById('editAnnualDayTotal').value = safeFloat(data.annualFee?.total);
     const busSection = document.getElementById('editBusFeeSection'); const busFee = data.busFee;
     if (busFee && busFee.monthly) { busSection.style.display = 'block'; const m = busFee.monthly; const ids = ['editBusJune','editBusJuly','editBusAug','editBusSep','editBusOct','editBusNov','editBusDec','editBusJan','editBusFeb','editBusMar']; BUS_MONTHS.forEach((month, i) => { document.getElementById(ids[i]).value = safeFloat(m[month]); }); } else { busSection.style.display = 'none'; }
@@ -1814,8 +1872,15 @@ async function openEditStudent() {
         e.preventDefault(); editForm.removeEventListener('submit', handler);
         const updatedName = document.getElementById('editStudentName').value.trim(); const updatedClass = document.getElementById('editStudentClass').value; const updatedPhone = document.getElementById('editStudentPhone').value.trim();
         const newEca = safeFloat(document.getElementById('editEcaFee').value) || 1250; const newAnnual = safeFloat(document.getElementById('editAnnualDayTotal').value);
-        const newTermTotals = [safeFloat(document.getElementById('editTerm1Total').value), safeFloat(document.getElementById('editTerm2Total').value), safeFloat(document.getElementById('editTerm3Total').value)];
-        const updatedTerms = [{ name: "Term 1 (June – August)", total: newTermTotals[0], paid: safeFloat(terms[0]?.paid) },{ name: "Term 2 (September – November)", total: newTermTotals[1], paid: safeFloat(terms[1]?.paid) },{ name: "Term 3 (December – February)", total: newTermTotals[2], paid: safeFloat(terms[2]?.paid) }];
+        let updatedTerms;
+        if (isMonthlyStudent) {
+            const newMonthlyFee = safeFloat(document.getElementById('editTerm1Total').value);
+            const PLAY_MONTHS = ["June", "July", "August", "September", "October", "November", "December", "January", "February", "March"];
+            updatedTerms = PLAY_MONTHS.map((month, i) => ({ name: month, total: newMonthlyFee, paid: safeFloat(terms[i]?.paid) }));
+        } else {
+            const newTermTotals = [safeFloat(document.getElementById('editTerm1Total').value), safeFloat(document.getElementById('editTerm2Total').value), safeFloat(document.getElementById('editTerm3Total').value)];
+            updatedTerms = [{ name: "Term 1 (June – August)", total: newTermTotals[0], paid: safeFloat(terms[0]?.paid) },{ name: "Term 2 (September – November)", total: newTermTotals[1], paid: safeFloat(terms[1]?.paid) },{ name: "Term 3 (December – February)", total: newTermTotals[2], paid: safeFloat(terms[2]?.paid) }];
+        }
         const updatePayload = { name: updatedName, class: updatedClass, phone: updatedPhone, terms: updatedTerms, ecaFee: { total: newEca, paid: safeFloat(data.ecaFee?.paid) }, otherFees: data.otherFees || [] };
         if (newAnnual > 0) updatePayload.annualFee = { total: newAnnual, paid: safeFloat(data.annualFee?.paid) };
         if (busFee && busFee.monthly) { const ids = ['editBusJune','editBusJuly','editBusAug','editBusSep','editBusOct','editBusNov','editBusDec','editBusJan','editBusFeb','editBusMar']; const newMonthly = {}; BUS_MONTHS.forEach((month, i) => { newMonthly[month] = safeFloat(document.getElementById(ids[i]).value); }); updatePayload.busFee = { ...busFee, monthly: newMonthly }; }
@@ -1857,7 +1922,7 @@ const passwordModal = document.getElementById('passwordModal');
 const addPasswordInput = document.getElementById('addPassword');
 const pwdError = document.getElementById('pwdError');
 function openAddStudentPassword() { showModal(passwordModal); addPasswordInput.value = ''; pwdError.style.display = 'none'; }
-document.getElementById('confirmPwdBtn').addEventListener('click', () => { if (addPasswordInput.value === PASSWORDS.ADD) { hideModal(passwordModal); document.getElementById('addStudentForm').reset(); busFeeFields.style.display = 'none'; prevYearFeeFields.style.display = 'none'; showModal(addStudentModal); } else { pwdError.style.display = 'block'; addPasswordInput.value = ''; } });
+document.getElementById('confirmPwdBtn').addEventListener('click', () => { if (addPasswordInput.value === PASSWORDS.ADD) { hideModal(passwordModal); document.getElementById('addStudentForm').reset(); busFeeFields.style.display = 'none'; prevYearFeeFields.style.display = 'none'; term2FeeGroup.style.display = ''; term3FeeGroup.style.display = ''; term1FeeLabel.textContent = TERM1_LABEL_DEFAULT; showModal(addStudentModal); } else { pwdError.style.display = 'block'; addPasswordInput.value = ''; } });
 document.getElementById('closePwdModal').onclick = () => hideModal(passwordModal);
 document.getElementById('cancelPwdBtn').onclick = () => hideModal(passwordModal);
 
@@ -1941,8 +2006,8 @@ const bulkImportStatus = document.getElementById('bulkImportStatus');
 const bulkImportStatusText = document.getElementById('bulkImportStatusText');
 const bulkImportSummaryContent = document.getElementById('bulkImportSummaryContent');
 
-const WITHOUT_BUS_HEADERS = ["Student ID", "Name", "Phone Number", "Term 1 Fee", "Term 2 Fee", "Term 3 Fee", "ECA Fee", "Annual Day Fee"];
-const WITH_BUS_HEADERS = ["Student ID", "Name", "Phone Number", "Term 1 Fee", "Term 2 Fee", "Term 3 Fee", "June Bus", "July Bus", "August Bus", "September Bus", "October Bus", "November Bus", "December Bus", "January Bus", "February Bus", "March Bus", "ECA Fee", "Annual Day Fee"];
+const WITHOUT_BUS_HEADERS = ["Student ID", "Name", "Class", "Phone Number", "Term 1 Fee", "Term 2 Fee", "Term 3 Fee", "ECA Fee", "Annual Day Fee"];
+const WITH_BUS_HEADERS = ["Student ID", "Name", "Class", "Phone Number", "Term 1 Fee", "Term 2 Fee", "Term 3 Fee", "June Bus", "July Bus", "August Bus", "September Bus", "October Bus", "November Bus", "December Bus", "January Bus", "February Bus", "March Bus", "ECA Fee", "Annual Day Fee"];
 
 let bulkImportWithBus = false;
 
@@ -2033,28 +2098,32 @@ async function processBulkImport(file, withBus) {
 
             const studentId = String(row[0] || '').trim().toLowerCase();
             const name = String(row[1] || '').trim();
-            const phone = String(row[2] || '').trim();
+            const rowClass = String(row[2] || '').trim();
+            const phone = String(row[3] || '').trim();
             if (!studentId || !name) { invalidRows++; continue; }
 
-            const term1 = parseFee(row[3]);
-            const term2 = parseFee(row[4]);
-            const term3 = parseFee(row[5]);
+            const term1 = parseFee(row[4]);
+            const term2 = parseFee(row[5]);
+            const term3 = parseFee(row[6]);
 
             let busMonths = null;
-            let ecaIndex = 6;
-            let annualIndex = 7;
+            let ecaIndex = 7;
+            let annualIndex = 8;
             if (withBus) {
                 busMonths = {};
-                BUS_MONTHS.forEach((m, idx) => { busMonths[m] = parseFee(row[6 + idx]); });
-                ecaIndex = 16;
-                annualIndex = 17;
+                BUS_MONTHS.forEach((m, idx) => { busMonths[m] = parseFee(row[7 + idx]); });
+                ecaIndex = 17;
+                annualIndex = 18;
             }
             const ecaFee = parseFee(row[ecaIndex]);
             const annualFee = parseFee(row[annualIndex]);
 
+            // Use per-row class if provided, otherwise fall back to dropdown selection
+            const effectiveClass = rowClass || selectedClass;
+
             if (seenIds.has(studentId)) { duplicateFileRows++; continue; }
             seenIds.add(studentId);
-            students.push({ studentId, name, phone, term1, term2, term3, busMonths, ecaFee, annualFee });
+            students.push({ studentId, name, phone, cls: effectiveClass, term1, term2, term3, busMonths, ecaFee, annualFee });
         }
 
         if (students.length === 0) throw new Error('No valid student rows found');
@@ -2085,7 +2154,7 @@ async function processBulkImport(file, withBus) {
             createStudent({
                 id: s.studentId,
                 name: s.name,
-                cls: selectedClass,
+                cls: s.cls,
                 phone: s.phone,
                 term1: s.term1,
                 term2: s.term2,
@@ -2111,9 +2180,10 @@ async function processBulkImport(file, withBus) {
         }
 
         for (const s of toImport) {
-            if (!studentData[selectedClass]) studentData[selectedClass] = [];
-            const exists = studentData[selectedClass].some(st => st.id === s.studentId);
-            if (!exists) studentData[selectedClass].push({ name: s.name, id: s.studentId });
+            const sClass = s.cls;
+            if (!studentData[sClass]) studentData[sClass] = [];
+            const exists = studentData[sClass].some(st => st.id === s.studentId);
+            if (!exists) studentData[sClass].push({ name: s.name, id: s.studentId });
         }
         renderClassGrid();
         if (currentClass === selectedClass) renderStudentList(studentData[selectedClass] || [], selectedClass);
@@ -2192,5 +2262,5 @@ async function initMain() {
 function generateParticles() { const container = document.getElementById('particles'); for (let i = 0; i < 25; i++) { const p = document.createElement('div'); p.className = 'particle'; const size = Math.random() * 80 + 40; p.style.width = size + 'px'; p.style.height = size + 'px'; p.style.left = Math.random() * 100 + '%'; p.style.top = Math.random() * 100 + '%'; p.style.animationDelay = Math.random() * 14 + 's'; container.appendChild(p); } }
 window.addEventListener('load', () => { loginOverlay.style.display = 'flex'; adminHeader.style.display = 'none'; appContainer.style.display = 'none'; footer.style.display = 'none'; });
 </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a14b890409e3968e',t:'MTc4Mjk3MzEyOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a14b890409e3968e',t:'MTc4Mjk3MzEyOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a20120073a25993d',t:'MTc4NDg3NzIzNg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
