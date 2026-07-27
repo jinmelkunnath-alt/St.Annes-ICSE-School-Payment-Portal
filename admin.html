@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1936,26 +1937,310 @@ async function openUnifiedAdminAccess() {
 async function verifyExcelAccess() { const pass = await promptModal("Excel Download", "Enter admin password:", "password"); return pass === PASSWORDS.EXCEL; }
 async function exportClassExcel() {
     if (!currentClass) { toast("No class selected", true); return; }
-    const btn = document.getElementById('downloadExcelBtn'); btn.innerHTML = '<span class="excel-spinner"></span> Generating…'; btn.disabled = true;
+    const btn = document.getElementById('downloadExcelBtn');
+    btn.innerHTML = '<span class="excel-spinner"></span> Generating…';
+    btn.disabled = true;
     try {
-        const snapshot = await getDocs(collection(db, "students")); const rows = [];
+        const snapshot = await getDocs(collection(db, "students"));
+        const students = [];
         snapshot.forEach(docSnap => {
-            const data = docSnap.data(); const docClass = mapClass(data.class || ''); if (docClass.toUpperCase() !== currentClass.toUpperCase()) return;
-            const terms = data.terms || []; const eca = data.ecaFee || { total: 1250, paid: 0 }; const annual = data.annualFee || { total: 0, paid: 0 }; const otherFees = Array.isArray(data.otherFees) ? data.otherFees : [];
-            let termTotal = 0, termPaid = 0; terms.forEach(t => { termTotal += safeFloat(t.total); termPaid += safeFloat(t.paid); }); const termRemaining = termTotal - termPaid;
-            let busTotal = 0, busPaid = 0; if (data.busFee && data.busFee.monthly) { const monthly = data.busFee.monthly; BUS_MONTHS.forEach(m => { busTotal += safeFloat(monthly[m]); }); const paidMonths = Array.isArray(data.busFee.paidMonths) ? data.busFee.paidMonths : []; paidMonths.forEach(m => { busPaid += safeFloat(monthly[m]); }); const partial = Array.isArray(data.busFee.partialPayments) ? data.busFee.partialPayments : []; partial.forEach(p => { busPaid += safeFloat(p.amount); }); } const busRemaining = busTotal - busPaid;
-            let otherTotal = 0, otherPaid = 0; otherTotal += safeFloat(eca.total); otherPaid += safeFloat(eca.paid); otherTotal += safeFloat(annual.total); otherPaid += safeFloat(annual.paid); otherFees.forEach(f => { otherTotal += safeFloat(f.total); otherPaid += safeFloat(f.paid); }); const otherRemaining = otherTotal - otherPaid;
-            const grandTotal = termTotal + busTotal + otherTotal; const grandPaid = termPaid + busPaid + otherPaid; const grandRemaining = grandTotal - grandPaid;
-            rows.push({ "Student Name": data.name || "", "Class": docClass, "Phone": data.phone || "", "": "", "Term Total (₹)": termTotal, "Term Paid (₹)": termPaid, "Term Remaining (₹)": termRemaining, "Term Status": termRemaining <= 0 ? "✅ Paid" : "⏳ Pending", " ": "", "Bus Total (₹)": busTotal, "Bus Paid (₹)": busPaid, "Bus Remaining (₹)": busRemaining, "Bus Status": busTotal === 0 ? "N/A" : (busRemaining <= 0 ? "✅ Paid" : "⏳ Pending"), "  ": "", "Other Total (₹)": otherTotal, "Other Paid (₹)": otherPaid, "Other Remaining (₹)": otherRemaining, "Other Status": otherRemaining <= 0 ? "✅ Paid" : "⏳ Pending", "   ": "", "Grand Total (₹)": grandTotal, "Grand Paid (₹)": grandPaid, "Grand Remaining (₹)": grandRemaining, "Overall Status": grandRemaining <= 0 ? "✅ Cleared" : "⏳ Due" });
+            const data = docSnap.data();
+            const docClass = mapClass(data.class || '');
+            if (docClass.toUpperCase() === currentClass.toUpperCase()) {
+                students.push({ id: docSnap.id, ...data });
+            }
         });
-        if (rows.length === 0) { toast("No students found for this class", true); return; }
-        rows.sort((a, b) => a["Student Name"].localeCompare(b["Student Name"]));
-        const worksheet = XLSX.utils.json_to_sheet(rows); const colWidths = Object.keys(rows[0]).map(key => ({ wch: Math.max(key.length + 2, ...rows.map(r => String(r[key] || '').length + 2)) })); worksheet['!cols'] = colWidths;
-        const workbook = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(workbook, worksheet, currentClass.replace(/[:\\\/\?\*\[\]]/g, ''));
-        const today = new Date(); const dateStr = `${today.getDate().toString().padStart(2,'0')}-${(today.getMonth()+1).toString().padStart(2,'0')}-${today.getFullYear()}`; const fileName = `${currentClass}_Fee_Report_${dateStr}.xlsx`;
-        XLSX.writeFile(workbook, fileName); toast(`Downloaded: ${fileName}`);
-    } catch (err) { console.error("exportClassExcel:", err); toast("Failed to generate Excel", true); }
-    finally { btn.innerHTML = '📥 Download Excel'; btn.disabled = false; }
+
+        if (students.length === 0) {
+            toast("No students found for this class", true);
+            return;
+        }
+
+        const BUS_MONTHS = ["june","july","august","september","october","november","december","january","february","march"];
+        const BUS_MONTH_LABELS = ["June", "July", "August", "September", "October", "November", "December", "January", "February", "March"];
+
+        const aoa = [];
+        
+        // ── Report Header Block ──
+        aoa.push(["ST. ANNE’S ICSE SCHOOL, KOTTODY"]);
+        aoa.push(["STUDENT FEE COLLECTION REPORT"]);
+        
+        const today = new Date();
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const day = today.getDate().toString().padStart(2, '0');
+        const mon = months[today.getMonth()];
+        const yr = today.getFullYear();
+        let hrs = today.getHours();
+        const mins = today.getMinutes().toString().padStart(2, '0');
+        const ampm = hrs >= 12 ? 'PM' : 'AM';
+        hrs = hrs % 12; hrs = hrs ? hrs : 12;
+        const hrsStr = hrs.toString().padStart(2, '0');
+        const dateStr = `${day}-${mon}-${yr} ${hrsStr}:${mins} ${ampm}`;
+        const academicYear = "2026–27";
+
+        aoa.push([`Academic Year : ${academicYear}   |   Class : ${currentClass}   |   Generated On : ${dateStr}`]);
+        aoa.push([]); // blank row 3
+
+        // ── Group Header Row 4 ──
+        const groupHeaderRow = [
+            "STUDENT INFORMATION", "", "", 
+            "OVERALL FEES", "", 
+            "TERM FEES", "", "", "", "", "", 
+            "ECA", "", 
+            "ANNUAL DAY", "", 
+            "PREVIOUS YEAR", "", "", "", 
+            "BUS FEES", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""
+        ];
+        aoa.push(groupHeaderRow);
+
+        // ── Sub Header Row 5 ──
+        const subHeaders = [
+            "Sl No", "Student Name", "Class", 
+            "Total Fees", "Total Paid", 
+            "Term 1 Fee", "Term 1 Paid", "Term 2 Fee", "Term 2 Paid", "Term 3 Fee", "Term 3 Paid", 
+            "ECA Fee", "ECA Paid", 
+            "Annual Day Fee", "Annual Day Paid", 
+            "Previous Year Fee", "Previous Year Paid", "Previous Year Bus Fee", "Previous Year Bus Paid"
+        ];
+        BUS_MONTH_LABELS.forEach(m => {
+            subHeaders.push(`${m} Fee`);
+            subHeaders.push(`${m} Paid`);
+        });
+        aoa.push(subHeaders);
+
+        let slNo = 1;
+
+        students.forEach(data => {
+            const terms = data.terms || [];
+            const isMonthly = terms.length === 10;
+            
+            let t1Fee = 0, t1Paid = 0, t2Fee = 0, t2Paid = 0, t3Fee = 0, t3Paid = 0;
+            if (isMonthly) {
+                for (let i=0; i<3; i++) { t1Fee += safeFloat(terms[i]?.total); t1Paid += safeFloat(terms[i]?.paid); }
+                for (let i=3; i<6; i++) { t2Fee += safeFloat(terms[i]?.total); t2Paid += safeFloat(terms[i]?.paid); }
+                for (let i=6; i<10; i++) { t3Fee += safeFloat(terms[i]?.total); t3Paid += safeFloat(terms[i]?.paid); }
+            } else {
+                t1Fee = safeFloat(terms[0]?.total); t1Paid = safeFloat(terms[0]?.paid);
+                t2Fee = safeFloat(terms[1]?.total); t2Paid = safeFloat(terms[1]?.paid);
+                t3Fee = safeFloat(terms[2]?.total); t3Paid = safeFloat(terms[2]?.paid);
+            }
+
+            const eca = data.ecaFee || { total: 1250, paid: 0 };
+            const ecaFeeVal = safeFloat(eca.total) > 0 ? safeFloat(eca.total) : "";
+            const ecaPaidVal = safeFloat(eca.total) > 0 ? safeFloat(eca.paid) : 0;
+
+            const annual = data.annualFee || { total: 0, paid: 0 };
+            const annualFeeVal = safeFloat(annual.total) > 0 ? safeFloat(annual.total) : "";
+            const annualPaidVal = safeFloat(annual.total) > 0 ? safeFloat(annual.paid) : 0;
+
+            const prev = data.previousYearFees || {};
+            const prevTuition = prev.tuition || {};
+            const prevBus = prev.bus || {};
+            
+            const prevFeeVal = safeFloat(prevTuition.total) > 0 ? safeFloat(prevTuition.total) : "";
+            const prevPaidVal = safeFloat(prevTuition.total) > 0 ? safeFloat(prevTuition.paid) : 0;
+            const prevBusFeeVal = safeFloat(prevBus.total) > 0 ? safeFloat(prevBus.total) : "";
+            const prevBusPaidVal = safeFloat(prevBus.total) > 0 ? safeFloat(prevBus.paid) : 0;
+
+            let studentTotalFees = t1Fee + t2Fee + t3Fee + safeFloat(eca.total) + safeFloat(annual.total) + safeFloat(prevTuition.total) + safeFloat(prevBus.total);
+            let studentTotalPaid = t1Paid + t2Paid + t3Paid + safeFloat(eca.paid) + safeFloat(annual.paid) + safeFloat(prevTuition.paid) + safeFloat(prevBus.paid);
+
+            const row = [
+                slNo++,
+                data.name || "",
+                mapClass(data.class || currentClass),
+                studentTotalFees,
+                studentTotalPaid,
+                t1Fee > 0 ? t1Fee : "", t1Fee > 0 ? t1Paid : "",
+                t2Fee > 0 ? t2Fee : "", t2Fee > 0 ? t2Paid : "",
+                t3Fee > 0 ? t3Fee : "", t3Fee > 0 ? t3Paid : "",
+                ecaFeeVal, ecaFeeVal !== "" ? ecaPaidVal : "",
+                annualFeeVal, annualFeeVal !== "" ? annualPaidVal : "",
+                prevFeeVal, prevFeeVal !== "" ? prevPaidVal : "",
+                prevBusFeeVal, prevBusFeeVal !== "" ? prevBusPaidVal : ""
+            ];
+
+            const busData = data.busFee || {};
+            const busMonthly = busData.monthly || {};
+            const paidMonths = (busData.paidMonths || []).map(m => m.toLowerCase());
+            
+            BUS_MONTHS.forEach(m => {
+                const mFee = safeFloat(busMonthly[m]);
+                if (mFee > 0) {
+                    studentTotalFees += mFee;
+                    const isPaid = paidMonths.includes(m);
+                    const mPaid = isPaid ? mFee : 0;
+                    studentTotalPaid += mPaid;
+                    row.push(mFee);
+                    row.push(mPaid);
+                } else {
+                    row.push("");
+                    row.push("");
+                }
+            });
+
+            row[3] = studentTotalFees;
+            row[4] = studentTotalPaid;
+
+            aoa.push(row);
+        });
+
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+        const range = XLSX.utils.decode_range(ws['!ref']);
+        const lastCol = range.e.c;
+
+        // ── Merges ──
+        ws['!merges'] = [
+            { s: { r: 0, c: 0 }, e: { r: 0, c: lastCol } },
+            { s: { r: 1, c: 0 }, e: { r: 1, c: lastCol } },
+            { s: { r: 2, c: 0 }, e: { r: 2, c: lastCol } },
+            // Group header merges
+            { s: { r: 4, c: 0 }, e: { r: 4, c: 2 } },   // Student Info
+            { s: { r: 4, c: 3 }, e: { r: 4, c: 4 } },   // Overall Fees
+            { s: { r: 4, c: 5 }, e: { r: 4, c: 10 } },  // Term Fees
+            { s: { r: 4, c: 11 }, e: { r: 4, c: 12 } }, // ECA
+            { s: { r: 4, c: 13 }, e: { r: 4, c: 14 } }, // Annual Day
+            { s: { r: 4, c: 15 }, e: { r: 4, c: 18 } }, // Previous Year
+            { s: { r: 4, c: 19 }, e: { r: 4, c: lastCol } } // Bus Fees
+        ];
+
+        const thinBorder = {
+            top: { style: 'thin', color: { rgb: 'D3D3D3' } },
+            bottom: { style: 'thin', color: { rgb: 'D3D3D3' } },
+            left: { style: 'thin', color: { rgb: 'D3D3D3' } },
+            right: { style: 'thin', color: { rgb: 'D3D3D3' } }
+        };
+
+        const thickBottomBorder = {
+            top: { style: 'thin', color: { rgb: 'B0B0B0' } },
+            bottom: { style: 'medium', color: { rgb: '1B365D' } },
+            left: { style: 'thin', color: { rgb: 'D3D3D3' } },
+            right: { style: 'thin', color: { rgb: 'D3D3D3' } }
+        };
+
+        // ── Styling All Cells ──
+        for (let R = 0; R <= range.e.r; R++) {
+            for (let C = 0; C <= range.e.c; C++) {
+                const cellRef = XLSX.utils.encode_cell({ r: R, c: C });
+                if (!ws[cellRef]) ws[cellRef] = { v: '', t: 's' };
+                const cell = ws[cellRef];
+
+                if (R === 0) {
+                    cell.s = {
+                        font: { name: 'Calibri', sz: 16, bold: true, color: { rgb: 'FFFFFF' } },
+                        fill: { fgColor: { rgb: '1B365D' } },
+                        alignment: { horizontal: 'center', vertical: 'center' }
+                    };
+                } else if (R === 1) {
+                    cell.s = {
+                        font: { name: 'Calibri', sz: 13, bold: true, color: { rgb: 'FFFFFF' } },
+                        fill: { fgColor: { rgb: '1B365D' } },
+                        alignment: { horizontal: 'center', vertical: 'center' }
+                    };
+                } else if (R === 2) {
+                    cell.s = {
+                        font: { name: 'Calibri', sz: 11, bold: true, color: { rgb: '1B365D' } },
+                        fill: { fgColor: { rgb: 'E8EEF5' } },
+                        alignment: { horizontal: 'center', vertical: 'center' }
+                    };
+                } else if (R === 4) {
+                    // Group headers with professional section colors
+                    let bg = '1F4E79'; // Student Info / Default
+                    if (C >= 3 && C <= 4) bg = '4682B4'; // Overall Fees
+                    if (C >= 5 && C <= 10) bg = '2E7D32'; // Term Fees
+                    if (C >= 11 && C <= 12) bg = '6A1B9A'; // ECA
+                    if (C >= 13 && C <= 14) bg = 'D84315'; // Annual Day
+                    if (C >= 15 && C <= 18) bg = '5D4037'; // Previous Year
+                    if (C >= 19) bg = '00695C'; // Bus Fees
+
+                    cell.s = {
+                        font: { name: 'Calibri', sz: 10, bold: true, color: { rgb: 'FFFFFF' } },
+                        fill: { fgColor: { rgb: bg } },
+                        alignment: { horizontal: 'center', vertical: 'center' },
+                        border: thinBorder
+                    };
+                } else if (R === 5) {
+                    // Sub headers
+                    cell.s = {
+                        font: { name: 'Calibri', sz: 10, bold: true, color: { rgb: 'FFFFFF' } },
+                        fill: { fgColor: { rgb: '1F4E79' } },
+                        alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+                        border: thickBottomBorder
+                    };
+                } else if (R >= 6) {
+                    // Student data rows
+                    const isAlt = (R % 2 === 1);
+                    const fillColor = isAlt ? 'F2F6FA' : 'FFFFFF';
+                    
+                    let align = 'left';
+                    if (C === 0 || C === 2) align = 'center';
+                    if (C >= 3 && typeof cell.v === 'number') align = 'right';
+
+                    if (typeof cell.v === 'number') {
+                        if (C === 0) {
+                            cell.z = '0';
+                        } else {
+                            cell.z = '"₹"#,##0.00';
+                        }
+                    }
+
+                    cell.s = {
+                        font: { name: 'Calibri', sz: 10, color: { rgb: '000000' } },
+                        fill: { fgColor: { rgb: fillColor } },
+                        alignment: { horizontal: align, vertical: 'center' },
+                        border: thinBorder
+                    };
+                }
+            }
+        }
+
+        // ── Row Heights ──
+        ws['!rows'] = [
+            { hpt: 32 }, // 0 Title
+            { hpt: 24 }, // 1 Subtitle
+            { hpt: 22 }, // 2 Metadata
+            { hpt: 10 }, // 3 Blank
+            { hpt: 22 }, // 4 Group Headers
+            { hpt: 28 }  // 5 Sub Headers
+        ];
+
+        // ── Freeze Panes & Auto Filter ──
+        ws['!freeze'] = { xSplit: 3, ySplit: 6, topLeftCell: 'D7', state: 'frozen' };
+        ws['!autofilter'] = { ref: `A6:${XLSX.utils.encode_col(lastCol)}${range.e.r}` };
+
+        // ── Page Setup (Landscape & Repeat Header) ──
+        ws['!pageSetup'] = { orientation: 'landscape', fitToWidth: 1, fitToHeight: 0 };
+
+        // ── Auto Column Widths ──
+        const cols = [];
+        for (let C = 0; C <= lastCol; C++) {
+            let maxLen = 12;
+            for (let R = 4; R <= range.e.r; R++) {
+                const cell = ws[XLSX.utils.encode_cell({ r: R, c: C })];
+                if (cell && cell.v !== undefined) {
+                    const len = String(cell.v).length;
+                    if (len > maxLen) maxLen = len;
+                }
+            }
+            cols.push({ wch: Math.min(Math.max(maxLen + 3, 12), 35) });
+        }
+        ws['!cols'] = cols;
+
+        const workbook = XLSX.utils.book_new();
+        const sheetName = `${currentClass} Fee Report`.replace(/[:\\\/\?\*\[\]]/g, '');
+        XLSX.utils.book_append_sheet(workbook, ws, sheetName);
+
+        const fileDateStr = `${today.getDate().toString().padStart(2,'0')}-${(today.getMonth()+1).toString().padStart(2,'0')}-${today.getFullYear()}`;
+        const fileName = `${currentClass.replace(/\s+/g, '_')}_Fee_Report_${fileDateStr}.xlsx`;
+        XLSX.writeFile(workbook, fileName, { cellStyles: true });
+        toast(`Downloaded: ${fileName}`);
+    } catch (err) {
+        console.error("exportClassExcel:", err);
+        toast("Failed to generate Excel", true);
+    } finally {
+        btn.innerHTML = '📥 Download Excel';
+        btn.disabled = false;
+    }
 }
 document.getElementById('downloadExcelBtn').addEventListener('click', async () => { const allowed = await verifyExcelAccess(); if (!allowed) { toast("Wrong password", true); return; } exportClassExcel(); });
 
@@ -2264,5 +2549,6 @@ async function initMain() {
 function generateParticles() { const container = document.getElementById('particles'); for (let i = 0; i < 25; i++) { const p = document.createElement('div'); p.className = 'particle'; const size = Math.random() * 80 + 40; p.style.width = size + 'px'; p.style.height = size + 'px'; p.style.left = Math.random() * 100 + '%'; p.style.top = Math.random() * 100 + '%'; p.style.animationDelay = Math.random() * 14 + 's'; container.appendChild(p); } }
 window.addEventListener('load', () => { loginOverlay.style.display = 'flex'; adminHeader.style.display = 'none'; appContainer.style.display = 'none'; footer.style.display = 'none'; });
 </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a14b890409e3968e',t:'MTc4Mjk3MzEyOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a201ef6478b47f50',t:'MTc4NDg4NTcyOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a14b890409e3968e',t:'MTc4Mjk3MzEyOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a201ef6478b47f50',t:'MTc4NDg4NTcyOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f"}' crossorigin="anonymous"></script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a21a0d070a745fb9',t:'MTc4NTEzODYwMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
