@@ -1,3 +1,6 @@
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -844,21 +847,6 @@ button:focus-visible,.fee-tab:focus-visible,.cselect-trigger:focus-visible{outli
   .home-dual{grid-template-columns:1fr}
 }
 
-
-/* ── HYBRID PAYMENT SHEET · presentation layer only ── */
-.hybrid-sheet-overlay{align-items:flex-end!important;padding:0!important;background:rgba(15,23,42,.34)!important;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
-.hybrid-sheet{width:min(680px,100%)!important;max-height:min(88dvh,820px);overflow:auto!important;margin:0!important;border-radius:28px 28px 0 0!important;padding:13px clamp(18px,4vw,30px) calc(22px + env(safe-area-inset-bottom))!important;background:color-mix(in srgb,var(--surface) 92%,transparent)!important;box-shadow:0 -20px 60px rgba(15,23,42,.18)!important;animation:sheetUp .36s var(--ease-out) both}
-.hybrid-sheet::before{content:"";display:block;width:38px;height:5px;border-radius:99px;background:var(--line-strong);margin:0 auto 15px}
-@keyframes sheetUp{from{opacity:0;transform:translateY(42px)}to{opacity:1;transform:none}}
-.payment-sheet-head{display:flex;gap:14px;align-items:flex-start;padding:0 2px 15px}.payment-sheet-head h3{margin:0;font-size:1.22rem;letter-spacing:-.025em}.payment-sheet-head p{margin:4px 0 0;color:var(--text-3);font-size:.82rem;line-height:1.45}.payment-sheet-head .modal-close{position:static;margin-left:auto;flex:0 0 auto}
-.payment-sheet-balance{display:flex;align-items:end;justify-content:space-between;gap:12px;padding:15px 16px;margin-bottom:13px;border:1px solid var(--line);border-radius:18px;background:var(--surface-2)}.payment-sheet-balance span{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;font-weight:800;color:var(--text-3)}.payment-sheet-balance b{font-size:1.35rem;letter-spacing:-.035em;color:var(--text)}
-.payment-sheet-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.07em;font-weight:800;color:var(--text-3);margin:14px 2px 7px}.payment-amount-input{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:14px;padding:0 14px;background:var(--surface-2);box-shadow:var(--sh-xs)}.payment-amount-input span{font-size:1.12rem;font-weight:800;color:var(--text-2)}.payment-amount-input input{appearance:textfield;width:100%;border:0!important;box-shadow:none!important;background:transparent!important;padding:13px 0!important;font:800 1.1rem var(--font);color:var(--text);outline:0}.payment-amount-input:focus-within{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-50)}
-.payment-methods{display:grid;grid-template-columns:1fr 1fr;gap:10px}.payment-methods-v4{grid-template-columns:1fr}.payment-method{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:1px solid var(--line);border-radius:15px;padding:12px;background:var(--surface);color:var(--text);transition:transform var(--dur-fast) var(--ease),border-color var(--dur) var(--ease),background var(--dur) var(--ease)}.payment-method:hover,.payment-method.active{border-color:var(--brand-200);background:var(--brand-50)}.payment-method:active{transform:scale(.98)}.payment-method .pm-icon{width:34px;height:34px;display:grid;place-items:center;border-radius:11px;background:var(--surface-2);color:var(--brand)}.payment-method.active .pm-icon{background:var(--brand);color:#fff}.payment-method .pm-content{flex:1;min-width:0}.payment-method .payment-continue{margin-left:auto;flex:0 0 auto;min-height:38px;padding:8px 12px;font-size:.76rem}.payment-method strong{display:block;font-size:.83rem}.payment-method small{display:block;color:var(--text-3);font-size:.68rem;margin-top:2px}
-
-.payment-sheet-action{display:flex;gap:10px;margin-top:14px}.payment-sheet-action .btn-upi-pay{margin:0}.payment-sheet-note{margin:10px 2px 0;color:var(--text-3);font-size:.7rem;line-height:1.45}.payment-qr-panel{display:none;margin-top:13px;text-align:center;padding:15px;border-radius:18px;background:var(--surface-2);border:1px solid var(--line)}.payment-qr-panel.show{display:block}.payment-qr-panel img{display:block;width:min(205px,70vw);aspect-ratio:1;object-fit:contain;margin:0 auto 12px;border-radius:12px;background:#fff}.payment-qr-panel .upi-row{margin-top:10px}.payment-sheet-status{display:flex;align-items:center;gap:8px;margin:12px 2px 0;font-size:.76rem;font-weight:700;color:var(--text-3)}.payment-sheet-status .status-dot{width:8px;height:8px;border-radius:50%;background:var(--brand)}
-@media (max-width:520px){.hybrid-sheet{max-height:92dvh;border-radius:23px 23px 0 0!important}.payment-methods{grid-template-columns:1fr}.payment-sheet-balance b{font-size:1.18rem}}@media (max-width:360px){.payment-method{gap:8px;padding:10px}.payment-method .pm-icon{width:30px;height:30px}.payment-method .payment-continue{padding:7px 9px;font-size:.72rem}}
-@media (min-width:900px){.hybrid-sheet-overlay{align-items:center!important;padding:24px!important}.hybrid-sheet{max-width:580px!important;border-radius:26px!important}.hybrid-sheet::before{display:none}}
-
 </style>
 
 
@@ -1111,38 +1099,27 @@ const UPI_ID       = "jinmelkunnath@oksbi";          // legacy – not used in n
 const WHATSAPP_URL = "https://wa.me/918547987577";
 const MAX_RECEIPTS = 100;
 
-/* ═══════════════════════════════════════════
-   PLATFORM SERVICE LAYER
-   The UI calls this object only; native bridge selection and web fallbacks
-   remain in this one boundary.
-═══════════════════════════════════════════ */
+/* Native boundary for the two existing payment controls. The popup UI stays
+   unchanged; only this service may communicate with an Android bridge. */
 const Platform = (() => {
   const bridge = () => window.AndroidNative || window.Android || window.NativeBridge || null;
-  const invoke = (method, ...args) => {
+  const native = (method, ...args) => {
     const b = bridge();
-    if (!b || typeof b[method] !== "function") return { used: false, value: null };
-    try { return { used: true, value: b[method](...args) }; }
-    catch (e) { Logger.warn("Native bridge " + method + " failed", e); return { used: false, value: null }; }
+    if (!b || typeof b[method] !== "function") return false;
+    try { b[method](...args); return true; } catch (_) { return false; }
   };
-  const fallbackCopy = async text => {
-    try { if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(text); return true; } } catch (e) {}
-    const area = document.createElement("textarea"); area.value = text; area.setAttribute("readonly", "");
-    area.style.cssText = "position:fixed;opacity:0;pointer-events:none"; document.body.appendChild(area); area.select();
-    let copied = false; try { copied = document.execCommand("copy"); } catch (e) {} area.remove(); return copied;
+  const browserCopy = async text => {
+    try { if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(text); return true; } } catch (_) {}
+    const ta = document.createElement("textarea"); ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    let copied = false; try { copied = document.execCommand("copy"); } catch (_) {}
+    ta.remove(); return copied;
   };
   return Object.freeze({
-    isNative: () => !!bridge(), isAndroid: () => !!bridge(), isBrowser: () => !bridge(),
-    getPlatform: () => bridge() ? "android" : "browser",
-    copyUpi: async upi => { const r = invoke("copyUpi", String(upi || "")); return r.used ? r.value !== false : fallbackCopy(String(upi || "")); },
-    openUpiApps: (upi, name, amount) => { const r = invoke("openUpiApps", String(upi || ""), String(name || ""), Number(amount) || 0); if (r.used) return r.value; const q = new URLSearchParams({ pa:String(upi || ""), pn:String(name || "St. Anne's ICSE School"), cu:"INR" }); if (Number(amount) > 0) q.set("am", Number(amount).toFixed(2)); window.location.href = "upi://pay?" + q.toString(); return true; },
-    shareQr: (qr, title, amount) => { const r = invoke("shareQr", String(qr || ""), String(title || ""), Number(amount) || 0); return r.used; },
-    download: (url, filename) => { const r = invoke("download", String(url || ""), String(filename || "")); if (r.used) return r.value; const a = document.createElement("a"); a.href=url; a.download=filename || "download"; a.click(); return true; },
-    share: async text => { const r = invoke("share", String(text || "")); if (r.used) return r.value; if (navigator.share) try { return await navigator.share({ text:String(text || "") }); } catch (e) {} return fallbackCopy(String(text || "")); },
-    call: number => { const r = invoke("call", String(number || "")); if (r.used) return r.value; window.location.href = "tel:" + String(number || ""); return true; },
-    openWhatsApp: url => { const r = invoke("openWhatsApp", String(url || "")); if (r.used) return r.value; window.open(String(url || ""), "_blank", "noopener"); return true; },
-    toast: message => { const r = invoke("toast", String(message || "")); if (!r.used) toast(String(message || "")); },
-    vibrate: pattern => { const r = invoke("vibrate", pattern || 12); if (!r.used && navigator.vibrate) navigator.vibrate(pattern || 12); },
-    notify: message => { const r = invoke("notify", String(message || "")); if (!r.used) toast(String(message || "")); }
+    isNative: () => !!bridge(),
+    copyUpi: upi => native("copyUpi", String(upi || "")) || browserCopy(String(upi || "")),
+    shareQr: (qr, name) => native("shareQr", String(qr || ""), String(name || "")),
+    openUpiApps: (upi, name) => native("openUpiApps", String(upi || ""), String(name || ""))
   });
 })();
 window.Platform = Platform;
@@ -2258,7 +2235,8 @@ async function renderReceiptImg(data) {
 }
 
 function dlReceipt(url, code) {
-  return Platform.download(url, `${code}.png`);
+  const a = document.createElement("a");
+  a.href = url; a.download = `${code}.png`; a.click();
 }
 
 async function showSuccess(subType, amount, code, opts) {
@@ -2290,7 +2268,7 @@ async function showSuccess(subType, amount, code, opts) {
     </div>`);
   m.querySelector("#rcpt-dl").onclick = () => dlReceipt(imgUrl, code);
   m.querySelector("#rcpt-wa").onclick = () =>
-    Platform.openWhatsApp(`https://wa.me/${SD.phone}?text=${encodeURIComponent(
+    window.open(`https://wa.me/${SD.phone}?text=${encodeURIComponent(
       `Dear Parent,\n\nPayment of ${fmtRs(amount)} for ${presentation.title} has been updated.\nReceipt: ${code}\n\nSt. Anne's ICSE School`
     )}`);
 }
@@ -2378,8 +2356,11 @@ async function shareReceipt(r) {
     ? `Fee Type: ${presentation.feeType}\nMonth: ${presentation.period}`
     : `Fee: ${r.subType || ""}`;
   const text = `St. Anne's ICSE School\nPayment Receipt\n${feeText}\nAmount: ${fmtRs(amt)}\nDate: ${getPaymentDate(r)}\nReceipt No: ${r.code || ""}`;
-  const shared = await Platform.share(text);
-  if (!shared) Platform.openWhatsApp(WHATSAPP_URL + "?text=" + encodeURIComponent(text));
+  if (navigator.share) {
+    try { await navigator.share({ title: "Fee Receipt", text }); return; } catch (e) {}
+  }
+  try { if (navigator.clipboard) await navigator.clipboard.writeText(text); } catch (e) {}
+  window.open(WHATSAPP_URL + "?text=" + encodeURIComponent(text));
 }
 
 function printReceipt(r) {
@@ -3167,66 +3148,156 @@ const PAYMENT_ACCOUNTS = {
   }
 };
 
-/* Reusable parent payment component. It only orchestrates presentation and
-   Platform services; fee records, receipts and verification are untouched. */
-const PaymentExperience = {
-  browserQr(account, value) {
-    const m = overlay(`
-      <button class="modal-close" aria-label="Close QR payment">${iconSvg("close")}</button>
-      <div class="payment-qr-panel show" style="display:block;margin-top:4px">
-        <img src="${htmlEscape(account.qr)}" alt="${htmlEscape(account.name)} QR code">
-        <strong>Scan with any UPI app</strong>
-        <p class="payment-sheet-note">Amount to pay: ${fmtRs(value)}</p>
-        <div class="upi-row"><span class="upi-text">${htmlEscape(account.upiId)}</span><button class="btn-copy" id="browser-qr-copy" type="button">${iconSvg("content_copy")} Copy UPI ID</button></div>
-      </div>`);
-    const copy = m.querySelector("#browser-qr-copy");
-    if (copy) copy.onclick = async () => { await Platform.copyUpi(account.upiId); Platform.toast("UPI ID copied"); };
-  },
-  open(opts) {
-    opts = opts || {};
-    const summary = (typeof SummaryEngine !== "undefined" && SummaryEngine.compute) ? SummaryEngine.compute() : { remaining: 0 };
-    const outstanding = Math.max(0, safe(summary.remaining));
-    const account = PAYMENT_ACCOUNTS[opts.account] || PAYMENT_ACCOUNTS.tuition;
-    const m = overlay(`
-      <div class="payment-sheet-head"><div><h3>Make a payment</h3><p>Choose a payment method to continue securely.</p></div><button class="modal-close" aria-label="Close payment sheet">${iconSvg("close")}</button></div>
-      <div class="payment-sheet-balance"><span>Outstanding balance</span><b>${fmtRs(outstanding)}</b></div>
-      <div class="payment-sheet-label">Amount to pay</div>
-      <label class="payment-amount-input"><span>₹</span><input id="payment-sheet-amount" inputmode="decimal" type="number" min="0" step="0.01" value="${outstanding || ""}" aria-label="Amount to pay"></label>
-      <p class="payment-sheet-note">You may enter a partial payment amount. Your fee record is updated only after the existing school verification process.</p>
-      <div class="payment-sheet-label">Payment methods</div>
-      <div class="payment-methods payment-methods-v4" aria-label="Payment methods">
-        <section class="payment-method" aria-label="Quick QR Payment"><span class="pm-icon">${iconSvg("receipt")}</span><span class="pm-content"><strong>Quick QR Payment</strong><small>Recommended for fast QR payments.</small></span><button class="btn-modal btn-modal-ok payment-continue" data-payment-method="qr" type="button">Continue</button></section>
-        <section class="payment-method" aria-label="Smart UPI Payment"><span class="pm-icon">${iconSvg("payments")}</span><span class="pm-content"><strong>Smart UPI Payment</strong><small>Recommended. Supports all payment amounts.</small></span><button class="btn-modal btn-modal-ok payment-continue" data-payment-method="upi" type="button">Continue</button></section>
+function openPay(opts) {
+  opts = opts || {};
+  const m = overlay(`
+    <button class="modal-close">${iconSvg("close")}</button>
+    <div class="payment-popup">
+      <h3>Select Payment Category</h3>
+      <p class="subtitle">Please pay to the correct account based on the fee type.</p>
+      <div class="payment-card" data-account="tuition">
+        <div class="payment-card-header">
+          <div class="payment-card-icon">${iconSvg("school")}</div>
+          <div class="payment-card-info">
+            <div class="payment-card-name">Tuition Fees</div>
+            <div class="payment-card-upi">${htmlEscape(PAYMENT_ACCOUNTS.tuition.upiId)}</div>
+          </div>
+          <div class="payment-card-chevron">${iconSvg("chevron_right")}</div>
+        </div>
+        <div class="payment-card-body">
+          <div class="payment-card-body-inner">
+            <img src="${htmlEscape(PAYMENT_ACCOUNTS.tuition.qr)}" alt="Tuition QR">
+            <div class="upi-row">
+              <span class="upi-text">${htmlEscape(PAYMENT_ACCOUNTS.tuition.upiId)}</span>
+              <button class="btn-copy" data-upi="${htmlEscape(PAYMENT_ACCOUNTS.tuition.upiId)}">${iconSvg("content_copy")} Copy UPI ID</button>
+            </div>
+            <button class="btn-upi-pay" data-upi="${htmlEscape(PAYMENT_ACCOUNTS.tuition.upiId)}" data-name="Tuition Fees">Pay via UPI App</button>
+          </div>
+        </div>
       </div>
-      <div class="payment-sheet-status" aria-live="polite"><span class="status-dot"></span><span id="payment-sheet-status">Payment Started → Payment Completed → Receipt Uploaded → Waiting For Verification → Verified</span></div>
-      <p class="payment-sheet-note">After completing payment, use the existing receipt upload and verification process.</p>`);
-    m.parentElement.classList.add("hybrid-sheet-overlay");
-    m.classList.add("hybrid-sheet");
-    const amountInput = m.querySelector("#payment-sheet-amount");
-    const getAmount = () => Math.max(0, Number(amountInput.value) || 0);
-    m.querySelectorAll(".payment-continue").forEach(button => button.onclick = async () => {
-      const value = getAmount();
-      if (value <= 0) { Platform.toast("Enter a payment amount greater than ₹0."); amountInput.focus(); return; }
-      const method = button.dataset.paymentMethod;
-      button.disabled = true;
-      try {
-        if (method === "qr") {
-          if (Platform.isNative()) Platform.shareQr(account.qr, account.name, value);
-          else this.browserQr(account, value);
-        } else if (Platform.isNative()) {
-          await Platform.copyUpi(account.upiId);
-          Platform.openUpiApps(account.upiId, account.name, value);
-        } else {
-          await Platform.copyUpi(account.upiId);
-          const status = m.querySelector("#payment-sheet-status");
-          if (status) status.textContent = "✓ UPI ID Copied. Open any preferred UPI application manually to complete your payment.";
-        }
-        Platform.vibrate([10,35,10]);
-      } finally { button.disabled = false; }
+      <div class="payment-card" data-account="bus">
+        <div class="payment-card-header">
+          <div class="payment-card-icon">${iconSvg("bus")}</div>
+          <div class="payment-card-info">
+            <div class="payment-card-name">Bus Fees</div>
+            <div class="payment-card-upi">${htmlEscape(PAYMENT_ACCOUNTS.bus.upiId)}</div>
+          </div>
+          <div class="payment-card-chevron">${iconSvg("chevron_right")}</div>
+        </div>
+        <div class="payment-card-body">
+          <div class="payment-card-body-inner">
+            <img src="${htmlEscape(PAYMENT_ACCOUNTS.bus.qr)}" alt="Bus QR">
+            <div class="upi-row">
+              <span class="upi-text">${htmlEscape(PAYMENT_ACCOUNTS.bus.upiId)}</span>
+              <button class="btn-copy" data-upi="${htmlEscape(PAYMENT_ACCOUNTS.bus.upiId)}">${iconSvg("content_copy")} Copy UPI ID</button>
+            </div>
+            <button class="btn-upi-pay" data-upi="${htmlEscape(PAYMENT_ACCOUNTS.bus.upiId)}" data-name="Bus Fees">Pay via UPI App</button>
+          </div>
+        </div>
+      </div>
+      <div class="payment-card" data-account="other">
+        <div class="payment-card-header">
+          <div class="payment-card-icon">${iconSvg("receipt")}</div>
+          <div class="payment-card-info">
+            <div class="payment-card-name">Other Fees</div>
+            <div class="payment-card-upi">${htmlEscape(PAYMENT_ACCOUNTS.other.upiId)}</div>
+          </div>
+          <div class="payment-card-chevron">${iconSvg("chevron_right")}</div>
+        </div>
+        <div class="payment-card-body">
+          <div class="payment-card-body-inner">
+            <img src="${htmlEscape(PAYMENT_ACCOUNTS.other.qr)}" alt="Other QR">
+            <div class="upi-row">
+              <span class="upi-text">${htmlEscape(PAYMENT_ACCOUNTS.other.upiId)}</span>
+              <button class="btn-copy" data-upi="${htmlEscape(PAYMENT_ACCOUNTS.other.upiId)}">${iconSvg("content_copy")} Copy UPI ID</button>
+            </div>
+            <button class="btn-upi-pay" data-upi="${htmlEscape(PAYMENT_ACCOUNTS.other.upiId)}" data-name="Other Fees">Pay via UPI App</button>
+          </div>
+        </div>
+      </div>
+    </div>`);
+
+  const cards = m.querySelectorAll(".payment-card");
+  let currentlyOpen = null;
+
+  function expandCard(card) {
+    if (currentlyOpen && currentlyOpen !== card) {
+      const pb = currentlyOpen.querySelector(".payment-card-body");
+      const ph = currentlyOpen.querySelector(".payment-card-header");
+      if (pb) pb.style.maxHeight = "0";
+      if (ph) ph.classList.remove("open");
+    }
+    if (currentlyOpen === card) { currentlyOpen = null; return; }
+    const body = card.querySelector(".payment-card-body");
+    const header = card.querySelector(".payment-card-header");
+    body.style.willChange = "max-height";
+    requestAnimationFrame(() => {
+      const inner = body.querySelector(".payment-card-body-inner");
+      body.style.maxHeight = (inner ? inner.scrollHeight : 400) + "px";
     });
+    if (header) header.classList.add("open");
+    currentlyOpen = card;
+    const onEnd = () => { body.style.willChange = "auto"; body.removeEventListener("transitionend", onEnd); };
+    body.addEventListener("transitionend", onEnd, { once: true });
   }
-};
-function openPay(opts) { PaymentExperience.open(opts); }
+
+  cards.forEach(card => {
+    const header = card.querySelector(".payment-card-header");
+    if (header) header.addEventListener("click", () => {
+      if (currentlyOpen === card) {
+        const b = card.querySelector(".payment-card-body");
+        if (b) b.style.maxHeight = "0";
+        header.classList.remove("open");
+        currentlyOpen = null;
+      } else {
+        expandCard(card);
+      }
+    });
+
+    // Existing Copy UPI ID control: native chooser is requested only after
+    // the original copy acknowledgement; browser remains copy-only.
+    const copyBtn = card.querySelector(".btn-copy");
+    if (copyBtn) {
+      copyBtn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const upi = copyBtn.getAttribute("data-upi");
+        await Platform.copyUpi(upi);
+        const originalHTML = copyBtn.innerHTML;
+        copyBtn.innerHTML = iconSvg("check") + ' UPI ID Copied';
+        if (Platform.isNative()) {
+          const name = card.querySelector(".btn-upi-pay")?.getAttribute("data-name") || "St. Anne's ICSE";
+          setTimeout(() => Platform.openUpiApps(upi, name), 400);
+        }
+        setTimeout(() => { copyBtn.innerHTML = originalHTML; }, 1500);
+      });
+    }
+
+    // Existing Pay via UPI App control: Android owns its native QR action.
+    // The browser branch is intentionally the original UPI URL behaviour.
+    const upiBtn = card.querySelector(".btn-upi-pay");
+    if (upiBtn) {
+      upiBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (upiBtn.classList.contains("is-loading")) return;
+        const upi = upiBtn.getAttribute("data-upi");
+        const name = upiBtn.getAttribute("data-name") || "St. Anne's ICSE";
+        const account = Object.values(PAYMENT_ACCOUNTS).find(a => a.name === name && a.upiId === upi);
+        upiBtn.classList.add("is-loading");
+        setTimeout(() => {
+          upiBtn.classList.remove("is-loading");
+          if (Platform.isNative() && Platform.shareQr(account ? account.qr : "", name)) return;
+          const encodedName = encodeURIComponent(name);
+          window.location.href = `upi://pay?pa=${encodeURIComponent(upi)}&pn=${encodedName}&cu=INR`;
+        }, 320);
+      });
+    }
+  });
+
+  if (opts.account) {
+    const target = m.querySelector('.payment-card[data-account="' + opts.account + '"]');
+    if (target) expandCard(target);
+  }
+}
 
 /* ═══════════════════════════════════════════
    ADMIN ADD FLOW
@@ -3497,7 +3568,7 @@ function openHelp() {
         <button class="btn-action btn-pay" id="raiseTicket" type="button">${iconSvg("send")} Raise Ticket</button>
       </div>
     </div>`);
-  const wc = m.querySelector("#wa-chat"); if (wc) wc.onclick = () => Platform.openWhatsApp(WHATSAPP_URL);
+  const wc = m.querySelector("#wa-chat"); if (wc) wc.onclick = () => window.open(WHATSAPP_URL);
   const rt = m.querySelector("#raiseTicket"); if (rt) rt.onclick = () => {
     const subj = encodeURIComponent("Fee Portal Support - " + (SD && SD.name ? SD.name : "Student"));
     const body = encodeURIComponent("Hello, I need help with the fee portal. Student: " + ((typeof studentId !== "undefined" && studentId) ? studentId.toUpperCase() : "—") + " Reference: " + ((typeof studentId !== "undefined" && studentId) ? studentId.toUpperCase() : "—") + " Issue: ");
@@ -4527,7 +4598,7 @@ function wireUI(){
   click("topNotify",   openNotifications);
   click("navSettings", openSettings);
   click("navLogout",   () => { const b = $("logoutBtn"); if (b) b.click(); });
-  click("wa-chat-2",   () => Platform.openWhatsApp(WHATSAPP_URL));
+  click("wa-chat-2",   () => window.open(WHATSAPP_URL));
   click("sidebarToggle", () => { const a = $("app"); if (a) a.classList.toggle("sidebar-collapsed"); });
 
   document.querySelectorAll("#feeTabs .fee-tab").forEach(function (b) {
@@ -4630,5 +4701,5 @@ wireBottomNav();
 </script>
 
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1dfaf1bbdaec08d',t:'MTc4NDUyNjU4MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1e9f8e17dbcc87a',t:'MTc4NDYzNDQ2MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1eb5288e88aef77',t:'MTc4NDY0ODYxOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1e9f8e17dbcc87a',t:'MTc4NDYzNDQ2MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1eb5288e88aef77',t:'MTc4NDY0ODYxOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a26d9d792f7b0d9e',t:'MTc4NjAxNDgzNg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
