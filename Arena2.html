@@ -1,6 +1,4 @@
 
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -60,7 +58,7 @@ h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em;color:var(--text)}
 .icon{width:1.15em;height:1.15em;display:block;stroke-width:2;stroke:currentColor;fill:none;stroke-linecap:round;stroke-linejoin:round}
 
 /* ── SKELETON LOADER ── */
-.skeleton-screen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:grid;grid-template-columns:var(--sidebar-w) minmax(0,1fr) var(--rightbar-w);grid-template-rows:var(--topbar-h) 1fr;grid-template-areas:"sk-side sk-top" "sk-side sk-main";gap:12px;padding:12px;max-width:1320px;margin:0 auto}
+.skeleton-screen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:grid;grid-template-columns:var(--sidebar-w) minmax(0,1fr) var(--rightbar-w);grid-template-rows:var(--topbar-h) 1fr;grid-template-areas:"sk-side sk-top sk-top" "sk-side sk-main sk-main";gap:12px;padding:12px;max-width:1320px;margin:0 auto}
 @media (max-width:1023px){.skeleton-screen{grid-template-columns:1fr;grid-template-rows:var(--topbar-h) 1fr;grid-template-areas:"sk-top" "sk-main"}}
 .sk{position:relative;overflow:hidden;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--sh-xs)}
 .sk-side{grid-area:sk-side;box-shadow:var(--sh-xs)}
@@ -369,7 +367,6 @@ h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em;color:var(--text)}
 .overlay.admin-overlay .modal::before{display:none}
 @keyframes adminModalIn{from{opacity:0;transform:scale(.96) translateY(10px)}to{opacity:1;transform:none}}
 .overlay.closing .modal{animation:sheetDown .24s var(--ease) both}
-@keyframes overlayFade{from{opacity:1}to{opacity:0}}
 @keyframes sheetDown{to{transform:translateY(100%)}}
 .modal{width:100%;max-width:480px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:28px 28px 0 0;padding:6px 22px calc(24px + env(safe-area-inset-bottom));max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch;box-shadow:var(--sh-lg);transform:translateY(100%);animation:sheetUp .36s var(--ease-out) both;position:relative}
 @keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
@@ -390,7 +387,7 @@ h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em;color:var(--text)}
 .payment-card-name{font-weight:800;font-size:.96rem}
 .payment-card-upi{font-size:.78rem;color:var(--text-3);font-weight:500;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .payment-card-chevron{color:var(--text-3);font-size:1.4rem;transition:transform var(--dur) var(--ease);display:inline-flex}
-.payment-card-chevron.open{transform:rotate(90deg);color:var(--brand)}
+.payment-card-header.open .payment-card-chevron,.payment-card-chevron.open{transform:rotate(90deg);color:var(--brand)}
 .payment-card-body{max-height:0;overflow:hidden;transition:max-height .4s var(--ease)}
 .payment-card-body-inner{padding:4px 16px 18px;display:flex;flex-direction:column;align-items:center;gap:12px;background:var(--surface-2);border-top:1px solid var(--line)}
 .payment-card-body-inner img{width:180px;height:180px;border-radius:14px;background:#fff;border:1px solid var(--line);padding:8px}
@@ -1095,33 +1092,155 @@ enableIndexedDbPersistence(db).catch(err => {
 ═══════════════════════════════════════════ */
 const ADMIN_EMAIL_1 = "immanuelmelbindj@gmail.com";
 const ADMIN_EMAIL_2 = "SCHOOL_OFFICE_EMAIL@gmail.com"; // school office email (deployment config)
-const UPI_ID       = "jinmelkunnath@oksbi";          // legacy – not used in new popup
 const WHATSAPP_URL = "https://wa.me/918547987577";
 const MAX_RECEIPTS = 100;
 
-/* Native boundary for the two existing payment controls. The popup UI stays
-   unchanged; only this service may communicate with an Android bridge. */
+async function ensureAdminSignedIn(password) {
+  if (adminUser) return true;
+  const emails = [ADMIN_EMAIL_1, ADMIN_EMAIL_2]
+    .map(v => String(v || "").trim())
+    .filter(v => v && v.includes("@") && !/^SCHOOL_OFFICE_EMAIL/i.test(v));
+  let lastError = null;
+  for (const email of emails) {
+    try {
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+      adminUser = cred && cred.user ? cred.user : adminUser;
+      return true;
+    } catch (err) { lastError = err; }
+  }
+  throw lastError || new Error("Administrator sign-in failed.");
+}
+
+/* Native payment boundary. The popup UI calls Platform.* only; the
+   WebView supplies window.Platform, while browsers use safe fallbacks. */
 const Platform = (() => {
-  const bridge = () => window.AndroidNative || window.Android || window.NativeBridge || null;
-  const native = (method, ...args) => {
-    const b = bridge();
-    if (!b || typeof b[method] !== "function") return false;
-    try { b[method](...args); return true; } catch (_) { return false; }
+  let adapter = null;
+  const currentExternal = () => {
+    const candidate = window.Platform;
+    return candidate && candidate !== adapter && (typeof candidate === "object" || typeof candidate === "function") ? candidate : null;
   };
+
+  const invokeExternal = (method, ...args) => {
+    const external = currentExternal();
+    if (!external || typeof external[method] !== "function") return { called: false, value: false };
+    try { return { called: true, value: external[method](...args) }; }
+    catch (_) { return { called: false, value: false }; }
+  };
+
+  const nativeResult = async call => {
+    if (!call || !call.called) return null;
+    try {
+      const value = (call.value && typeof call.value.then === "function") ? await call.value : call.value;
+      return value === undefined ? true : value;
+    } catch (_) { return false; }
+  };
+
   const browserCopy = async text => {
-    try { if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(text); return true; } } catch (_) {}
-    const ta = document.createElement("textarea"); ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
-    document.body.appendChild(ta); ta.focus(); ta.select();
-    let copied = false; try { copied = document.execCommand("copy"); } catch (_) {}
-    ta.remove(); return copied;
+    text = String(text || "");
+    if (!text) return false;
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch (_) {}
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.left = "-9999px";
+    ta.style.top = "0";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.focus({ preventScroll: true });
+    ta.select();
+    ta.setSelectionRange(0, ta.value.length);
+    let copied = false;
+    try { copied = document.execCommand("copy"); } catch (_) {}
+    ta.remove();
+    return copied;
   };
-  return Object.freeze({
-    copyUpi: upi => native("copyUpi", String(upi || "")) || browserCopy(String(upi || "")),
-    shareQr: qr => native("shareQr", String(qr || "")),
-    openUpiApps: () => native("openUpiApps")
+
+  const browserOpenUpi = upi => {
+    upi = String(upi || "").trim();
+    if (!upi) return false;
+    try {
+      const ua = navigator.userAgent || "";
+      const canAttemptProtocol = /Mobi|Mobile|Tablet/i.test(ua) || (navigator.maxTouchPoints || 0) > 0;
+      if (!canAttemptProtocol) return false;
+      const url = "upi://pay?pa=" + encodeURIComponent(upi) +
+        "&pn=" + encodeURIComponent("St. Anne's ICSE School") + "&cu=INR";
+      const a = document.createElement("a");
+      a.href = url;
+      a.rel = "noopener noreferrer";
+      a.style.display = "none";
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { try { a.remove(); } catch (_) {} }, 100);
+      return true;
+    } catch (_) { return false; }
+  };
+
+  const fileExt = mime => {
+    const m = String(mime || "").toLowerCase();
+    if (m.indexOf("jpeg") !== -1 || m.indexOf("jpg") !== -1) return "jpg";
+    if (m.indexOf("png") !== -1) return "png";
+    if (m.indexOf("webp") !== -1) return "webp";
+    return "png";
+  };
+
+  const shareUrlFallback = async imageUrl => {
+    if (!imageUrl || !navigator.share) return false;
+    try { await navigator.share({ title: "Payment QR", url: imageUrl }); return true; }
+    catch (err) { return err && err.name === "AbortError" ? "cancel" : false; }
+  };
+
+  adapter = Object.freeze({
+    copyUpi: async upi => {
+      upi = String(upi || "");
+      const native = await nativeResult(invokeExternal("copyUpi", upi));
+      if (native && native !== "cancel") return true;
+      return browserCopy(upi);
+    },
+    shareQr: async qr => {
+      const imageUrl = String(qr || "");
+      const native = await nativeResult(invokeExternal("shareQr", imageUrl));
+      if (native && native !== false) return native;
+      if (!imageUrl || !navigator.share) return false;
+      if (!navigator.canShare || typeof File === "undefined") return shareUrlFallback(imageUrl);
+      let controller = null;
+      let timeoutId = null;
+      try {
+        if (typeof AbortController !== "undefined") {
+          controller = new AbortController();
+          timeoutId = setTimeout(() => controller.abort(), 10000);
+        }
+        const response = await fetch(imageUrl, controller ? { signal: controller.signal } : undefined);
+        if (timeoutId) { clearTimeout(timeoutId); timeoutId = null; }
+        if (!response.ok) return shareUrlFallback(imageUrl);
+        const blob = await response.blob();
+        const file = new File([blob], "st-annes-payment-qr." + fileExt(blob.type), { type: blob.type || "image/png" });
+        if (!navigator.canShare({ files: [file] })) return shareUrlFallback(imageUrl);
+        await navigator.share({ files: [file] });
+        return true;
+      } catch (err) {
+        if (timeoutId) clearTimeout(timeoutId);
+        if (controller && controller.signal.aborted) return false;
+        if (err && err.name === "AbortError") return "cancel";
+        return shareUrlFallback(imageUrl);
+      }
+    },
+    openUpiApps: async upi => {
+      upi = String(upi || "");
+      const native = await nativeResult(invokeExternal("openUpiApps", upi));
+      if (native && native !== "cancel") return true;
+      return browserOpenUpi(upi);
+    }
   });
+
+  if (!currentExternal()) window.Platform = adapter;
+  return adapter;
 })();
-window.Platform = Platform;
 
 
 const MONTH_ORDER = ["june","july","august","september","october","november","december","january","february","march"];
@@ -1926,7 +2045,10 @@ function showLatestReceipt() {
     .sort((a, b) => (b.date || "").localeCompare(a.date || ""));
   if (!recs.length) { toast("No receipts available yet."); return; }
   const r = recs[0];
-  showSuccess(r.subType, Math.abs(safe(r.amount)), r.code, { mode: r.mode || "upi", type: r.type, term: r.subType, ay: AcademicYearEngine.current(), paymentDate: getPaymentDate(r) });
+  // Receipt rendering (html2canvas) can fail offline — surface a toast
+  // instead of an unhandled rejection.
+  showSuccess(r.subType, Math.abs(safe(r.amount)), r.code, { mode: r.mode || "upi", type: r.type, term: r.subType, ay: AcademicYearEngine.current(), paymentDate: getPaymentDate(r) })
+    .catch(e => { Logger.error("showSuccess", e); toast("Could not generate receipt."); });
 }
 
 function renderTermView(container) {
@@ -2235,7 +2357,13 @@ async function renderReceiptImg(data) {
 
 function dlReceipt(url, code) {
   const a = document.createElement("a");
-  a.href = url; a.download = `${code}.png`; a.click();
+  a.href = url;
+  a.download = `${code || "receipt"}.png`;
+  a.rel = "noopener noreferrer";
+  a.style.display = "none";
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { try { a.remove(); } catch (e) {} }, 0);
 }
 
 async function showSuccess(subType, amount, code, opts) {
@@ -2494,7 +2622,14 @@ async function applyPayment(feeType, identifier, amount, isFull, mode = "upi", p
   }
 
   render();
-  await showSuccess(subType, absAmount, code, { mode: mode, type: feeType, term: subType, ay: AcademicYearEngine.current(), paymentDate });
+  // Receipt rendering must never fail the payment flow: the payment is
+  // already saved — a render failure only means no visual receipt.
+  try {
+    await showSuccess(subType, absAmount, code, { mode: mode, type: feeType, term: subType, ay: AcademicYearEngine.current(), paymentDate });
+  } catch (e) {
+    Logger.error("showSuccess", e);
+    toast("Could not generate receipt.");
+  }
   return true;
   } finally {
     paymentInProgress = false;
@@ -2675,7 +2810,14 @@ async function applyEdit(oldReceipt, newAmount, newMode = "upi", paymentDate = t
     await saveAll();
 
     render();
-    await showSuccess(oldReceipt.subType, newAmount, newCode, { type: oldReceipt.type, paymentDate });
+    // Isolated on purpose: the edit is already saved — a receipt-render
+    // failure must surface as a toast, never roll back the saved edit.
+    try {
+      await showSuccess(oldReceipt.subType, newAmount, newCode, { type: oldReceipt.type, mode: newMode, paymentDate });
+    } catch (e) {
+      Logger.error("showSuccess", e);
+      toast("Could not generate receipt.");
+    }
 
   } catch (err) {
     item.paid   = prevItemPaid;
@@ -3132,18 +3274,18 @@ let _modalSeq = 0;
 const PAYMENT_ACCOUNTS = {
   tuition: {
     name: "Tuition Fees",
-    upiId: "21766745100830@cnrb",        // Replace with actual tuition UPI ID
-    qr: "https://github.com/jinmelkunnath-alt/St.Annes-ICSE-School-Payment-Portal/blob/main/TUITIONFEE.jpg?raw=true"            // Replace with actual tuition QR code
+    upiId: "21766745100830@cnrb",
+    qr: "https://github.com/jinmelkunnath-alt/St.Annes-ICSE-School-Payment-Portal/blob/main/TUITIONFEE.jpg?raw=true"
   },
   bus: {
     name: "Bus Fees",
-    upiId: "217667451033741@cnrb",            // Replace with actual bus UPI ID
-    qr: "https://github.com/jinmelkunnath-alt/St.Annes-ICSE-School-Payment-Portal/blob/main/BUSFEEQR.jpg?raw=true"                // Replace with actual bus QR code
+    upiId: "217667451033741@cnrb",
+    qr: "https://github.com/jinmelkunnath-alt/St.Annes-ICSE-School-Payment-Portal/blob/main/BUSFEEQR.jpg?raw=true"
   },
   other: {
     name: "Other Fees",
-    upiId: "21766745100830@cnrb",          // Replace with actual other fees UPI ID
-    qr: "https://github.com/jinmelkunnath-alt/St.Annes-ICSE-School-Payment-Portal/blob/main/TUITIONFEE.jpg?raw=true"              // Replace with actual other fees QR code
+    upiId: "21766745100830@cnrb",
+    qr: "https://github.com/jinmelkunnath-alt/St.Annes-ICSE-School-Payment-Portal/blob/main/TUITIONFEE.jpg?raw=true"
   }
 };
 
@@ -3155,7 +3297,7 @@ function openPay(opts) {
       <h3>Select Payment Category</h3>
       <p class="subtitle">Please pay to the correct account based on the fee type.</p>
       <div class="payment-card" data-account="tuition">
-        <div class="payment-card-header">
+        <div class="payment-card-header" role="button" tabindex="0" aria-expanded="false">
           <div class="payment-card-icon">${iconSvg("school")}</div>
           <div class="payment-card-info">
             <div class="payment-card-name">Tuition Fees</div>
@@ -3175,7 +3317,7 @@ function openPay(opts) {
         </div>
       </div>
       <div class="payment-card" data-account="bus">
-        <div class="payment-card-header">
+        <div class="payment-card-header" role="button" tabindex="0" aria-expanded="false">
           <div class="payment-card-icon">${iconSvg("bus")}</div>
           <div class="payment-card-info">
             <div class="payment-card-name">Bus Fees</div>
@@ -3195,7 +3337,7 @@ function openPay(opts) {
         </div>
       </div>
       <div class="payment-card" data-account="other">
-        <div class="payment-card-header">
+        <div class="payment-card-header" role="button" tabindex="0" aria-expanded="false">
           <div class="payment-card-icon">${iconSvg("receipt")}</div>
           <div class="payment-card-info">
             <div class="payment-card-name">Other Fees</div>
@@ -3218,23 +3360,33 @@ function openPay(opts) {
 
   const cards = m.querySelectorAll(".payment-card");
   let currentlyOpen = null;
+  let expandSeq = 0;
 
-  function expandCard(card) {
-    if (currentlyOpen && currentlyOpen !== card) {
-      const pb = currentlyOpen.querySelector(".payment-card-body");
-      const ph = currentlyOpen.querySelector(".payment-card-header");
-      if (pb) pb.style.maxHeight = "0";
-      if (ph) ph.classList.remove("open");
-    }
-    if (currentlyOpen === card) { currentlyOpen = null; return; }
+  function setCardOpenState(card, open) {
+    if (!card) return;
     const body = card.querySelector(".payment-card-body");
     const header = card.querySelector(".payment-card-header");
+    if (body) body.style.maxHeight = open ? body.style.maxHeight : "0";
+    if (header) {
+      header.classList.toggle("open", !!open);
+      header.setAttribute("aria-expanded", open ? "true" : "false");
+    }
+  }
+
+  function expandCard(card) {
+    expandSeq++;
+    if (currentlyOpen && currentlyOpen !== card) setCardOpenState(currentlyOpen, false);
+    if (currentlyOpen === card) { setCardOpenState(card, false); currentlyOpen = null; return; }
+    const body = card.querySelector(".payment-card-body");
+    if (!body) return;
+    const seq = expandSeq;
     body.style.willChange = "max-height";
     requestAnimationFrame(() => {
+      if (seq !== expandSeq || currentlyOpen !== card || !document.body.contains(m)) return;
       const inner = body.querySelector(".payment-card-body-inner");
       body.style.maxHeight = (inner ? inner.scrollHeight : 400) + "px";
+      setCardOpenState(card, true);
     });
-    if (header) header.classList.add("open");
     currentlyOpen = card;
     const onEnd = () => { body.style.willChange = "auto"; body.removeEventListener("transitionend", onEnd); };
     body.addEventListener("transitionend", onEnd, { once: true });
@@ -3242,50 +3394,62 @@ function openPay(opts) {
 
   cards.forEach(card => {
     const header = card.querySelector(".payment-card-header");
-    if (header) header.addEventListener("click", () => {
-      if (currentlyOpen === card) {
-        const b = card.querySelector(".payment-card-body");
-        if (b) b.style.maxHeight = "0";
-        header.classList.remove("open");
-        currentlyOpen = null;
-      } else {
-        expandCard(card);
-      }
-    });
-
-    // Existing Copy UPI ID control: native chooser is requested only after
-    // the original copy acknowledgement; browser remains copy-only.
-    const copyBtn = card.querySelector(".btn-copy");
-    if (copyBtn) {
-      copyBtn.addEventListener("click", async (e) => {
-        e.stopPropagation();
-        const upi = copyBtn.getAttribute("data-upi");
-        await Platform.copyUpi(upi);
-        const originalHTML = copyBtn.innerHTML;
-        copyBtn.innerHTML = iconSvg("check") + ' UPI ID Copied';
-        // On browsers this Platform call is intentionally a no-op.
-        setTimeout(() => Platform.openUpiApps(), 400);
-        setTimeout(() => { copyBtn.innerHTML = originalHTML; }, 1500);
+    if (header) {
+      const toggle = () => expandCard(card);
+      header.addEventListener("click", toggle);
+      header.addEventListener("keydown", e => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); }
       });
     }
 
-    // Existing Pay via UPI App control: Android owns its native QR action.
-    // The browser branch is intentionally the original UPI URL behaviour.
+    // Copy UPI ID: copy exactly what is displayed, acknowledge success,
+    // then delegate the app hand-off to Platform.openUpiApps().
+    const copyBtn = card.querySelector(".btn-copy");
+    if (copyBtn) {
+      // Pristine label captured once per popup build — every restore returns
+      // to this exact state, so rapid re-clicks can never leave the button
+      // stuck showing the acknowledgement.
+      const pristineHTML = copyBtn.innerHTML;
+      let copyInFlight = false;
+      copyBtn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        if (copyInFlight) return;
+        copyInFlight = true;
+        const displayed = card.querySelector(".upi-text");
+        const upi = (displayed && displayed.textContent ? displayed.textContent : copyBtn.getAttribute("data-upi") || "").trim();
+        const alive = () => document.body.contains(m);
+        let copied = false;
+        try { copied = !!(await Platform.copyUpi(upi)); } catch (_) { copied = false; }
+        if (copied) {
+          copyBtn.innerHTML = iconSvg("check") + ' UPI ID Copied';
+          setTimeout(() => { if (alive()) copyBtn.innerHTML = pristineHTML; }, 1500);
+          try { if (alive()) Promise.resolve(Platform.openUpiApps(upi)).catch(() => {}); } catch (_) {}
+        } else {
+          toast("Could not copy UPI ID — please try again.");
+        }
+        copyInFlight = false;
+      });
+    }
+
+    // Pay via UPI App: delegate only the QR image currently displayed
+    // inside this card to Platform.shareQr().
     const upiBtn = card.querySelector(".btn-upi-pay");
     if (upiBtn) {
-      upiBtn.addEventListener("click", (e) => {
+      let shareInFlight = false;
+      upiBtn.addEventListener("click", async (e) => {
         e.stopPropagation();
-        if (upiBtn.classList.contains("is-loading")) return;
-        const upi = upiBtn.getAttribute("data-upi");
-        const name = upiBtn.getAttribute("data-name") || "St. Anne's ICSE";
-        const account = Object.values(PAYMENT_ACCOUNTS).find(a => a.name === name && a.upiId === upi);
+        if (shareInFlight || upiBtn.classList.contains("is-loading")) return;
+        const img = card.querySelector(".payment-card-body-inner img");
+        const currentQr = (img && (img.currentSrc || img.src)) || "";
+        shareInFlight = true;
         upiBtn.classList.add("is-loading");
-        setTimeout(() => {
-          upiBtn.classList.remove("is-loading");
-          // The native engine receives only the category QR image. Browser
-          // use keeps the already-visible original QR panel unchanged.
-          Platform.shareQr(account ? account.qr : "");
-        }, 320);
+        let result = false;
+        try { result = await Platform.shareQr(currentQr); } catch (_) { result = false; }
+        finally {
+          shareInFlight = false;
+          if (document.body.contains(m)) upiBtn.classList.remove("is-loading");
+        }
+        if (result === false && document.body.contains(m)) toast("Could not share the QR image on this device.");
       });
     }
   });
@@ -3592,11 +3756,16 @@ function applyTheme(theme) {
 }
 
 function detectSystemTheme() {
-  applyTheme(window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  const mq = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+  applyTheme(mq && mq.matches ? "dark" : "light");
 }
 
-window.matchMedia("(prefers-color-scheme: dark)")
-  .addEventListener("change", e => { applyTheme(e.matches ? "dark" : "light"); });
+const colorSchemeQuery = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+if (colorSchemeQuery) {
+  const onColorSchemeChange = e => { applyTheme(e.matches ? "dark" : "light"); };
+  if (typeof colorSchemeQuery.addEventListener === "function") colorSchemeQuery.addEventListener("change", onColorSchemeChange);
+  else if (typeof colorSchemeQuery.addListener === "function") colorSchemeQuery.addListener(onColorSchemeChange);
+}
 
 /* ═══════════════════════════════════════════
    STEALTH KEYBOARD SHORTCUTS
@@ -3724,10 +3893,21 @@ function openAdminAuth(mode) {
   passInput.addEventListener("input", () => { _typed = passInput.value; });
 
   // ── Submit ──
-  const attempt = () => {
+  let authInFlight = false;
+  const attempt = async () => {
+    if (authInFlight) return;
     const password = (passInput.value || "").trim();
-    if (password === "ADMIN@STANNES") {
-      // Immediately wipe from input and memory
+    if (password !== "ADMIN@STANNES") {
+      toast("Incorrect administrator password.");
+      okBtn.disabled = false;
+      clearPassword();
+      passInput.focus();
+      return;
+    }
+    authInFlight = true;
+    okBtn.disabled = true;
+    try {
+      await ensureAdminSignedIn(password);
       clearPassword();
       closeAllOverlays();
       if (mode === "add") {
@@ -3736,11 +3916,14 @@ function openAdminAuth(mode) {
         isAdminMode = true;
         openAdminEditSelector();
       }
-    } else {
-      toast("Incorrect administrator password.");
+    } catch (err) {
+      toast("Administrator sign-in failed. Please try again.");
+      Logger.error("admin auth", err);
       okBtn.disabled = false;
       clearPassword();
       passInput.focus();
+    } finally {
+      authInFlight = false;
     }
   };
 
@@ -3923,7 +4106,12 @@ const DateEngine = {
   month(){ return this.now().toLocaleDateString("en-IN", { month: "long" }); },
   year() { return this.now().getFullYear(); },
   tz()   { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "Local"; } catch (e) { return "Local"; } },
-  iso(d) { d = d || this.now(); return d.toISOString().slice(0, 10); },
+  iso(d) {
+    d = d || this.now();
+    const local = new Date(d.getTime());
+    local.setMinutes(local.getMinutes() - local.getTimezoneOffset());
+    return local.toISOString().slice(0, 10);
+  },
   // whole-day difference between today (local midnight) and an ISO date
   daysBetween(targetISO) {
     const a = new Date(this.iso() + "T00:00:00");
@@ -3947,7 +4135,7 @@ const AcademicYearEngine = {
    "Term 1 (June – August)" -> last day of August in the academic year.
    Returns ISO string or null (no schema change; purely derived). */
 function deriveTermDueDate(name, ayStart) {
-  const m = String(name || "").match(/\(([a-z]+)\s*[–-]\s*([a-z]+)\)/i);
+  const m = String(name || "").match(/([a-z]+)\s*[–-]\s*([a-z]+)/i);
   const endMonth = m ? m[2] : null;
   if (!endMonth) return null;
   const idx = MONTH_ORDER.indexOf(endMonth.toLowerCase());
@@ -4569,7 +4757,8 @@ SummaryEngine.compute = (function (orig) {
     const py = calcPreviousYearTotals();
     const receipts = (SD && SD.receipts) ? SD.receipts.length : 0;
     const eca = (SD && SD.ecaFee) ? (SD.ecaFee.total + "|" + SD.ecaFee.paid) : "0|0";
-    return [VIEW, t.total, t.paid, o.total, o.paid, py.total, py.paid, receipts, eca].join("|");
+    const day = (typeof DateEngine !== "undefined" && DateEngine.iso) ? DateEngine.iso() : today();
+    return [day, VIEW, t.total, t.paid, o.total, o.paid, py.total, py.paid, receipts, eca].join("|");
   }
   return function () {
     const k = key();
@@ -4696,7 +4885,5 @@ wireBottomNav();
 
 
 </script>
-
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1dfaf1bbdaec08d',t:'MTc4NDUyNjU4MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1e9f8e17dbcc87a',t:'MTc4NDYzNDQ2MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1eb5288e88aef77',t:'MTc4NDY0ODYxOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a26dc780285a1043',t:'MTc4NjAxNjU1OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a276b01d6e19186d',t:'MTc4NjEwOTk3Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
