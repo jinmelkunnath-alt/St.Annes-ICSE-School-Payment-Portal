@@ -31,6 +31,7 @@
   --sh-sm:0 1px 2px rgba(15,23,42,.04), 0 6px 16px -10px rgba(15,23,42,.12);
   --sh-md:0 2px 6px rgba(15,23,42,.05), 0 12px 28px -16px rgba(15,23,42,.16);
   --sh-brand:0 8px 20px -8px rgba(41,94,239,.45);
+  --sh-lg:0 4px 12px rgba(15,23,42,.08), 0 18px 40px -18px rgba(15,23,42,.28);
   --dur:.2s; --dur-fast:.14s; --dur-slow:.5s;
   --ease:cubic-bezier(.4,0,.2,1); --ease-out:cubic-bezier(.16,1,.3,1);
   --font:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
@@ -57,7 +58,7 @@ h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em;color:var(--text)}
 .icon{width:1.15em;height:1.15em;display:block;stroke-width:2;stroke:currentColor;fill:none;stroke-linecap:round;stroke-linejoin:round}
 
 /* ── SKELETON LOADER ── */
-.skeleton-screen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:grid;grid-template-columns:var(--sidebar-w) minmax(0,1fr) var(--rightbar-w);grid-template-rows:var(--topbar-h) 1fr;grid-template-areas:"sk-side sk-top" "sk-side sk-main";gap:12px;padding:12px;max-width:1320px;margin:0 auto}
+.skeleton-screen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:grid;grid-template-columns:var(--sidebar-w) minmax(0,1fr) var(--rightbar-w);grid-template-rows:var(--topbar-h) 1fr;grid-template-areas:"sk-side sk-top sk-top" "sk-side sk-main sk-main";gap:12px;padding:12px;max-width:1320px;margin:0 auto}
 @media (max-width:1023px){.skeleton-screen{grid-template-columns:1fr;grid-template-rows:var(--topbar-h) 1fr;grid-template-areas:"sk-top" "sk-main"}}
 .sk{position:relative;overflow:hidden;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--sh-xs)}
 .sk-side{grid-area:sk-side;box-shadow:var(--sh-xs)}
@@ -366,7 +367,6 @@ h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em;color:var(--text)}
 .overlay.admin-overlay .modal::before{display:none}
 @keyframes adminModalIn{from{opacity:0;transform:scale(.96) translateY(10px)}to{opacity:1;transform:none}}
 .overlay.closing .modal{animation:sheetDown .24s var(--ease) both}
-@keyframes overlayFade{from{opacity:1}to{opacity:0}}
 @keyframes sheetDown{to{transform:translateY(100%)}}
 .modal{width:100%;max-width:480px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:28px 28px 0 0;padding:6px 22px calc(24px + env(safe-area-inset-bottom));max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch;box-shadow:var(--sh-lg);transform:translateY(100%);animation:sheetUp .36s var(--ease-out) both;position:relative}
 @keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
@@ -387,7 +387,7 @@ h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em;color:var(--text)}
 .payment-card-name{font-weight:800;font-size:.96rem}
 .payment-card-upi{font-size:.78rem;color:var(--text-3);font-weight:500;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .payment-card-chevron{color:var(--text-3);font-size:1.4rem;transition:transform var(--dur) var(--ease);display:inline-flex}
-.payment-card-chevron.open{transform:rotate(90deg);color:var(--brand)}
+.payment-card-header.open .payment-card-chevron,.payment-card-chevron.open{transform:rotate(90deg);color:var(--brand)}
 .payment-card-body{max-height:0;overflow:hidden;transition:max-height .4s var(--ease)}
 .payment-card-body-inner{padding:4px 16px 18px;display:flex;flex-direction:column;align-items:center;gap:12px;background:var(--surface-2);border-top:1px solid var(--line)}
 .payment-card-body-inner img{width:180px;height:180px;border-radius:14px;background:#fff;border:1px solid var(--line);padding:8px}
@@ -1092,9 +1092,95 @@ enableIndexedDbPersistence(db).catch(err => {
 ═══════════════════════════════════════════ */
 const ADMIN_EMAIL_1 = "immanuelmelbindj@gmail.com";
 const ADMIN_EMAIL_2 = "SCHOOL_OFFICE_EMAIL@gmail.com"; // school office email (deployment config)
-const UPI_ID       = "jinmelkunnath@oksbi";          // legacy – not used in new popup
 const WHATSAPP_URL = "https://wa.me/918547987577";
 const MAX_RECEIPTS = 100;
+
+async function ensureAdminSignedIn(password) {
+  if (adminUser) return true;
+  const emails = [ADMIN_EMAIL_1, ADMIN_EMAIL_2]
+    .map(v => String(v || "").trim())
+    .filter(v => v && v.includes("@") && !/^SCHOOL_OFFICE_EMAIL/i.test(v));
+  let lastError = null;
+  for (const email of emails) {
+    try {
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+      adminUser = cred && cred.user ? cred.user : adminUser;
+      return true;
+    } catch (err) { lastError = err; }
+  }
+  throw lastError || new Error("Administrator sign-in failed.");
+}
+
+/* Native payment boundary. The popup requests native actions only; the
+   WebView supplies window.Platform, while browsers remain inert. */
+const copyDisplayedText = async text => {
+  text = String(text || "");
+  if (!text) return false;
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch (_) {}
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.setAttribute("readonly", "");
+  ta.style.position = "fixed";
+  ta.style.left = "-9999px";
+  ta.style.top = "0";
+  ta.style.opacity = "0";
+  document.body.appendChild(ta);
+  ta.focus({ preventScroll: true });
+  ta.select();
+  ta.setSelectionRange(0, ta.value.length);
+  let copied = false;
+  try { copied = document.execCommand("copy"); } catch (_) {}
+  ta.remove();
+  return copied;
+};
+
+const Platform = (() => {
+  let adapter = null;
+  const currentExternal = () => {
+    const candidate = window.Platform;
+    return candidate && candidate !== adapter && (typeof candidate === "object" || typeof candidate === "function") ? candidate : null;
+  };
+
+  const invokeExternal = (method, ...args) => {
+    const external = currentExternal();
+    if (!external || typeof external[method] !== "function") return { called: false, value: false };
+    try { return { called: true, value: external[method](...args) }; }
+    catch (_) { return { called: false, value: false }; }
+  };
+
+  const nativeResult = async call => {
+    if (!call || !call.called) return null;
+    try {
+      const value = (call.value && typeof call.value.then === "function") ? await call.value : call.value;
+      return value === undefined ? true : value;
+    } catch (_) { return false; }
+  };
+
+  adapter = Object.freeze({
+    openUpiChooser: async () => {
+      const native = await nativeResult(invokeExternal("openUpiChooser"));
+      return !!(native && native !== "cancel");
+    },
+    generateAndShareQr: async (upiId, payeeName, feeCategory, note) => {
+      const native = await nativeResult(invokeExternal(
+        "generateAndShareQr",
+        String(upiId || "").trim(),
+        String(payeeName || "").trim(),
+        String(feeCategory || "").trim(),
+        String(note || "").trim()
+      ));
+      return !!(native && native !== "cancel");
+    }
+  });
+
+  if (!currentExternal()) window.Platform = adapter;
+  return adapter;
+})();
 
 const MONTH_ORDER = ["june","july","august","september","october","november","december","january","february","march"];
 const PLAY_SCHOOL_MONTHS = MONTH_ORDER.map(m => m.charAt(0).toUpperCase() + m.slice(1));
@@ -1898,7 +1984,10 @@ function showLatestReceipt() {
     .sort((a, b) => (b.date || "").localeCompare(a.date || ""));
   if (!recs.length) { toast("No receipts available yet."); return; }
   const r = recs[0];
-  showSuccess(r.subType, Math.abs(safe(r.amount)), r.code, { mode: r.mode || "upi", type: r.type, term: r.subType, ay: AcademicYearEngine.current(), paymentDate: getPaymentDate(r) });
+  // Receipt rendering (html2canvas) can fail offline — surface a toast
+  // instead of an unhandled rejection.
+  showSuccess(r.subType, Math.abs(safe(r.amount)), r.code, { mode: r.mode || "upi", type: r.type, term: r.subType, ay: AcademicYearEngine.current(), paymentDate: getPaymentDate(r) })
+    .catch(e => { Logger.error("showSuccess", e); toast("Could not generate receipt."); });
 }
 
 function renderTermView(container) {
@@ -2207,7 +2296,13 @@ async function renderReceiptImg(data) {
 
 function dlReceipt(url, code) {
   const a = document.createElement("a");
-  a.href = url; a.download = `${code}.png`; a.click();
+  a.href = url;
+  a.download = `${code || "receipt"}.png`;
+  a.rel = "noopener noreferrer";
+  a.style.display = "none";
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { try { a.remove(); } catch (e) {} }, 0);
 }
 
 async function showSuccess(subType, amount, code, opts) {
@@ -2466,7 +2561,14 @@ async function applyPayment(feeType, identifier, amount, isFull, mode = "upi", p
   }
 
   render();
-  await showSuccess(subType, absAmount, code, { mode: mode, type: feeType, term: subType, ay: AcademicYearEngine.current(), paymentDate });
+  // Receipt rendering must never fail the payment flow: the payment is
+  // already saved — a render failure only means no visual receipt.
+  try {
+    await showSuccess(subType, absAmount, code, { mode: mode, type: feeType, term: subType, ay: AcademicYearEngine.current(), paymentDate });
+  } catch (e) {
+    Logger.error("showSuccess", e);
+    toast("Could not generate receipt.");
+  }
   return true;
   } finally {
     paymentInProgress = false;
@@ -2647,7 +2749,14 @@ async function applyEdit(oldReceipt, newAmount, newMode = "upi", paymentDate = t
     await saveAll();
 
     render();
-    await showSuccess(oldReceipt.subType, newAmount, newCode, { type: oldReceipt.type, paymentDate });
+    // Isolated on purpose: the edit is already saved — a receipt-render
+    // failure must surface as a toast, never roll back the saved edit.
+    try {
+      await showSuccess(oldReceipt.subType, newAmount, newCode, { type: oldReceipt.type, mode: newMode, paymentDate });
+    } catch (e) {
+      Logger.error("showSuccess", e);
+      toast("Could not generate receipt.");
+    }
 
   } catch (err) {
     item.paid   = prevItemPaid;
@@ -3104,18 +3213,18 @@ let _modalSeq = 0;
 const PAYMENT_ACCOUNTS = {
   tuition: {
     name: "Tuition Fees",
-    upiId: "21766745100830@cnrb",        // Replace with actual tuition UPI ID
-    qr: "https://github.com/jinmelkunnath-alt/St.Annes-ICSE-School-Payment-Portal/blob/main/TUITIONFEE.jpg?raw=true"            // Replace with actual tuition QR code
+    upiId: "21766745100830@cnrb",
+    qr: "https://github.com/jinmelkunnath-alt/St.Annes-ICSE-School-Payment-Portal/blob/main/TUITIONFEE.jpg?raw=true"
   },
   bus: {
     name: "Bus Fees",
-    upiId: "217667451033741@cnrb",            // Replace with actual bus UPI ID
-    qr: "https://github.com/jinmelkunnath-alt/St.Annes-ICSE-School-Payment-Portal/blob/main/BUSFEEQR.jpg?raw=true"                // Replace with actual bus QR code
+    upiId: "217667451033741@cnrb",
+    qr: "https://github.com/jinmelkunnath-alt/St.Annes-ICSE-School-Payment-Portal/blob/main/BUSFEEQR.jpg?raw=true"
   },
   other: {
     name: "Other Fees",
-    upiId: "21766745100830@cnrb",          // Replace with actual other fees UPI ID
-    qr: "https://github.com/jinmelkunnath-alt/St.Annes-ICSE-School-Payment-Portal/blob/main/TUITIONFEE.jpg?raw=true"              // Replace with actual other fees QR code
+    upiId: "21766745100830@cnrb",
+    qr: "https://github.com/jinmelkunnath-alt/St.Annes-ICSE-School-Payment-Portal/blob/main/TUITIONFEE.jpg?raw=true"
   }
 };
 
@@ -3127,7 +3236,7 @@ function openPay(opts) {
       <h3>Select Payment Category</h3>
       <p class="subtitle">Please pay to the correct account based on the fee type.</p>
       <div class="payment-card" data-account="tuition">
-        <div class="payment-card-header">
+        <div class="payment-card-header" role="button" tabindex="0" aria-expanded="false">
           <div class="payment-card-icon">${iconSvg("school")}</div>
           <div class="payment-card-info">
             <div class="payment-card-name">Tuition Fees</div>
@@ -3140,14 +3249,14 @@ function openPay(opts) {
             <img src="${htmlEscape(PAYMENT_ACCOUNTS.tuition.qr)}" alt="Tuition QR">
             <div class="upi-row">
               <span class="upi-text">${htmlEscape(PAYMENT_ACCOUNTS.tuition.upiId)}</span>
-              <button class="btn-copy" data-upi="${htmlEscape(PAYMENT_ACCOUNTS.tuition.upiId)}">${iconSvg("content_copy")} Copy UPI ID</button>
+              <button class="btn-copy">${iconSvg("content_copy")} Copy UPI ID</button>
             </div>
-            <button class="btn-upi-pay" data-upi="${htmlEscape(PAYMENT_ACCOUNTS.tuition.upiId)}" data-name="Tuition Fees">Pay via UPI App</button>
+            <button class="btn-upi-pay" data-name="Tuition Fees">Pay via UPI App</button>
           </div>
         </div>
       </div>
       <div class="payment-card" data-account="bus">
-        <div class="payment-card-header">
+        <div class="payment-card-header" role="button" tabindex="0" aria-expanded="false">
           <div class="payment-card-icon">${iconSvg("bus")}</div>
           <div class="payment-card-info">
             <div class="payment-card-name">Bus Fees</div>
@@ -3160,14 +3269,14 @@ function openPay(opts) {
             <img src="${htmlEscape(PAYMENT_ACCOUNTS.bus.qr)}" alt="Bus QR">
             <div class="upi-row">
               <span class="upi-text">${htmlEscape(PAYMENT_ACCOUNTS.bus.upiId)}</span>
-              <button class="btn-copy" data-upi="${htmlEscape(PAYMENT_ACCOUNTS.bus.upiId)}">${iconSvg("content_copy")} Copy UPI ID</button>
+              <button class="btn-copy">${iconSvg("content_copy")} Copy UPI ID</button>
             </div>
-            <button class="btn-upi-pay" data-upi="${htmlEscape(PAYMENT_ACCOUNTS.bus.upiId)}" data-name="Bus Fees">Pay via UPI App</button>
+            <button class="btn-upi-pay" data-name="Bus Fees">Pay via UPI App</button>
           </div>
         </div>
       </div>
       <div class="payment-card" data-account="other">
-        <div class="payment-card-header">
+        <div class="payment-card-header" role="button" tabindex="0" aria-expanded="false">
           <div class="payment-card-icon">${iconSvg("receipt")}</div>
           <div class="payment-card-info">
             <div class="payment-card-name">Other Fees</div>
@@ -3180,9 +3289,9 @@ function openPay(opts) {
             <img src="${htmlEscape(PAYMENT_ACCOUNTS.other.qr)}" alt="Other QR">
             <div class="upi-row">
               <span class="upi-text">${htmlEscape(PAYMENT_ACCOUNTS.other.upiId)}</span>
-              <button class="btn-copy" data-upi="${htmlEscape(PAYMENT_ACCOUNTS.other.upiId)}">${iconSvg("content_copy")} Copy UPI ID</button>
+              <button class="btn-copy">${iconSvg("content_copy")} Copy UPI ID</button>
             </div>
-            <button class="btn-upi-pay" data-upi="${htmlEscape(PAYMENT_ACCOUNTS.other.upiId)}" data-name="Other Fees">Pay via UPI App</button>
+            <button class="btn-upi-pay" data-name="Other Fees">Pay via UPI App</button>
           </div>
         </div>
       </div>
@@ -3190,23 +3299,33 @@ function openPay(opts) {
 
   const cards = m.querySelectorAll(".payment-card");
   let currentlyOpen = null;
+  let expandSeq = 0;
 
-  function expandCard(card) {
-    if (currentlyOpen && currentlyOpen !== card) {
-      const pb = currentlyOpen.querySelector(".payment-card-body");
-      const ph = currentlyOpen.querySelector(".payment-card-header");
-      if (pb) pb.style.maxHeight = "0";
-      if (ph) ph.classList.remove("open");
-    }
-    if (currentlyOpen === card) { currentlyOpen = null; return; }
+  function setCardOpenState(card, open) {
+    if (!card) return;
     const body = card.querySelector(".payment-card-body");
     const header = card.querySelector(".payment-card-header");
+    if (body) body.style.maxHeight = open ? body.style.maxHeight : "0";
+    if (header) {
+      header.classList.toggle("open", !!open);
+      header.setAttribute("aria-expanded", open ? "true" : "false");
+    }
+  }
+
+  function expandCard(card) {
+    expandSeq++;
+    if (currentlyOpen && currentlyOpen !== card) setCardOpenState(currentlyOpen, false);
+    if (currentlyOpen === card) { setCardOpenState(card, false); currentlyOpen = null; return; }
+    const body = card.querySelector(".payment-card-body");
+    if (!body) return;
+    const seq = expandSeq;
     body.style.willChange = "max-height";
     requestAnimationFrame(() => {
+      if (seq !== expandSeq || currentlyOpen !== card || !document.body.contains(m)) return;
       const inner = body.querySelector(".payment-card-body-inner");
       body.style.maxHeight = (inner ? inner.scrollHeight : 400) + "px";
+      setCardOpenState(card, true);
     });
-    if (header) header.classList.add("open");
     currentlyOpen = card;
     const onEnd = () => { body.style.willChange = "auto"; body.removeEventListener("transitionend", onEnd); };
     body.addEventListener("transitionend", onEnd, { once: true });
@@ -3214,57 +3333,78 @@ function openPay(opts) {
 
   cards.forEach(card => {
     const header = card.querySelector(".payment-card-header");
-    if (header) header.addEventListener("click", () => {
-      if (currentlyOpen === card) {
-        const b = card.querySelector(".payment-card-body");
-        if (b) b.style.maxHeight = "0";
-        header.classList.remove("open");
-        currentlyOpen = null;
-      } else {
-        expandCard(card);
-      }
-    });
-
-    // Copy button
-    const copyBtn = card.querySelector(".btn-copy");
-    if (copyBtn) {
-      copyBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const upi = copyBtn.getAttribute("data-upi");
-        const fallback = () => {
-          const ta = document.createElement("textarea");
-          ta.value = upi;
-          ta.style.position = "fixed"; ta.style.opacity = "0";
-          document.body.appendChild(ta);
-          ta.focus(); ta.select();
-          try { document.execCommand("content_copy"); } catch (_) {}
-          document.body.removeChild(ta);
-        };
-        if (navigator.clipboard) {
-          navigator.clipboard.writeText(upi).catch(fallback);
-        } else {
-          fallback();
-        }
-        const originalHTML = copyBtn.innerHTML;
-        copyBtn.innerHTML = iconSvg("check") + ' Copied';
-        setTimeout(() => { copyBtn.innerHTML = originalHTML; }, 1500);
+    if (header) {
+      const toggle = () => expandCard(card);
+      header.addEventListener("click", toggle);
+      header.addEventListener("keydown", e => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); }
       });
     }
 
-    // UPI button (processing state)
+    // Copy UPI ID: copy exactly what is displayed, acknowledge success,
+    // then delegate the app hand-off to Platform.openUpiChooser().
+    const copyBtn = card.querySelector(".btn-copy");
+    if (copyBtn) {
+      // Pristine label captured once per popup build — every restore returns
+      // to this exact state, so rapid re-clicks can never leave the button
+      // stuck showing the acknowledgement.
+      const pristineHTML = copyBtn.innerHTML;
+      let copyInFlight = false;
+      let copySeq = 0; // generation token: a stale restore never overwrites a newer copy
+      copyBtn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        if (copyInFlight) return;
+        copyInFlight = true;
+        const seq = ++copySeq;
+        const displayed = card.querySelector(".upi-text");
+        const upi = displayed && displayed.textContent ? displayed.textContent.trim() : "";
+        const alive = () => document.body.contains(m);
+        let copied = false;
+        try { copied = !!(await copyDisplayedText(upi)); } catch (_) { copied = false; }
+        if (copied) {
+          // Requirement: show ✓ UPI ID Copied, wait ~400 ms, then open the
+          // UPI-app chooser via Platform.openUpiChooser() WITHOUT passing the
+          // UPI ID, WITHOUT building a payment link, and WITHOUT starting
+          // a payment. The parent performs the payment manually after
+          // choosing an app.
+          copyBtn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px">\u2713 UPI ID Copied</span>';
+          setTimeout(() => { if (alive() && seq === copySeq) copyBtn.innerHTML = pristineHTML; }, 1800);
+          setTimeout(() => {
+            if (seq === copySeq) copyInFlight = false;
+            try { Promise.resolve(Platform.openUpiChooser()).catch(() => {}); } catch (_) {}
+          }, 400);
+        } else {
+          toast("Could not copy UPI ID — please try again.");
+          copyInFlight = false;
+        }
+      });
+    }
+
+    // Pay via UPI App: delegate directly to Platform.generateAndShareQr()
+    // with ONLY the required UPI metadata (no image/blob/file/URL).
     const upiBtn = card.querySelector(".btn-upi-pay");
     if (upiBtn) {
-      upiBtn.addEventListener("click", (e) => {
+      let shareInFlight = false;
+      upiBtn.addEventListener("click", async (e) => {
         e.stopPropagation();
-        if (upiBtn.classList.contains("is-loading")) return;
-        const upi = upiBtn.getAttribute("data-upi");
-        const name = upiBtn.getAttribute("data-name") || "St. Anne's ICSE";
-        const encodedName = encodeURIComponent(name);
+        if (shareInFlight || upiBtn.classList.contains("is-loading")) return;
+        shareInFlight = true;
         upiBtn.classList.add("is-loading");
-        setTimeout(() => {
-          upiBtn.classList.remove("is-loading");
-          window.location.href = `upi://pay?pa=${encodeURIComponent(upi)}&pn=${encodedName}&cu=INR`;
-        }, 320);
+        let result = false;
+        try {
+          const displayed = card.querySelector(".upi-text");
+          const upiId = displayed && displayed.textContent ? displayed.textContent.trim() : "";
+          const payeeName = "St. Anne's ICSE School";
+          const feeCategory = (upiBtn.getAttribute("data-name") || "").trim();
+          const note = opts && opts.note ? String(opts.note).trim() : "";
+          if (!document.body.contains(m)) return;
+          result = await Platform.generateAndShareQr(upiId, payeeName, feeCategory, note);
+        } catch (_) { result = false; }
+        finally {
+          shareInFlight = false;
+          if (document.body.contains(m)) upiBtn.classList.remove("is-loading");
+        }
+        if (result === false && document.body.contains(m)) toast("Could not generate and share UPI QR on this device.");
       });
     }
   });
@@ -3525,7 +3665,7 @@ function openHelp() {
         </div>
         <div class="help-contact-row">
           <div class="help-contact-ico">${iconSvg("mail")}</div>
-          <div class="help-contact-main"><div class="help-contact-label">Email</div><div class="help-contact-val"><a href="mailto:stannesschool007@gmail.com">stannesschool007@gmail.com</a></div></div>
+          <div class="help-contact-main"><div class="help-contact-label">Email</div><div class="help-contact-val"><a href="mailto:office@stannes.edu">office@stannes.edu</a></div></div>
         </div>
         <div class="help-contact-row">
           <div class="help-contact-ico">${iconSvg("schedule")}</div>
@@ -3571,11 +3711,16 @@ function applyTheme(theme) {
 }
 
 function detectSystemTheme() {
-  applyTheme(window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  const mq = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+  applyTheme(mq && mq.matches ? "dark" : "light");
 }
 
-window.matchMedia("(prefers-color-scheme: dark)")
-  .addEventListener("change", e => { applyTheme(e.matches ? "dark" : "light"); });
+const colorSchemeQuery = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+if (colorSchemeQuery) {
+  const onColorSchemeChange = e => { applyTheme(e.matches ? "dark" : "light"); };
+  if (typeof colorSchemeQuery.addEventListener === "function") colorSchemeQuery.addEventListener("change", onColorSchemeChange);
+  else if (typeof colorSchemeQuery.addListener === "function") colorSchemeQuery.addListener(onColorSchemeChange);
+}
 
 /* ═══════════════════════════════════════════
    STEALTH KEYBOARD SHORTCUTS
@@ -3584,7 +3729,7 @@ let keys      = { a: false, d: false, e: false };
 let comboLock = false;
 
 document.addEventListener("keydown", e => {
-  const tag = e.target.tagName;
+  const tag = (e.target && e.target.tagName) || "";
   if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
 
   const k = e.key.toLowerCase();
@@ -3703,10 +3848,21 @@ function openAdminAuth(mode) {
   passInput.addEventListener("input", () => { _typed = passInput.value; });
 
   // ── Submit ──
-  const attempt = () => {
+  let authInFlight = false;
+  const attempt = async () => {
+    if (authInFlight) return;
     const password = (passInput.value || "").trim();
-    if (password === "ADMIN@STANNES") {
-      // Immediately wipe from input and memory
+    if (password !== "ADMIN@STANNES") {
+      toast("Incorrect administrator password.");
+      okBtn.disabled = false;
+      clearPassword();
+      passInput.focus();
+      return;
+    }
+    authInFlight = true;
+    okBtn.disabled = true;
+    try {
+      await ensureAdminSignedIn(password);
       clearPassword();
       closeAllOverlays();
       if (mode === "add") {
@@ -3715,11 +3871,14 @@ function openAdminAuth(mode) {
         isAdminMode = true;
         openAdminEditSelector();
       }
-    } else {
-      toast("Incorrect administrator password.");
+    } catch (err) {
+      toast("Administrator sign-in failed. Please try again.");
+      Logger.error("admin auth", err);
       okBtn.disabled = false;
       clearPassword();
       passInput.focus();
+    } finally {
+      authInFlight = false;
     }
   };
 
@@ -3902,7 +4061,12 @@ const DateEngine = {
   month(){ return this.now().toLocaleDateString("en-IN", { month: "long" }); },
   year() { return this.now().getFullYear(); },
   tz()   { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "Local"; } catch (e) { return "Local"; } },
-  iso(d) { d = d || this.now(); return d.toISOString().slice(0, 10); },
+  iso(d) {
+    d = d || this.now();
+    const local = new Date(d.getTime());
+    local.setMinutes(local.getMinutes() - local.getTimezoneOffset());
+    return local.toISOString().slice(0, 10);
+  },
   // whole-day difference between today (local midnight) and an ISO date
   daysBetween(targetISO) {
     const a = new Date(this.iso() + "T00:00:00");
@@ -3926,7 +4090,7 @@ const AcademicYearEngine = {
    "Term 1 (June – August)" -> last day of August in the academic year.
    Returns ISO string or null (no schema change; purely derived). */
 function deriveTermDueDate(name, ayStart) {
-  const m = String(name || "").match(/\(([a-z]+)\s*[–-]\s*([a-z]+)\)/i);
+  const m = String(name || "").match(/([a-z]+)\s*[–-]\s*([a-z]+)/i);
   const endMonth = m ? m[2] : null;
   if (!endMonth) return null;
   const idx = MONTH_ORDER.indexOf(endMonth.toLowerCase());
@@ -4103,6 +4267,9 @@ const PopupEngine = {
     return `<div><span>Outstanding</span><b>${fmtRs(this.total())}</b></div><div><span>Items</span><b>${this.items().length}</b></div>`;
   },
   show() {
+    /* Any dismissal (backdrop / Esc) marks the reminder handled for this
+       session so render()/refreshLive() never re-show it. */
+    const dismissFlag = () => { try { sessionStorage.setItem(this.KEY, "1"); } catch (e) {} };
     const m = overlay(`
       <div class="due-popup info">
         <div class="due-popup-ico">${iconSvg("schedule")}</div>
@@ -4114,7 +4281,7 @@ const PopupEngine = {
           <button class="btn-action btn-pay" id="duePay">${iconSvg("payments")} Pay Now</button>
         </div>
         <button class="due-popup-dismiss" id="dueDismiss">Maybe later</button>
-      </div>`);
+      </div>`, dismissFlag);
     const dp = m.querySelector("#duePay");
     if (dp) dp.onclick = () => { try { sessionStorage.setItem(this.KEY, "1"); } catch (e) {} closeAllOverlays(); const p = el("payBtn"); if (p) p.click(); };
     const dx = m.querySelector("#dueDismiss");
@@ -4351,7 +4518,7 @@ function openSettings(){
       <div class="settings-sec-head">${iconSvg("school")} Profile</div>
       <div class="settings-row"><div class="settings-row-main"><div class="settings-label">Student</div></div><div class="settings-value">${htmlEscape(SD && SD.name ? SD.name : "—")}</div></div>
       <div class="settings-row"><div class="settings-row-main"><div class="settings-label">Class</div></div><div class="settings-value">${htmlEscape(SD && SD.class ? SD.class : "—")}</div></div>
-      <div class="settings-row"><div class="settings-row-main"><div class="settings-label">Reference</div></div><div class="settings-value">${(typeof studentId !== "undefined" && studentId) ? studentId.toUpperCase() : "—"}</div></div>
+      <div class="settings-row"><div class="settings-row-main"><div class="settings-label">Reference</div></div><div class="settings-value">${htmlEscape((typeof studentId !== "undefined" && studentId) ? studentId.toUpperCase() : "—")}</div></div>
       <div class="settings-row"><div class="settings-row-main"><div class="settings-label">Academic Year</div></div><div class="settings-value">${academicYearLabel()}</div></div>
     </div>
 
@@ -4484,8 +4651,14 @@ function initOffline() {
 /* ── SESSION MANAGEMENT (admin token expiry) ──────────────────────── */
 function initSession() {
   try {
+    /* Track state locally: the app-level listener nulls `adminUser` before
+       this observer runs, so comparing against it could never detect a
+       genuine sign-out. */
+    let hadUser = !!adminUser;
     onAuthStateChanged(auth, (u) => {
-      if (!u && adminUser) {
+      const had = hadUser;
+      hadUser = !!u;
+      if (!u && had) {
         adminUser = false; isAdminMode = false;
         try { closeAllOverlays(); } catch (e) {}
         toast("Session expired. Please sign in again.");
@@ -4548,7 +4721,8 @@ SummaryEngine.compute = (function (orig) {
     const py = calcPreviousYearTotals();
     const receipts = (SD && SD.receipts) ? SD.receipts.length : 0;
     const eca = (SD && SD.ecaFee) ? (SD.ecaFee.total + "|" + SD.ecaFee.paid) : "0|0";
-    return [VIEW, t.total, t.paid, o.total, o.paid, py.total, py.paid, receipts, eca].join("|");
+    const day = (typeof DateEngine !== "undefined" && DateEngine.iso) ? DateEngine.iso() : today();
+    return [day, VIEW, t.total, t.paid, o.total, o.paid, py.total, py.paid, receipts, eca].join("|");
   }
   return function () {
     const k = key();
@@ -4674,8 +4848,5 @@ function wireBottomNav() {
 wireBottomNav();
 
 
-</script>
-
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1dfaf1bbdaec08d',t:'MTc4NDUyNjU4MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1e9f8e17dbcc87a',t:'MTc4NDYzNDQ2MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1eb5288e88aef77',t:'MTc4NDY0ODYxOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a202619f3ed99870',t:'MTc4NDg5MDQwOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a278b176f83d0ed9',t:'MTc4NjEzMDk5OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a278cf481a624bda',t:'MTc4NjEzMjIyMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
