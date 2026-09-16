@@ -1,2878 +1,449 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>St. Anne's ICSE School | Admin Portal</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <style>
-:root {
-    --bg: #f5f9ff;
-    --bg-secondary: #eef2f8;
-    --card-bg: rgba(255,255,255,0.82);
-    --card-border: rgba(255,255,255,0.65);
-    --card-hover-bg: rgba(255,255,255,0.95);
-    --text-primary: #1a2740;
-    --text-secondary: #5b6e8c;
-    --text-tertiary: #7c8ea8;
-    --header-bg: rgba(255,255,255,0.72);
-    --header-border: rgba(42,82,152,0.12);
-    --button-bg: rgba(238,242,255,0.88);
-    --button-border: rgba(42,82,152,0.28);
-    --button-hover-bg: rgba(42,82,152,0.12);
-    --input-bg: #fff;
-    --input-border: #cbdde9;
-    --input-focus-shadow: rgba(42,82,152,0.1);
-    --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
-    --shadow-md: 0 12px 28px -10px rgba(0,0,0,0.08);
-    --shadow-lg: 0 24px 40px -14px rgba(0,0,0,0.12);
-    --shadow-xl: 0 32px 56px -18px rgba(0,0,0,0.18);
-    --modal-bg: rgba(255,255,255,0.94);
-    --overlay-bg: rgba(10,18,40,0.35);
-    --spacer-color: rgba(0,0,0,0.05);
-    --section-divider: linear-gradient(90deg, transparent, #d0dded, transparent);
-    --accent: #2a5298;
-    --accent-light: #3b6bb5;
-    --accent-glow: rgba(42,82,152,0.18);
-    --success: #4CAF50;
-    --danger: #bc4e2c;
-    --gradient-text: linear-gradient(135deg, #1E3C72 0%, #2A5298 100%);
-    --card-icon-stroke: #2a5298;
-    --skeleton-base: #e2e8f0;
-    --skeleton-shine: #f0f4fa;
-    --toast-bg: #1e4a76;
-    --toast-error-bg: #b33b2c;
-    --badge-bg: rgba(238,242,255,0.8);
-    --badge-border: rgba(42,82,152,0.22);
-    --badge-text: #1e3c72;
-    --student-card-bg: rgba(255,255,255,0.82);
-    --student-card-hover-bg: rgba(255,255,255,0.95);
-    --student-card-hover-border: rgba(42,82,152,0.3);
-    --bus-item-bg: #f7f9fc;
-    --bus-item-border: #e3e8f0;
-    --auto-btn-bg: #eef2f8;
-    --auto-btn-hover: #dce8f2;
-    --modal-close-hover: #f0f4fa;
-    --verify-success-bg: #e1f7ea;
-    --verify-error-bg: #ffe6e5;
-    --contact-option-bg: rgba(238,242,255,0.9);
-    --footer-border: rgba(0,0,0,0.05);
-    --login-card-bg: rgba(255,255,255,0.94);
-    --particle-color: rgba(42,82,152,0.07);
-}
-
-/* ── DARK MODE ── */
-body.dark {
-    --bg: #060b16;
-    --bg-secondary: #0d1525;
-    --card-bg: rgba(17,24,39,0.78);
-    --card-border: rgba(255,255,255,0.08);
-    --card-hover-bg: rgba(22,32,52,0.9);
-    --text-primary: #e8edf5;
-    --text-secondary: #8fa0c0;
-    --text-tertiary: #6b7d9e;
-    --header-bg: rgba(6,11,22,0.78);
-    --header-border: rgba(255,255,255,0.06);
-    --button-bg: rgba(30,58,95,0.55);
-    --button-border: rgba(96,165,250,0.22);
-    --button-hover-bg: rgba(59,130,246,0.2);
-    --input-bg: rgba(17,25,40,0.9);
-    --input-border: rgba(255,255,255,0.1);
-    --input-focus-shadow: rgba(59,130,246,0.18);
-    --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
-    --shadow-md: 0 12px 28px -10px rgba(0,0,0,0.45);
-    --shadow-lg: 0 24px 40px -14px rgba(0,0,0,0.55);
-    --shadow-xl: 0 32px 56px -18px rgba(0,0,0,0.65);
-    --modal-bg: rgba(15,23,38,0.94);
-    --overlay-bg: rgba(0,0,0,0.65);
-    --spacer-color: rgba(255,255,255,0.06);
-    --section-divider: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
-    --accent: #3b82f6;
-    --accent-light: #60a5fa;
-    --accent-glow: rgba(59,130,246,0.25);
-    --gradient-text: linear-gradient(135deg, #60a5fa 0%, #38bdf8 100%);
-    --card-icon-stroke: #60a5fa;
-    --skeleton-base: rgba(255,255,255,0.06);
-    --skeleton-shine: rgba(255,255,255,0.12);
-    --toast-bg: #1e3a5f;
-    --toast-error-bg: #5c1e18;
-    --badge-bg: rgba(30,58,95,0.6);
-    --badge-border: rgba(96,165,250,0.25);
-    --badge-text: #93c5fd;
-    --student-card-bg: rgba(17,24,39,0.75);
-    --student-card-hover-bg: rgba(22,34,55,0.9);
-    --student-card-hover-border: rgba(96,165,250,0.3);
-    --bus-item-bg: rgba(17,25,40,0.6);
-    --bus-item-border: rgba(255,255,255,0.08);
-    --auto-btn-bg: rgba(30,58,95,0.45);
-    --auto-btn-hover: rgba(59,130,246,0.18);
-    --modal-close-hover: rgba(255,255,255,0.06);
-    --verify-success-bg: rgba(34,139,87,0.18);
-    --verify-error-bg: rgba(188,78,44,0.18);
-    --contact-option-bg: rgba(30,58,95,0.6);
-    --footer-border: rgba(255,255,255,0.06);
-    --login-card-bg: rgba(15,23,38,0.94);
-    --particle-color: rgba(96,165,250,0.06);
-}
-
-* {
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Service Permanently Discontinued</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
     margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
-}
-
-body {
-    background: var(--bg);
     min-height: 100vh;
-    position: relative;
+    min-height: 100dvh;
+    background: #f7f8fc;
+    color: #1a1d2e;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+                 Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
-    color: var(--text-primary);
-    transition: background 0.4s ease, color 0.3s ease;
-}
+  }
 
-/* ── Animated background mesh ── */
-.bg-mesh {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    z-index: -2;
-    background: radial-gradient(ellipse at 30% 20%, rgba(59,130,246,0.04) 0%, transparent 60%),
-                radial-gradient(ellipse at 70% 60%, rgba(56,189,248,0.03) 0%, transparent 55%),
-                radial-gradient(ellipse at 45% 85%, rgba(99,102,241,0.03) 0%, transparent 50%);
-    transition: background 0.5s ease;
-}
-body.dark .bg-mesh {
-    background: radial-gradient(ellipse at 25% 15%, rgba(59,130,246,0.08) 0%, transparent 60%),
-                radial-gradient(ellipse at 72% 55%, rgba(56,189,248,0.06) 0%, transparent 55%),
-                radial-gradient(ellipse at 40% 80%, rgba(99,102,241,0.05) 0%, transparent 50%),
-                radial-gradient(ellipse at 60% 30%, rgba(139,92,246,0.04) 0%, transparent 50%);
-}
-.bg-mesh::before {
-    content: '';
+  /* ---------- Background ---------- */
+  .bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+
+  .blob {
     position: absolute;
-    width: 200%; height: 200%;
-    top: -50%; left: -50%;
-    background: radial-gradient(circle at 50% 50%, rgba(59,130,246,0.03) 0%, transparent 65%);
-    animation: meshMove 22s infinite alternate ease-in-out;
-}
-@keyframes meshMove {
-    0% { transform: translate(0%,0%) rotate(0deg) scale(1); }
-    50% { transform: translate(3%,4%) rotate(1.5deg) scale(1.02); }
-    100% { transform: translate(-2%,6%) rotate(-1deg) scale(0.98); }
-}
-
-/* ── Floating particles ── */
-.particles {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    z-index: -1;
-    pointer-events: none;
-}
-.particle {
-    position: absolute;
-    background: var(--particle-color);
     border-radius: 50%;
-    animation: float 14s infinite ease-in-out;
-}
-@keyframes float {
-    0% { transform: translateY(0px) translateX(0px); opacity: 0; }
-    15% { opacity: 0.6; }
-    70% { opacity: 0.5; }
-    100% { transform: translateY(-120px) translateX(40px); opacity: 0; }
-}
+    filter: blur(110px);
+    opacity: .55;
+    will-change: transform;
+  }
+  .b1 { width: 640px; height: 640px; background: #c7d2fe; top: -240px; left: -180px;   animation: float1 22s ease-in-out infinite; }
+  .b2 { width: 560px; height: 560px; background: #bae6fd; bottom: -220px; right: -180px; animation: float2 26s ease-in-out infinite; }
+  .b3 { width: 480px; height: 480px; background: #ddd6fe; top: 42%; left: 58%; opacity: .42; animation: float3 20s ease-in-out infinite; }
 
-/* ── HEADER ── */
-.admin-header {
-    position: sticky;
-    top: 0; z-index: 100;
-    background: var(--header-bg);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    box-shadow: 0 1px 0 var(--header-border), var(--shadow-sm);
-    padding: 0.9rem 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 1rem;
-    border-bottom: 1px solid var(--header-border);
-    transition: all 0.3s ease;
-}
-.logo-area {
-    display: flex;
-    align-items: center;
-    gap: 0.9rem;
-}
-.logo-placeholder {
-    width: 50px; height: 50px;
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-    background: #fff;
-    transition: all 0.3s ease;
-}
-body.dark .logo-placeholder {
-    box-shadow: 0 4px 20px rgba(59,130,246,0.2);
-    border: 1px solid rgba(255,255,255,0.1);
-}
-.logo-placeholder img {
-    width: 100%; height: 100%;
-    object-fit: cover; display: block;
-}
-.title-group h1 {
-    font-size: 1.45rem;
-    font-weight: 700;
-    background: var(--gradient-text);
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
-    letter-spacing: -0.3px;
-    user-select: none;
-    -webkit-user-select: none;
-    -webkit-touch-callout: none;
-    -webkit-tap-highlight-color: transparent;
-    cursor: default;
-    transition: all 0.3s ease;
-}
-.title-group p {
-    font-size: 0.72rem;
-    color: var(--text-secondary);
-    font-weight: 500;
-    letter-spacing: 0.3px;
-    transition: color 0.3s ease;
-}
-.header-actions {
-    display: flex;
-    gap: 0.65rem;
-    flex-wrap: wrap;
-    align-items: center;
-}
-.verify-receipt-btn, .dark-mode-toggle {
-    background: var(--button-bg);
-    border: 1px solid var(--button-border);
-    color: var(--text-primary);
-    font-weight: 500;
-    padding: 0.5rem 1.1rem;
-    border-radius: 2rem;
-    cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.2,0.8,0.3,1.1);
-    font-size: 0.84rem;
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    letter-spacing: 0.1px;
-}
-.verify-receipt-btn:hover, .dark-mode-toggle:hover {
-    background: var(--button-hover-bg);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px -6px var(--accent-glow);
-    border-color: var(--accent-light);
-}
-.verify-receipt-btn:active, .dark-mode-toggle:active {
-    transform: translateY(0) scale(0.97);
-}
-.download-excel-btn {
-    background: rgba(34,139,87,0.12);
-    border: 1px solid rgba(34,139,87,0.28);
-    color: #1a6640;
-    font-weight: 500;
-    padding: 0.5rem 1.1rem;
-    border-radius: 2rem;
-    cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.2,0.8,0.3,1.1);
-    font-size: 0.84rem;
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    letter-spacing: 0.1px;
-}
-body.dark .download-excel-btn {
-    background: rgba(34,139,87,0.15);
-    border-color: rgba(34,139,87,0.3);
-    color: #4ade80;
-}
-.download-excel-btn:hover {
-    background: rgba(34,139,87,0.2);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px -6px rgba(34,139,87,0.2);
-}
+  .grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(30,35,70,.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(30,35,70,.05) 1px, transparent 1px);
+    background-size: 64px 64px;
+    -webkit-mask-image: radial-gradient(ellipse 85% 75% at 50% 50%, #000 20%, transparent 85%);
+            mask-image: radial-gradient(ellipse 85% 75% at 50% 50%, #000 20%, transparent 85%);
+  }
 
-/* ── MAIN CONTAINER ── */
-.app-container {
-    max-width: 1400px;
-    margin: 2rem auto;
-    padding: 0 1.5rem;
+  .vignette {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at center, transparent 50%, rgba(247,248,252,.85) 100%);
+  }
+
+  /* ---------- Full screen content ---------- */
+  .screen {
     position: relative;
     z-index: 1;
-    animation: fadeSlideIn 0.5s ease;
-}
-@keyframes fadeSlideIn {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* ── CLASS CARDS GRID ── */
-.classes-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(155px, 175px));
-    gap: 1.6rem;
-    justify-content: center;
-    margin-top: 2rem;
-}
-.class-card {
-    background: var(--card-bg);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    aspect-ratio: 1/1;
-    border-radius: 26px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    box-shadow: var(--shadow-md);
-    transition: all 0.35s cubic-bezier(0.2,0.8,0.3,1.15);
-    cursor: pointer;
-    text-align: center;
-    border: 1px solid var(--card-border);
-    opacity: 0;
-    animation: cardAppear 0.5s cubic-bezier(0.2,0.8,0.3,1) forwards;
-    position: relative;
-    overflow: hidden;
-}
-.class-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 26px;
-    background: radial-gradient(circle at 50% 0%, var(--accent-glow), transparent 70%);
-    opacity: 0;
-    transition: opacity 0.4s ease;
-}
-.class-card:hover::before {
-    opacity: 1;
-}
-@keyframes cardAppear {
-    from { opacity: 0; transform: translateY(28px) scale(0.94); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
-}
-.class-card svg {
-    width: 44px; height: 44px;
-    stroke: var(--card-icon-stroke);
-    stroke-width: 1.4;
-    fill: none;
-    margin-bottom: 0.6rem;
-    transition: all 0.35s ease;
-    position: relative;
-    z-index: 1;
-}
-.class-card:hover svg {
-    stroke: var(--accent-light);
-    transform: scale(1.08);
-}
-.class-card span {
-    font-weight: 700;
-    font-size: 1.25rem;
-    background: var(--gradient-text);
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
-    position: relative;
-    z-index: 1;
-    transition: all 0.3s ease;
-}
-.class-card small {
-    font-size: 0.7rem;
-    color: var(--text-tertiary);
-    position: relative;
-    z-index: 1;
-    margin-top: 0.2rem;
-    font-weight: 500;
-    background: var(--badge-bg);
-    padding: 0.2rem 0.7rem;
-    border-radius: 20px;
-    transition: all 0.3s ease;
-}
-.class-card:hover {
-    transform: translateY(-10px) scale(1.03);
-    box-shadow: var(--shadow-xl), 0 0 40px -8px var(--accent-glow);
-    border-color: rgba(96,165,250,0.35);
-    background: var(--card-hover-bg);
-}
-.class-card:hover small {
-    background: rgba(59,130,246,0.2);
-    color: #93c5fd;
-}
-.class-card:active { transform: scale(0.96); transition: all 0.12s ease; }
-
-/* ── FULLSCREEN LOADER ── */
-.fullscreen-loader {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: var(--overlay-bg);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    visibility: hidden;
-    opacity: 0;
-    transition: visibility 0.3s, opacity 0.3s ease;
-}
-.fullscreen-loader.active { visibility: visible; opacity: 1; }
-.loader-content {
-    text-align: center;
-    background: var(--modal-bg);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    padding: 2.2rem 2.5rem;
-    border-radius: 2rem;
-    box-shadow: var(--shadow-xl);
-    width: 90%; max-width: 400px;
-    border: 1px solid var(--card-border);
-}
-.loader-message {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 1.2rem;
-}
-.skeleton-list { margin-top: 1.2rem; }
-.skeleton-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: var(--card-bg);
-    border-radius: 1.2rem;
-    padding: 0.8rem 1rem;
-    margin-bottom: 0.7rem;
-    border: 1px solid var(--card-border);
-}
-.skeleton-name {
-    width: 60%; height: 20px;
-    background: linear-gradient(90deg, var(--skeleton-base) 25%, var(--skeleton-shine) 50%, var(--skeleton-base) 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.6s infinite;
-    border-radius: 1rem;
-}
-.skeleton-icon {
-    width: 24px; height: 24px;
-    background: var(--skeleton-base);
-    border-radius: 50%;
-}
-@keyframes shimmer {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-}
-.dot-floating { font-size: 1.3rem; letter-spacing: 4px; }
-
-/* ── FULLSCREEN STUDENT VIEW ── */
-.fullscreen-student-view {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: var(--bg);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    z-index: 200;
-    overflow-y: auto;
-    padding-top: 90px;
-    padding-bottom: 2rem;
-    visibility: hidden;
-    opacity: 0;
-    transition: visibility 0.3s, opacity 0.3s ease;
-}
-.fullscreen-student-view.active { visibility: visible; opacity: 1; }
-.student-view-container {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 0 1.5rem;
-    animation: fadeSlideIn 0.4s ease;
-}
-.student-view-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    margin-bottom: 2rem;
-    gap: 0.75rem;
-}
-.student-view-header-left {
-    display: flex;
-    align-items: center;
-    gap: 0.7rem;
-    flex-wrap: wrap;
-}
-.back-btn {
-    background: var(--button-bg);
-    border: 1px solid var(--button-border);
-    color: var(--text-primary);
-    font-weight: 500;
-    padding: 0.5rem 1.1rem;
-    border-radius: 2rem;
-    cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.2,0.8,0.3,1.1);
-    font-size: 0.84rem;
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-}
-.back-btn:hover {
-    background: var(--button-hover-bg);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px -6px var(--accent-glow);
-    border-color: var(--accent-light);
-}
-.class-badge {
-    background: var(--badge-bg);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    padding: 0.5rem 1.2rem;
-    border-radius: 40px;
-    font-weight: 700;
-    color: var(--badge-text);
-    font-size: 1.05rem;
-    border: 1px solid var(--badge-border);
-    transition: all 0.3s ease;
-    letter-spacing: 0.1px;
-}
-.search-box {
-    display: flex;
-    align-items: center;
-    background: var(--card-bg);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 60px;
-    padding: 0.35rem 1rem;
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--input-border);
-    transition: all 0.3s ease;
-}
-.search-box:focus-within {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 4px var(--input-focus-shadow);
-    background: var(--card-hover-bg);
-}
-.search-box svg {
-    width: 18px; height: 18px;
-    stroke: var(--text-tertiary);
-    stroke-width: 1.8;
-    fill: none;
-    margin-right: 0.5rem;
-    transition: stroke 0.3s ease;
-}
-.search-box:focus-within svg { stroke: var(--accent); }
-.search-box input {
-    border: none;
-    padding: 0.55rem 0.5rem;
-    font-size: 0.88rem;
-    width: 200px;
-    outline: none;
-    background: transparent;
-    color: var(--text-primary);
-}
-.search-box input::placeholder { color: var(--text-tertiary); }
-
-/* ── STUDENT LIST ── */
-.students-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-}
-.student-card {
-    background: var(--student-card-bg);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 20px;
-    padding: 1rem 1.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    box-shadow: var(--shadow-sm);
-    transition: all 0.3s cubic-bezier(0.2,0.8,0.3,1.1);
-    border: 1px solid var(--card-border);
-    animation: cardAppear 0.4s ease forwards;
-}
-.student-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-lg), 0 0 30px -8px var(--accent-glow);
-    border-color: var(--student-card-hover-border);
-    background: var(--student-card-hover-bg);
-}
-.student-name {
-    font-weight: 650;
-    font-size: 1.05rem;
-    color: var(--text-primary);
-    letter-spacing: -0.1px;
-}
-.eye-icon {
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 42px; height: 42px;
-    border-radius: 50%;
-    transition: all 0.3s ease;
-    background: transparent;
-}
-.eye-icon svg {
-    width: 22px; height: 22px;
-    stroke: var(--accent);
-    stroke-width: 1.6;
-    fill: none;
-    transition: all 0.3s ease;
-}
-.eye-icon:hover {
-    background: var(--accent-glow);
-    transform: scale(1.1);
-    box-shadow: 0 0 20px -4px var(--accent-glow);
-}
-.eye-icon:hover svg { stroke: var(--accent-light); }
-.no-students {
-    text-align: center;
-    padding: 3rem 2rem;
-    background: var(--card-bg);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 2rem;
-    color: var(--text-secondary);
-    border: 1px solid var(--card-border);
-    font-size: 0.95rem;
-}
-
-/* ── MODAL OVERLAY ── */
-.modal-overlay {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: var(--overlay-bg);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2000;
-    visibility: hidden;
-    opacity: 0;
-    transition: visibility 0.25s, opacity 0.25s ease;
-}
-.modal-overlay.active { visibility: visible; opacity: 1; }
-.modal-card {
-    background: var(--modal-bg);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border-radius: 32px;
-    width: 90%; max-width: 520px;
-    max-height: 85vh;
-    overflow-y: auto;
-    padding: 1.8rem;
-    box-shadow: var(--shadow-xl);
-    border: 1px solid var(--card-border);
-    transform: scale(0.94);
-    transition: transform 0.3s cubic-bezier(0.2,0.8,0.3,1.15);
-    position: relative;
-}
-.modal-overlay.active .modal-card { transform: scale(1); }
-.modal-card h3 {
-    font-size: 1.45rem;
-    margin-bottom: 1.3rem;
-    color: var(--text-primary);
-    border-left: 4px solid var(--accent);
-    padding-left: 1rem;
-    font-weight: 700;
-    letter-spacing: -0.2px;
-}
-.form-group { margin-bottom: 1rem; }
-.form-group label {
-    display: block;
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-    margin-bottom: 0.35rem;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-}
-.form-group input,
-.form-group select {
+    min-height: 100vh;
+    min-height: 100dvh;
     width: 100%;
-    padding: 0.7rem 1rem;
-    border: 1px solid var(--input-border);
-    border-radius: 1.5rem;
-    font-size: 0.9rem;
-    background: var(--input-bg);
-    color: var(--text-primary);
-    transition: all 0.25s ease;
-    outline: none;
-}
-.form-group input:focus,
-.form-group select:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 4px var(--input-focus-shadow);
-}
-.form-group input::placeholder { color: var(--text-tertiary); }
-.modal-actions {
     display: flex;
-    justify-content: flex-end;
-    gap: 0.7rem;
-    margin-top: 1.5rem;
-}
-.modal-btn {
-    border: none;
-    background: var(--button-bg);
-    padding: 0.6rem 1.4rem;
-    border-radius: 2rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.2,0.8,0.3,1.1);
-    font-size: 0.88rem;
-    color: var(--text-primary);
-    border: 1px solid var(--button-border);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-}
-.modal-btn.primary {
-    background: linear-gradient(135deg, #1e4a76 0%, #2563eb 100%);
-    color: white;
-    border: none;
-    font-weight: 600;
-    letter-spacing: 0.2px;
-}
-body.dark .modal-btn.primary {
-    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
-    box-shadow: 0 4px 16px rgba(59,130,246,0.3);
-}
-.modal-btn.primary:hover:not(:disabled) {
-    box-shadow: 0 8px 24px -4px rgba(59,130,246,0.4);
-    transform: translateY(-2px);
-}
-.modal-btn.primary:disabled {
-    background: #8aaec9;
-    cursor: not-allowed;
-    box-shadow: none;
-}
-.modal-btn:hover:not(:disabled) {
-    background: var(--button-hover-bg);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px -6px var(--accent-glow);
-}
-.modal-close {
-    position: absolute;
-    top: 0.9rem; right: 1.1rem;
-    font-size: 1.2rem;
-    cursor: pointer;
-    color: var(--text-secondary);
-    line-height: 1;
-    padding: 0.4rem 0.5rem;
-    border-radius: 50%;
-    transition: all 0.2s ease;
-}
-.modal-close:hover { background: var(--modal-close-hover); color: var(--text-primary); }
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 56px 24px;
+    gap: 0;
+  }
 
-/* ── BUS FEE / PREV YEAR UI ── */
-.bus-section-label {
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 4px;
-}
-.checkbox-group { margin: 0.8rem 0 0.4rem; }
-.checkbox-group label {
+  /* ---------- Server illustration ---------- */
+  .server-wrap {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    margin-bottom: 32px;
+    display: grid;
+    place-items: center;
+    animation: rise 1s cubic-bezier(.2,.8,.2,1) both;
+  }
+
+  .halo {
+    position: absolute;
+    inset: -12px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(99,102,241,.18), transparent 68%);
+    animation: glowPulse 4s ease-in-out infinite;
+  }
+
+  .pulse-ring {
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    border: 1px solid rgba(99,102,241,.35);
+    animation: pulseRing 3.6s ease-out infinite;
+  }
+  .pulse-ring.delay { animation-delay: 1.8s; }
+
+  .server-box {
+    position: relative;
+    width: 108px;
+    height: 108px;
+    border-radius: 24px;
+    background: linear-gradient(160deg, #ffffff, #eef1fa);
+    border: 1px solid rgba(30,35,70,.1);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,.9) inset,
+      0 20px 40px -16px rgba(30,35,70,.22);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px 18px;
+  }
+
+  .slot {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    height: 11px;
+    opacity: 0;
+    animation: slotOn .5s ease forwards, slotOff 1.6s ease 2.6s forwards;
+  }
+  .slot:nth-child(1) { animation-delay: .35s, 2.6s; }
+  .slot:nth-child(2) { animation-delay: .55s, 3.0s; }
+  .slot:nth-child(3) { animation-delay: .75s, 3.4s; }
+
+  .led {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 8px rgba(16,185,129,.7);
+    flex: none;
+  }
+  .slot.off .led { background: #cbd5e1; box-shadow: none; }
+
+  .line {
+    flex: 1;
+    height: 4px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #cbd5e1, #e2e8f0);
+  }
+
+  .power {
+    width: 13px; height: 13px;
+    margin: 0 auto;
+    border-radius: 50%;
+    background: #ef4444;
+    box-shadow: 0 0 0 4px rgba(239,68,68,.12), 0 0 14px rgba(239,68,68,.55);
+    animation: powerFade 3s ease 2s forwards;
+  }
+
+  /* ---------- Status pill ---------- */
+  .status {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    font-weight: 600;
-    font-size: 0.84rem;
-    color: var(--text-primary);
-    cursor: pointer;
-    text-transform: none;
-    letter-spacing: 0;
-}
-.checkbox-group input[type="checkbox"] {
-    width: 16px; height: 16px;
-    accent-color: var(--accent);
-    cursor: pointer;
-}
-.bus-grid, .prev-year-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-    margin-top: 8px;
-}
-.bus-item, .prev-year-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: var(--bus-item-bg);
-    padding: 10px 14px;
-    border-radius: 14px;
-    border: 1px solid var(--bus-item-border);
-    transition: all 0.2s ease;
-}
-.bus-item:hover, .prev-year-item:hover {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--input-focus-shadow);
-}
-.bus-item span, .prev-year-item span {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-primary);
-    min-width: 90px;
-}
-.bus-item input, .prev-year-item input {
-    width: 110px;
-    border-radius: 10px;
-    border: 1px solid var(--input-border);
-    padding: 6px 10px;
-    text-align: right;
-    font-size: 0.88rem;
-    background: var(--input-bg);
-    color: var(--text-primary);
-    outline: none;
-    transition: all 0.2s ease;
-}
-.bus-item input:focus, .prev-year-item input:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--input-focus-shadow);
-}
-.bus-june-row { display: flex; align-items: center; gap: 8px; }
-.bus-june-row .bus-item { flex: 1; }
-.auto-btn {
-    background: var(--auto-btn-bg);
-    border: 1px solid var(--button-border);
-    border-radius: 2rem;
-    padding: 8px 14px;
-    font-size: 0.74rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    white-space: nowrap;
-    color: var(--text-primary);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-}
-.auto-btn:hover {
-    background: var(--auto-btn-hover);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 14px -4px var(--accent-glow);
-}
-
-/* ── EDIT BUS GRID ── */
-.edit-bus-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-    margin-top: 6px;
-}
-.edit-bus-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: var(--bus-item-bg);
-    padding: 10px 14px;
-    border-radius: 14px;
-    border: 1px solid var(--bus-item-border);
-    transition: all 0.2s ease;
-}
-.edit-bus-item:hover {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--input-focus-shadow);
-}
-.edit-bus-item span {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-primary);
-    min-width: 90px;
-}
-.edit-bus-item input {
-    width: 110px;
-    border-radius: 10px;
-    border: 1px solid var(--input-border);
-    padding: 6px 10px;
-    text-align: right;
-    font-size: 0.88rem;
-    background: var(--input-bg);
-    color: var(--text-primary);
-    outline: none;
-    transition: all 0.2s ease;
-}
-.edit-bus-item input:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--input-focus-shadow);
-}
-
-/* ── SUCCESS OVERLAY ── */
-.success-overlay {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: var(--overlay-bg);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 3000;
-    visibility: hidden;
-    opacity: 0;
-    transition: 0.25s ease;
-}
-.success-overlay.active { visibility: visible; opacity: 1; }
-.success-card {
-    background: var(--modal-bg);
-    border-radius: 32px;
-    padding: 2.2rem;
-    text-align: center;
-    max-width: 340px; width: 90%;
-    box-shadow: var(--shadow-xl);
-    border: 1px solid var(--card-border);
-}
-.tick-svg { width: 70px; height: 70px; margin: 0 auto 1rem; }
-.tick-circle {
-    stroke: #4CAF50; stroke-width: 3;
-    stroke-dasharray: 166; stroke-dashoffset: 166;
-    animation: circleAnim 0.6s ease-out forwards;
-}
-.tick-check {
-    stroke: #4CAF50; stroke-width: 4;
-    stroke-linecap: round; stroke-linejoin: round;
-    stroke-dasharray: 48; stroke-dashoffset: 48;
-    animation: checkAnim 0.4s ease-out 0.6s forwards;
-}
-@keyframes circleAnim { to { stroke-dashoffset: 0; } }
-@keyframes checkAnim  { to { stroke-dashoffset: 0; } }
-
-/* ── FOOTER ── */
-.footer {
-    text-align: center;
-    margin-top: 3rem;
-    padding: 1.2rem;
-    border-top: 1px solid var(--footer-border);
-}
-.contact-dev {
-    background: none; border: none;
-    color: var(--accent);
-    font-weight: 500;
-    cursor: pointer; font-size: 0.84rem;
-    text-decoration: underline;
-    transition: all 0.2s ease;
-    letter-spacing: 0.2px;
-}
-.contact-dev:hover { opacity: 0.7; }
-
-/* ── CONTACT MODAL ── */
-.contact-modal {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: var(--overlay-bg);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 4000;
-    visibility: hidden;
-    opacity: 0;
-    transition: visibility 0.25s, opacity 0.25s;
-}
-.contact-modal.active { visibility: visible; opacity: 1; }
-.contact-card {
-    background: var(--modal-bg);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border-radius: 32px;
-    width: 90%; max-width: 340px;
-    padding: 1.8rem;
-    text-align: center;
-    box-shadow: var(--shadow-xl);
-    transform: scale(0.94);
-    transition: transform 0.3s cubic-bezier(0.2,0.8,0.3,1.15);
-    border: 1px solid var(--card-border);
-}
-.contact-modal.active .contact-card { transform: scale(1); }
-.contact-card h3 { margin-bottom: 1rem; color: var(--text-primary); }
-.contact-options {
-    display: flex;
-    justify-content: center;
-    gap: 1.2rem;
-    margin: 1.5rem 0;
-    flex-wrap: wrap;
-}
-.contact-option {
-    border: none;
-    padding: 0.8rem 1.3rem;
-    border-radius: 2rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.88rem;
-}
-.contact-option.call      { background: linear-gradient(135deg,#1e4a76,#2563eb); color: white; }
-.contact-option.whatsapp  { background: linear-gradient(135deg,#1a8a3f,#25D366); color: white; }
-.contact-option:hover { transform: translateY(-3px); box-shadow: 0 8px 24px -6px rgba(0,0,0,0.3); }
-.close-contact {
-    background: var(--button-bg); border: 1px solid var(--button-border);
-    padding: 0.55rem 1.2rem; border-radius: 2rem;
-    cursor: pointer; color: var(--text-primary);
-    font-weight: 500;
-    transition: all 0.2s ease;
-}
-.close-contact:hover { background: var(--button-hover-bg); }
-
-/* ── POPUP PROMPT ── */
-.popup-overlay {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: var(--overlay-bg);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 5000;
-    opacity: 0;
-    animation: fadeIn 0.2s ease forwards;
-}
-.popup-card {
-    background: var(--modal-bg);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border-radius: 28px;
-    width: 90%; max-width: 350px;
-    padding: 1.6rem;
-    box-shadow: var(--shadow-xl);
-    transform: scale(0.9);
-    animation: popupScale 0.25s cubic-bezier(0.2,0.8,0.3,1.1) forwards;
-    position: relative;
-    border: 1px solid var(--card-border);
-}
-.popup-card h3 { margin-bottom: 1rem; color: var(--text-primary); font-size: 1.15rem; }
-.popup-card input {
-    width: 100%;
-    padding: 0.7rem 1rem;
-    border-radius: 1.5rem;
-    border: 1px solid var(--input-border);
-    outline: none;
-    font-size: 0.9rem;
-    background: var(--input-bg);
-    color: var(--text-primary);
-    transition: all 0.2s ease;
-}
-.popup-card input:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 4px var(--input-focus-shadow);
-}
-.popup-close {
-    position: absolute;
-    top: 10px; right: 14px;
-    font-size: 1.1rem;
-    cursor: pointer; color: var(--text-secondary);
-    transition: color 0.2s;
-}
-.popup-close:hover { color: var(--text-primary); }
-@keyframes fadeIn    { to { opacity: 1; } }
-@keyframes popupScale { to { transform: scale(1); } }
-
-/* ── SECTION DIVIDER ── */
-.section-divider {
-    height: 1px;
-    background: var(--section-divider);
-    margin: 1rem 0;
-}
-
-/* ── EXCEL SPINNER ── */
-.excel-spinner {
-    display: inline-block;
-    width: 14px; height: 14px;
-    border: 2px solid rgba(26,102,64,0.3);
-    border-top-color: #1a6640;
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-    vertical-align: middle;
-}
-body.dark .excel-spinner {
-    border-color: rgba(74,222,128,0.3);
-    border-top-color: #4ade80;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* ── LOGIN OVERLAY ── */
-.login-overlay {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: var(--overlay-bg);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    z-index: 10000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.login-card {
-    background: var(--login-card-bg);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border-radius: 36px;
-    padding: 2.4rem;
-    width: 90%; max-width: 380px;
-    box-shadow: var(--shadow-xl);
-    text-align: center;
-    border: 1px solid var(--card-border);
-    animation: popupScale 0.4s cubic-bezier(0.2,0.8,0.3,1.1) forwards;
-}
-.login-card h2 {
-    color: var(--text-primary);
-    margin-bottom: 1.4rem;
+    gap: 10px;
+    padding: 9px 20px 9px 16px;
+    border-radius: 999px;
+    font-size: 12px;
     font-weight: 700;
-    letter-spacing: -0.3px;
-}
-.login-card input {
-    width: 100%; padding: 0.75rem 1.1rem;
-    border-radius: 2rem; border: 1px solid var(--input-border);
-    background: var(--input-bg); color: var(--text-primary);
-    margin-bottom: 1rem; outline: none; font-size: 0.92rem;
-    transition: all 0.25s ease;
-}
-.login-card input:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 4px var(--input-focus-shadow);
-}
-.login-error {
-    color: var(--danger);
-    font-size: 0.8rem;
-    display: none;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-}
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: #b91c1c;
+    background: rgba(254,242,242,.85);
+    border: 1px solid rgba(185,28,28,.16);
+    -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
+    animation: rise .9s cubic-bezier(.2,.8,.2,1) .1s both;
+  }
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: blink 2.4s ease-in-out infinite;
+  }
 
-/* ── VERIFY RESULT ── */
-#verifyResult > div {
-    transition: all 0.3s ease;
-}
+  /* ---------- Text ---------- */
+  h1 {
+    margin: 28px 0 20px;
+    max-width: 18ch;
+    font-size: clamp(34px, 6.5vw, 68px);
+    font-weight: 750;
+    line-height: 1.08;
+    letter-spacing: -.035em;
+    color: #12152a;
+    animation: rise 1s cubic-bezier(.2,.8,.2,1) .15s both;
+  }
+  h1 .accent {
+    background: linear-gradient(100deg, #4f46e5, #8b5cf6 55%, #6366f1);
+    -webkit-background-clip: text;
+            background-clip: text;
+    color: transparent;
+  }
 
-/* ── RESPONSIVE ── */
-@media (max-width: 680px) {
-    .admin-header { padding: 0.8rem 1rem; }
-    .student-card { padding: 0.85rem 1.1rem; }
-    .search-box input { width: 120px; }
-    .student-view-header { flex-direction: column; align-items: stretch; }
-    .student-view-header-left { justify-content: space-between; }
-    .class-badge { text-align: center; font-size: 0.9rem; }
-    .modal-card { padding: 1.2rem; border-radius: 28px; }
-    .bus-item input, .prev-year-item input { width: 85px; }
-    .edit-bus-item input { width: 85px; }
-    .title-group h1 { font-size: 1.15rem; }
-    .download-excel-btn { font-size: 0.78rem; padding: 0.45rem 0.8rem; }
-    .classes-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 150px)); gap: 1rem; }
-    .class-card { border-radius: 22px; }
-    .class-card svg { width: 36px; height: 36px; }
-    .class-card span { font-size: 1.05rem; }
-    .login-card { padding: 1.8rem; }
-}
+  .lead {
+    margin: 0 auto;
+    max-width: 58ch;
+    font-size: clamp(15px, 1.6vw, 18px);
+    line-height: 1.72;
+    color: #565c78;
+    animation: rise 1s cubic-bezier(.2,.8,.2,1) .22s both;
+  }
+  .lead strong { color: #1a1d2e; font-weight: 600; }
 
-@media (max-width: 400px) {
-    .classes-grid { grid-template-columns: repeat(2, 1fr); gap: 0.8rem; }
-    .class-card { aspect-ratio: auto; padding: 1.2rem 0.5rem; min-height: 120px; }
-    .class-card svg { width: 30px; height: 30px; }
-    .class-card span { font-size: 0.9rem; }
-    .header-actions { gap: 0.4rem; }
-    .verify-receipt-btn, .dark-mode-toggle { font-size: 0.74rem; padding: 0.4rem 0.7rem; }
-}
+  /* ---------- Divider ---------- */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: min(680px, 100%);
+    margin: 48px 0 26px;
+    color: #a2a9c2;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    animation: rise 1s cubic-bezier(.2,.8,.2,1) .28s both;
+  }
+  .divider::before,
+  .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(30,35,70,.16), transparent);
+  }
 
-/* ── BULK IMPORT OUTLINE BUTTONS ── */
-.modal-btn.outline-btn {
-    background: transparent;
-    border: 1px solid var(--button-border);
-    color: var(--text-primary);
-}
-.modal-btn.outline-btn:hover:not(:disabled) {
-    background: var(--button-hover-bg);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px -6px var(--accent-glow);
-}
-    </style>
+  /* ---------- Meta grid ---------- */
+  .meta {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    width: min(680px, 100%);
+    margin-bottom: 44px;
+    animation: rise 1s cubic-bezier(.2,.8,.2,1) .34s both;
+  }
+  .item {
+    padding: 18px 14px;
+    border-radius: 16px;
+    background: rgba(255,255,255,.6);
+    border: 1px solid rgba(30,35,70,.07);
+    -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+    box-shadow: 0 2px 8px -4px rgba(30,35,70,.06);
+  }
+  .k {
+    display: block;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: .11em;
+    text-transform: uppercase;
+    color: #8b91ab;
+    margin-bottom: 7px;
+  }
+  .v {
+    font-size: 15.5px;
+    font-weight: 650;
+    color: #1a1d2e;
+    font-variant-numeric: tabular-nums;
+  }
+  .v.ok { color: #047857; }
+
+  /* ---------- WhatsApp actions ---------- */
+  .actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    width: min(620px, 100%);
+    animation: rise 1s cubic-bezier(.2,.8,.2,1) .4s both;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 11px;
+    padding: 16px 22px;
+    border: 0;
+    border-radius: 16px;
+    font-family: inherit;
+    font-size: 15.5px;
+    font-weight: 650;
+    letter-spacing: -.01em;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform .18s ease, box-shadow .25s ease;
+    -webkit-tap-highlight-color: transparent;
+    color: #fff;
+    background: linear-gradient(180deg, #25d366, #1ebe5b);
+    box-shadow: 0 12px 28px -10px rgba(37,211,102,.7), inset 0 1px 0 rgba(255,255,255,.3);
+  }
+  .btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 20px 38px -12px rgba(37,211,102,.85), inset 0 1px 0 rgba(255,255,255,.35);
+  }
+  .btn:active { transform: translateY(0) scale(.985); }
+
+  .btn svg { width: 19px; height: 19px; flex: none; }
+  .btn .num { font-variant-numeric: tabular-nums; }
+
+  /* ---------- Footer note ---------- */
+  .foot {
+    margin: 30px 0 0;
+    font-size: 13px;
+    color: #9ba1b8;
+    line-height: 1.6;
+    animation: rise 1s cubic-bezier(.2,.8,.2,1) .46s both;
+  }
+  .foot strong { color: #565c78; font-weight: 600; }
+
+  /* ---------- Keyframes ---------- */
+  @keyframes float1 {
+    0%, 100% { transform: translate(0,0) scale(1); }
+    50%      { transform: translate(70px, 50px) scale(1.1); }
+  }
+  @keyframes float2 {
+    0%, 100% { transform: translate(0,0) scale(1); }
+    50%      { transform: translate(-80px, -50px) scale(1.12); }
+  }
+  @keyframes float3 {
+    0%, 100% { transform: translate(0,0) scale(1); }
+    50%      { transform: translate(-50px, 60px) scale(.92); }
+  }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(26px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulseRing {
+    0%   { transform: scale(.85); opacity: .8; }
+    75%  { transform: scale(1.65); opacity: 0; }
+    100% { transform: scale(1.65); opacity: 0; }
+  }
+  @keyframes glowPulse {
+    0%, 100% { opacity: .55; }
+    50%      { opacity: 1; }
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: .35; }
+  }
+  @keyframes slotOn {
+    from { opacity: 0; transform: translateX(-6px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes slotOff {
+    from { opacity: 1; }
+    to   { opacity: .35; }
+  }
+  @keyframes powerFade {
+    0%   { background: #f59e0b; box-shadow: 0 0 0 4px rgba(245,158,11,.15), 0 0 14px rgba(245,158,11,.6); }
+    60%  { background: #ef4444; box-shadow: 0 0 0 4px rgba(239,68,68,.15), 0 0 14px rgba(239,68,68,.6); }
+    100% { background: #94a3b8; box-shadow: 0 0 0 4px rgba(148,163,184,.12); }
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 640px) {
+    .screen { padding: 44px 20px; }
+    .server-wrap { width: 120px; height: 120px; margin-bottom: 24px; }
+    .server-box { width: 88px; height: 88px; border-radius: 20px; padding: 12px 14px; gap: 6px; }
+    .meta { grid-template-columns: 1fr; }
+    .item { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; }
+    .k { margin-bottom: 0; }
+    .actions { grid-template-columns: 1fr; }
+    .divider { margin: 36px 0 20px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: .001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: .001ms !important;
+    }
+    .slot, .slot.off { opacity: 1; }
+  }
+</style>
 </head>
-<body class="light">
+<body>
 
-<div class="bg-mesh"></div>
-<div class="particles" id="particles"></div>
+  <div class="bg" aria-hidden="true">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="blob b3"></div>
+    <div class="grid"></div>
+    <div class="vignette"></div>
+  </div>
 
-<!-- Admin Login Overlay (password-only) -->
-<div id="loginOverlay" class="login-overlay">
-    <div class="login-card">
-        <h2>Admin Access</h2>
-        <input type="password" id="loginPassword" placeholder="Enter admin password" autofocus>
-        <div id="loginError" class="login-error">Wrong password</div>
-        <button id="loginSubmitBtn" class="modal-btn primary" style="width:100%">Login</button>
+  <main class="screen" role="alert" aria-live="polite">
+
+    <!-- Animated server illustration -->
+    <div class="server-wrap" aria-hidden="true">
+      <span class="halo"></span>
+      <span class="pulse-ring"></span>
+      <span class="pulse-ring delay"></span>
+      <div class="server-box">
+        <div class="slot"><span class="led"></span><span class="line"></span></div>
+        <div class="slot"><span class="led"></span><span class="line"></span></div>
+        <div class="slot"><span class="led"></span><span class="line"></span></div>
+        <div class="power"></div>
+      </div>
     </div>
-</div>
 
-<header class="admin-header" id="adminHeader" style="display:none;">
-    <div class="logo-area">
-        <div class="logo-placeholder">
-            <img src="https://raw.githubusercontent.com/jinmelkunnath-alt/St.Annes-ICSE-School-Payment-Portal/refs/heads/main/LOGO.jpg" alt="St. Anne's ICSE School Logo">
-        </div>
-        <div class="title-group">
-            <h1 id="schoolName">St. Anne's ICSE School</h1>
-            <p>Admin Panel · Quick Access</p>
-        </div>
+    <div class="status"><span class="dot"></span>Server shut down</div>
+
+    <h1>This service has been <span class="accent">permanently discontinued</span></h1>
+
+    <p class="lead">
+      After careful consideration, we have shut down this service for good.
+      The servers have been decommissioned and all related operations have
+      <strong>permanently ceased</strong>. We're grateful to everyone who was part of the journey.
+    </p>
+
+    <div class="divider">Service record</div>
+
+    <div class="meta">
+      <div class="item">
+        <span class="k">Shut down on</span>
+        <span class="v">Mar 31, 2025</span>
+      </div>
+      <div class="item">
+        <span class="k">Server status</span>
+        <span class="v">Offline</span>
+      </div>
+      <div class="item">
+        <span class="k">Data retention</span>
+        <span class="v ok">Archived</span>
+      </div>
     </div>
-    <div class="header-actions">
-        <button id="darkModeToggle" class="dark-mode-toggle" title="Toggle Dark Mode">🌙</button>
-        <button id="verifyReceiptBtn" class="verify-receipt-btn">🔍 Verify Receipt</button>
+
+    <div class="divider">Contact on WhatsApp</div>
+
+    <div class="actions">
+      <a class="btn" href="https://wa.me/918594009501" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
+        </svg>
+        <span class="num">+91 85940 09501</span>
+      </a>
+
+      <a class="btn" href="https://wa.me/919074257076" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
+        </svg>
+        <span class="num">+91 90742 57076</span>
+      </a>
     </div>
-</header>
 
-<div class="app-container" id="appContainer" style="display:none;">
-    <div id="classView">
-        <div class="classes-grid" id="classesGrid"></div>
-    </div>
-</div>
+    <p class="foot">
+      Tap any number to chat with us directly on <strong>WhatsApp</strong>.
+    </p>
 
-<!-- Fullscreen Loader -->
-<div id="fullscreenLoader" class="fullscreen-loader">
-    <div class="loader-content">
-        <div class="loader-message" id="loaderMessage">Loading<span class="dot-floating">...</span></div>
-        <div class="skeleton-list">
-            <div class="skeleton-item"><div class="skeleton-name"></div><div class="skeleton-icon"></div></div>
-            <div class="skeleton-item"><div class="skeleton-name"></div><div class="skeleton-icon"></div></div>
-            <div class="skeleton-item"><div class="skeleton-name"></div><div class="skeleton-icon"></div></div>
-        </div>
-    </div>
-</div>
+  </main>
 
-<!-- Fullscreen Student View -->
-<div id="fullscreenStudentView" class="fullscreen-student-view">
-    <div class="student-view-container">
-        <div class="student-view-header">
-            <div class="student-view-header-left">
-                <button id="backToClassesBtn" class="back-btn">← Back</button>
-                <div class="class-badge" id="currentClassBadge"></div>
-                <button id="downloadExcelBtn" class="download-excel-btn">📥 Download Excel</button>
-            </div>
-            <div class="search-box">
-                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                <input type="text" id="studentSearchInput" placeholder="Search by name..." autocomplete="off">
-            </div>
-        </div>
-        <div id="studentsListContainer" class="students-list"></div>
-    </div>
-</div>
-
-<!-- Add Student Modal -->
-<div id="addStudentModal" class="modal-overlay">
-    <div class="modal-card">
-        <div class="modal-close" id="closeAddModal">✕</div>
-        <h3>Add New Student</h3>
-        <form id="addStudentForm">
-            <div class="form-group">
-                <label>Student ID *</label>
-                <input type="text" id="studentId" placeholder="e.g., sa2024001" required>
-            </div>
-            <div class="form-group">
-                <label>Full Name *</label>
-                <input type="text" id="studentName" placeholder="Enter full name" required>
-            </div>
-            <div class="form-group">
-                <label>Class *</label>
-                <select id="studentClass" required>
-                    <option value="">Select Class</option>
-                    <option>Playschool</option>
-                    <option>LKG A</option>
-                    <option>LKG B</option>
-                    <option>UKG</option>
-                    <option>STD 1 A</option>
-                    <option>STD 1 B</option>
-                    <option>STD 2</option>
-                    <option>STD 3</option>
-                    <option>STD 4</option>
-                    <option>STD 5</option>
-                    <option>STD 6</option>
-                    <option>STD 7</option>
-                    <option>STD 8</option>
-                    <option>STD 9</option>
-                    <option>STD 10</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Phone Number *</label>
-                <input type="tel" id="studentPhone" placeholder="91XXXXXXXXXX" required>
-            </div>
-            <div class="section-divider"></div>
-            <div class="form-group">
-                <label>Term 1 Fee — June–August (₹) *</label>
-                <input type="number" id="term1Fee" placeholder="0" min="0" required>
-            </div>
-            <div class="form-group">
-                <label>Term 2 Fee — September–November (₹) *</label>
-                <input type="number" id="term2Fee" placeholder="0" min="0" required>
-            </div>
-            <div class="form-group">
-                <label>Term 3 Fee — December–February (₹) *</label>
-                <input type="number" id="term3Fee" placeholder="0" min="0" required>
-            </div>
-            <div class="section-divider"></div>
-            <div class="checkbox-group">
-                <label><input type="checkbox" id="enableBusFee"> Enable Bus Fee</label>
-            </div>
-            <div id="busFeeFields" style="display:none; margin-top:0.5rem;">
-                <div class="bus-section-label">Monthly Bus Amounts</div>
-                <div class="bus-june-row">
-                    <div class="bus-item" style="flex:1;"><span>June</span><input type="number" id="busJune" placeholder="₹" min="0"></div>
-                    <button type="button" id="autoFillBusBtn" class="auto-btn">Auto Fill ↓</button>
-                </div>
-                <div class="bus-grid">
-                    <div class="bus-item"><span>July</span><input type="number" id="busJuly" placeholder="₹" min="0"></div>
-                    <div class="bus-item"><span>August</span><input type="number" id="busAug" placeholder="₹" min="0"></div>
-                    <div class="bus-item"><span>September</span><input type="number" id="busSep" placeholder="₹" min="0"></div>
-                    <div class="bus-item"><span>October</span><input type="number" id="busOct" placeholder="₹" min="0"></div>
-                    <div class="bus-item"><span>November</span><input type="number" id="busNov" placeholder="₹" min="0"></div>
-                    <div class="bus-item"><span>December</span><input type="number" id="busDec" placeholder="₹" min="0"></div>
-                    <div class="bus-item"><span>January</span><input type="number" id="busJan" placeholder="₹" min="0"></div>
-                    <div class="bus-item"><span>February</span><input type="number" id="busFeb" placeholder="₹" min="0"></div>
-                    <div class="bus-item"><span>March</span><input type="number" id="busMar" placeholder="₹" min="0"></div>
-                </div>
-            </div>
-            <div class="section-divider"></div>
-            <div class="form-group">
-                <label>ECA Fee (₹) (One-time)</label>
-                <input type="number" id="ecaFee" placeholder="1250" min="0">
-            </div>
-            <div class="form-group">
-                <label>Annual Day Fee (₹) (One-time)</label>
-                <input type="number" id="annualDayFee" placeholder="750" min="0">
-            </div>
-            <div class="section-divider"></div>
-            <div class="checkbox-group">
-                <label><input type="checkbox" id="enablePrevYearFee"> Has Previous Year Pending Fee</label>
-            </div>
-            <div id="prevYearFeeFields" style="display:none; margin-top:0.5rem;">
-                <div class="prev-year-grid">
-                    <div class="prev-year-item"><span>Previous Tuition Pending (₹)</span><input type="number" id="prevTuition" placeholder="0" min="0"></div>
-                    <div class="prev-year-item"><span>Previous Bus Pending (₹)</span><input type="number" id="prevBus" placeholder="0" min="0"></div>
-                </div>
-            </div>
-            <div class="modal-actions">
-                <button type="button" class="modal-btn" id="cancelAddBtn">Cancel</button>
-                <button type="submit" class="modal-btn primary" id="submitStudentBtn">Create Student</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Edit Student Modal -->
-<div id="editStudentModal" class="modal-overlay">
-    <div class="modal-card">
-        <div class="modal-close" id="closeEditModal">✕</div>
-        <h3>Edit Student</h3>
-        <form id="editStudentForm">
-            <div class="form-group"><label>Student ID (read only)</label><input type="text" id="editStudentId" disabled></div>
-            <div class="form-group"><label>Full Name *</label><input type="text" id="editStudentName" required></div>
-            <div class="form-group">
-                <label>Class *</label>
-                <select id="editStudentClass" required>
-                    <option>Playschool</option>
-                    <option>LKG A</option>
-                    <option>LKG B</option>
-                    <option>UKG</option>
-                    <option>STD 1 A</option>
-                    <option>STD 1 B</option>
-                    <option>STD 2</option>
-                    <option>STD 3</option>
-                    <option>STD 4</option>
-                    <option>STD 5</option>
-                    <option>STD 6</option>
-                    <option>STD 7</option>
-                    <option>STD 8</option>
-                    <option>STD 9</option>
-                    <option>STD 10</option>
-                </select>
-            </div>
-            <div class="form-group"><label>Phone Number *</label><input type="tel" id="editStudentPhone" required></div>
-            <div class="section-divider"></div>
-            <div class="form-group"><label>Term 1 Total — June–August (₹)</label><input type="number" id="editTerm1Total" min="0"></div>
-            <div class="form-group"><label>Term 2 Total — September–November (₹)</label><input type="number" id="editTerm2Total" min="0"></div>
-            <div class="form-group"><label>Term 3 Total — December–February (₹)</label><input type="number" id="editTerm3Total" min="0"></div>
-            <div class="section-divider"></div>
-            <div id="editBusFeeSection" style="display:none;">
-                <div class="bus-section-label">Monthly Bus Amounts</div>
-                <div class="edit-bus-grid">
-                    <div class="edit-bus-item"><span>June</span><input type="number" id="editBusJune" min="0"></div>
-                    <div class="edit-bus-item"><span>July</span><input type="number" id="editBusJuly" min="0"></div>
-                    <div class="edit-bus-item"><span>August</span><input type="number" id="editBusAug" min="0"></div>
-                    <div class="edit-bus-item"><span>September</span><input type="number" id="editBusSep" min="0"></div>
-                    <div class="edit-bus-item"><span>October</span><input type="number" id="editBusOct" min="0"></div>
-                    <div class="edit-bus-item"><span>November</span><input type="number" id="editBusNov" min="0"></div>
-                    <div class="edit-bus-item"><span>December</span><input type="number" id="editBusDec" min="0"></div>
-                    <div class="edit-bus-item"><span>January</span><input type="number" id="editBusJan" min="0"></div>
-                    <div class="edit-bus-item"><span>February</span><input type="number" id="editBusFeb" min="0"></div>
-                    <div class="edit-bus-item"><span>March</span><input type="number" id="editBusMar" min="0"></div>
-                </div>
-                <div class="section-divider"></div>
-            </div>
-            <div class="form-group"><label>ECA Fee (₹) (One-time)</label><input type="number" id="editEcaFee" min="0"></div>
-            <div class="form-group"><label>Annual Day Fee (₹) (One-time)</label><input type="number" id="editAnnualDayTotal" min="0"></div>
-            <div id="editPrevYearSection" style="display:none;">
-                <div class="section-divider"></div>
-                <div class="bus-section-label">Previous Year Pending Fee</div>
-                <div class="edit-bus-grid">
-                    <div class="edit-bus-item"><span>Tuition Pending (₹)</span><input type="number" id="editPrevTuition" min="0"></div>
-                    <div class="edit-bus-item"><span>Bus Pending (₹)</span><input type="number" id="editPrevBus" min="0"></div>
-                </div>
-            </div>
-            <div class="modal-actions">
-                <button type="button" class="modal-btn" id="cancelEditBtn">Cancel</button>
-                <button type="submit" class="modal-btn primary">Save Changes</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Universal Edit Modal -->
-<div id="universalModal" class="modal-overlay">
-    <div class="modal-card">
-        <div class="modal-close" id="closeUniversalModal">✕</div>
-        <h3>Universal Edit</h3>
-        <div id="universalContent">
-            <div class="form-group"><label>Action</label><select id="universalAction"><option value="updateEca">Update ECA Fee (All / Class)</option><option value="updateAnnual">Update Annual Day Fee (All / Class)</option></select></div>
-            <div class="form-group"><label>Scope</label><select id="universalScope"><option value="all">All Students</option><option value="class">Specific Class</option></select></div>
-            <div id="universalClassSelect" style="display:none;" class="form-group">
-                <label>Class</label>
-                <select id="universalTargetClass">
-                    <option>Playschool</option>
-                    <option>LKG A</option>
-                    <option>LKG B</option>
-                    <option>UKG</option>
-                    <option>STD 1 A</option>
-                    <option>STD 1 B</option>
-                    <option>STD 2</option>
-                    <option>STD 3</option>
-                    <option>STD 4</option>
-                    <option>STD 5</option>
-                    <option>STD 6</option>
-                    <option>STD 7</option>
-                    <option>STD 8</option>
-                    <option>STD 9</option>
-                    <option>STD 10</option>
-                </select>
-            </div>
-            <div class="form-group"><label>New Amount (₹)</label><input type="number" id="universalAmount" placeholder="Enter amount" min="0"></div>
-            <div class="modal-actions"><button class="modal-btn" id="cancelUniversalBtn">Cancel</button><button class="modal-btn primary" id="applyUniversalBtn">Apply to All</button></div>
-        </div>
-    </div>
-</div>
-
-<!-- Admin Password Modal -->
-<div id="passwordModal" class="modal-overlay">
-    <div class="modal-card">
-        <div class="modal-close" id="closePwdModal">✕</div>
-        <h3>Admin Verification</h3>
-        <div class="form-group"><input type="password" id="addPassword" placeholder="Enter admin password"><div id="pwdError" style="color:#bc4e2c;font-size:0.75rem;margin-top:0.4rem;display:none;">Wrong password. Try again.</div></div>
-        <div class="modal-actions"><button class="modal-btn" id="cancelPwdBtn">Cancel</button><button class="modal-btn primary" id="confirmPwdBtn">Continue</button></div>
-    </div>
-</div>
-
-<!-- Success Popup -->
-<div id="successPopup" class="success-overlay">
-    <div class="success-card">
-        <svg class="tick-svg" viewBox="0 0 52 52"><circle class="tick-circle" cx="26" cy="26" r="25" fill="none"/><path class="tick-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/></svg>
-        <h3 style="color:#1f7840;">Student Added</h3>
-        <p style="margin-top:0.5rem;color:var(--text-secondary);">Student successfully created.</p>
-        <button class="modal-btn primary" id="closeSuccessBtn" style="margin-top:1rem;">OK</button>
-    </div>
-</div>
-
-<!-- Verify Receipt Modal -->
-<div id="verifyModal" class="modal-overlay">
-    <div class="modal-card">
-        <div class="modal-close" id="closeVerifyModal">✕</div>
-        <h3>Verify Receipt</h3>
-        <div class="form-group"><label>Receipt Code</label><input type="text" id="receiptCodeInput" placeholder="Enter receipt code" autocomplete="off"></div>
-        <div class="modal-actions"><button class="modal-btn" id="cancelVerifyBtn">Cancel</button><button class="modal-btn primary" id="verifyBtn">Verify</button></div>
-        <div id="verifyResult" style="margin-top:1rem;"></div>
-    </div>
-</div>
-
-<!-- Bulk Student Import Modal -->
-<div id="bulkImportModal" class="modal-overlay">
-    <div class="modal-card">
-        <div class="modal-close" id="closeBulkImportModal">✕</div>
-        <h3>Bulk Student Import</h3>
-        <div class="form-group">
-            <label>Select Class</label>
-            <select id="bulkImportClass">
-                <option value="">Select Class</option>
-                <option>Playschool</option>
-                <option>LKG A</option>
-                <option>LKG B</option>
-                <option>UKG</option>
-                <option>STD 1 A</option>
-                <option>STD 1 B</option>
-                <option>STD 2</option>
-                <option>STD 3</option>
-                <option>STD 4</option>
-                <option>STD 5</option>
-                <option>STD 6</option>
-                <option>STD 7</option>
-                <option>STD 8</option>
-                <option>STD 9</option>
-                <option>STD 10</option>
-            </select>
-        </div>
-        <div class="modal-actions" style="flex-direction: column; gap: 0.6rem;">
-            <button type="button" class="modal-btn primary" id="importWithoutBusBtn" style="width: 100%;">Import Students (Without Bus Fee)</button>
-            <button type="button" class="modal-btn primary" id="importWithBusBtn" style="width: 100%;">Import Students (With Bus Fee)</button>
-        </div>
-        <div class="section-divider"></div>
-        <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
-            <button type="button" class="modal-btn outline-btn" id="downloadTemplateWithoutBusBtn" style="flex: 1; min-width: 140px;">Download Template (Without Bus)</button>
-            <button type="button" class="modal-btn outline-btn" id="downloadTemplateWithBusBtn" style="flex: 1; min-width: 140px;">Download Template (With Bus)</button>
-        </div>
-        <input type="file" id="bulkImportFileInput" accept=".xlsx,.xls" style="display: none;">
-        <div id="bulkImportStatus" style="margin-top: 1rem; text-align: center; display: none;">
-            <span class="excel-spinner"></span>
-            <span id="bulkImportStatusText" style="margin-left: 0.5rem; color: var(--text-secondary); font-size: 0.85rem;">Importing...</span>
-        </div>
-    </div>
-</div>
-
-<!-- Bulk Import Summary Modal -->
-<div id="bulkImportSummaryModal" class="modal-overlay">
-    <div class="modal-card" style="text-align: center;">
-        <h3 style="border-left: none; padding-left: 0;">Import Completed</h3>
-        <div id="bulkImportSummaryContent" style="margin: 1rem 0; color: var(--text-secondary); line-height: 1.6;"></div>
-        <div class="modal-actions" style="justify-content: center;">
-            <button class="modal-btn primary" id="closeBulkImportSummaryBtn">OK</button>
-        </div>
-    </div>
-</div>
-
-<!-- Contact Developer Modal -->
-<div id="contactModal" class="contact-modal">
-    <div class="contact-card">
-        <h3>Contact Developer</h3>
-        <div class="contact-options">
-            <button class="contact-option call" id="callBtn">📞 Call</button>
-            <button class="contact-option whatsapp" id="whatsappBtn">💬 WhatsApp</button>
-        </div>
-        <button class="close-contact" id="closeContactBtn">Close</button>
-    </div>
-</div>
-
-<footer class="footer" id="footer" style="display:none;">
-    <button id="contactDevBtn" class="contact-dev">Contact Developer</button>
-</footer>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import {
-    getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc, writeBatch
-} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
-import {
-    getAuth, signInWithEmailAndPassword
-} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
-
-const firebaseConfig = {
-    apiKey: "AIzaSyArC1RsGTkS0cr5glTfgUdTktjcfj_Ad88",
-    authDomain: "fee-payment-portal.firebaseapp.com",
-    projectId: "fee-payment-portal",
-    storageBucket: "fee-payment-portal.firebasestorage.app",
-    messagingSenderId: "1036013822615",
-    appId: "1:1036013822615:web:6c4159f84bae9882963fd2"
-};
-const app = initializeApp(firebaseConfig);
-const db  = getFirestore(app);
-const auth = getAuth(app);
-
-const PASSWORDS = { ADD: "ADD@123", EDIT: "EDIT@123", UNIVERSAL: "UNIVERSE@123", EXCEL: "PIXELCODEMEDIA" };
-const BASE_URL   = "https://jinmelkunnath-alt.github.io/St.Annes-ICSE-School-Payment-Portal/students/student.html?id=";
-const BUS_MONTHS = ["june","july","august","september","october","november","december","january","february","march"];
-const ADMIN_EMAILS = ["immanuelmelbindj@gmail.com", "SCHOOL_OFFICE_EMAIL@gmail.com"];
-
-let studentData  = {};
-let currentClass = null;
-
-const classesGrid           = document.getElementById('classesGrid');
-const classViewDiv          = document.getElementById('classView');
-const fullscreenLoader      = document.getElementById('fullscreenLoader');
-const fullscreenStudentView = document.getElementById('fullscreenStudentView');
-const loaderMessageEl       = document.getElementById('loaderMessage');
-const currentClassBadge     = document.getElementById('currentClassBadge');
-const studentSearchInput    = document.getElementById('studentSearchInput');
-const studentsListContainer = document.getElementById('studentsListContainer');
-const loginOverlay          = document.getElementById('loginOverlay');
-const adminHeader           = document.getElementById('adminHeader');
-const appContainer          = document.getElementById('appContainer');
-const footer                = document.getElementById('footer');
-
-const showModal = m => m.classList.add('active');
-const hideModal = m => m.classList.remove('active');
-
-function toast(msg, isError = false) {
-    const t = document.createElement('div');
-    Object.assign(t.style, {
-        position:'fixed', bottom:'24px', left:'50%', transform:'translateX(-50%)',
-        background: isError ? 'var(--toast-error-bg)' : 'var(--toast-bg)',
-        color:'white', padding:'0.65rem 1.6rem', borderRadius:'3rem', fontSize:'0.85rem',
-        zIndex:'9999', boxShadow:'0 4px 16px rgba(0,0,0,0.25)', pointerEvents:'none', whiteSpace:'nowrap'
-    });
-    t.innerText = msg;
-    document.body.appendChild(t);
-    setTimeout(() => t.remove(), 2600);
-}
-
-function safeFloat(val) { const n = parseFloat(val); return isNaN(n) ? 0 : n; }
-function escapeHtml(str) { if (!str) return ''; return String(str).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
-function mapClass(className) { const map = {"I":"STD 1 A","II":"STD 2","III":"STD 3","IV":"STD 4","V":"STD 5","VI":"STD 6","VII":"STD 7","VIII":"STD 8","IX":"STD 9","X":"STD 10"}; return map[className] || className; }
-
-// ═══════════════════════════════════════════════════════════════════
-// NEW ARCHITECTURE - SINGLE SOURCE OF TRUTH (S.S.O.T)
-// Trusted source: student.html normalizeBusFee
-// This is the ONLY place where raw Firestore Bus Fee is parsed
-// ALL consumers (Admin UI, Excel Export) use normalized object
-// ═══════════════════════════════════════════════════════════════════
-const BUS_MONTH_LABELS = ["June","July","August","September","October","November","December","January","February","March"];
-const MONTH_ALIAS_MAP = {jun:"june", jul:"july", aug:"august", sep:"september", sept:"september", oct:"october", nov:"november", dec:"december", jan:"january", feb:"february", mar:"march"};
-
-function safe(val){ const n=parseFloat(val); return isNaN(n)?0:n; }
-function normalizeMonthKey(k){
-  let key = String(k||'').toLowerCase().trim();
-  if(MONTH_ALIAS_MAP[key]) key = MONTH_ALIAS_MAP[key];
-  return key;
-}
-
-// ── CANONICAL BUS FEE PARSER - ONLY PARSER IN ENTIRE APP ──
-// Based on trusted student portal + legacy support
-function normalizeBusFee_CANONICAL(raw){
-  if(!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
-  let src = null;
-  if(raw.monthly && typeof raw.monthly === 'object' && !Array.isArray(raw.monthly)) src = raw.monthly;
-  else if(raw.busFeeMonthly && typeof raw.busFeeMonthly === 'object' && !Array.isArray(raw.busFeeMonthly)) src = raw.busFeeMonthly;
-  else if(raw.months && typeof raw.months === 'object' && !Array.isArray(raw.months)) src = raw.months;
-  else src = raw;
-
-  const monthly = {};
-  const reserved = new Set(['paidMonths','partialPayments','monthly','busFeeMonthly','months','data','paid','busMonthly','busFee','bus']);
-
-  Object.keys(src).forEach(k=>{
-    if(reserved.has(k)) return;
-    const v = src[k];
-    if(v===undefined||v===null) return;
-    let key = normalizeMonthKey(k);
-    if(!BUS_MONTHS.includes(key)) return;
-    if(typeof v === 'object' && !Array.isArray(v)){
-      monthly[key] = { total: safeFloat(v.total ?? v.amount ?? 0), paid: safeFloat(v.paid ?? 0) };
-    } else {
-      monthly[key] = { total: safeFloat(v), paid: 0 };
-    }
-  });
-
-  // Legacy: paidMonths array (old system used array of month names to indicate fully paid)
-  const paidMonthsLegacy = Array.isArray(raw.paidMonths) ? raw.paidMonths : (Array.isArray(raw.paid) ? raw.paid : []);
-  paidMonthsLegacy.forEach(item=>{
-    let m='';
-    if(typeof item==='string') m=normalizeMonthKey(item);
-    else if(item && typeof item==='object') m=normalizeMonthKey(item.month||item.name||'');
-    if(BUS_MONTHS.includes(m) && monthly[m] && monthly[m].paid===0){
-      monthly[m].paid = monthly[m].total;
-    }
-  });
-
-  // Legacy: partialPayments [{month, amount}]
-  const partialLegacy = Array.isArray(raw.partialPayments) ? raw.partialPayments : [];
-  const partialSums = {};
-  partialLegacy.forEach(p=>{
-    let m=normalizeMonthKey(p.month||p.name||p.title||'');
-    if(!BUS_MONTHS.includes(m)) return;
-    const amt = safeFloat(p.amount);
-    if(!partialSums[m]) partialSums[m]=0;
-    partialSums[m]+=amt;
-  });
-  Object.keys(partialSums).forEach(m=>{
-    if(monthly[m]){
-      const existing = monthly[m].paid||0;
-      const combined = Math.max(existing, partialSums[m]);
-      monthly[m].paid = Math.min(monthly[m].total, combined);
-    } else if(partialSums[m]>0){
-      monthly[m] = { total: partialSums[m], paid: partialSums[m] };
-    }
-  });
-
-  if(!Object.keys(monthly).length) return null;
-  return { monthly };
-}
-
-function normalizeTerms_CANONICAL(rawTerms, isPlaySchool){
-  const PLAY_MONTHS = ["June","July","August","September","October","November","December","January","February","March"];
-  const TERM_NAMES = ["Term 1 (June – August)","Term 2 (September – November)","Term 3 (December – February)"];
-  if(!Array.isArray(rawTerms) || !rawTerms.length){
-    if(isPlaySchool) return PLAY_MONTHS.map(n=>({name:n,total:0,paid:0}));
-    return TERM_NAMES.map(n=>({name:n,total:0,paid:0}));
-  }
-  return rawTerms.map((t,i)=>({
-    name: t.name || (isPlaySchool? PLAY_MONTHS[i]||`Month ${i+1}` : TERM_NAMES[i]||`Term ${i+1}`),
-    total: safeFloat(t.total ?? 0),
-    paid: safeFloat(t.paid ?? 0)
-  }));
-}
-
-function normalizeEca_CANONICAL(raw){
-  if(raw && raw.monthly && typeof raw.monthly==='object'){
-    let total=0,paid=0;
-    Object.values(raw.monthly).forEach(m=>{ total+=safeFloat(m.total??0); paid+=safeFloat(m.paid??0); });
-    return {total,paid};
-  }
-  if(!raw||typeof raw!=='object') return {total:1250,paid:0};
-  return {total: safeFloat(raw.total??1250), paid: safeFloat(raw.paid??0)};
-}
-
-function normalizeAnnual_CANONICAL(raw){
-  if(!raw||typeof raw!=='object') return null;
-  const total=safeFloat(raw.total??0);
-  if(!total) return null;
-  return {total, paid:safeFloat(raw.paid??0)};
-}
-
-function normalizePrevYear_CANONICAL(raw){
-  if(!raw||typeof raw!=='object') return null;
-  const out={};
-  ['tuition','bus'].forEach(k=>{
-    if(raw[k] && typeof raw[k]==='object'){
-      out[k]={total:safeFloat(raw[k].total??0), paid:safeFloat(raw[k].paid??0)};
-    } else if(typeof raw[k]==='number' || typeof raw[k]==='string'){
-      out[k]={total:safeFloat(raw[k]), paid:0};
-    }
-  });
-  return Object.keys(out).length? out : null;
-}
-
-function isPlaySchoolClass(cls){
-  return String(cls||'').toLowerCase().includes('playschool');
-}
-
-function normalizeStudentDoc_CANONICAL(id, raw){
-  const play = isPlaySchoolClass(raw.class);
-  let prevRaw = raw.previousYearFees || raw.prevYearFees || null;
-  if(!prevRaw && (raw.previousYearFee!==undefined || raw.previousYearBusFee!==undefined)){
-    prevRaw = {};
-    if(raw.previousYearFee!==undefined) prevRaw.tuition={total:safeFloat(raw.previousYearFee), paid:0};
-    if(raw.previousYearBusFee!==undefined) prevRaw.bus={total:safeFloat(raw.previousYearBusFee), paid:0};
-  }
-  const busRaw = raw.busFee || null;
-  return {
-    id,
-    name: raw.name||'',
-    class: mapClass(raw.class||''),
-    phone: raw.phone||'',
-    feeMode: raw.feeMode || (play?'monthly':'term'),
-    terms: normalizeTerms_CANONICAL(raw.terms, play),
-    busFee: normalizeBusFee_CANONICAL(busRaw),
-    ecaFee: normalizeEca_CANONICAL(raw.ecaFee||raw.eca),
-    annualFee: normalizeAnnual_CANONICAL(raw.annualFee),
-    previousYearFees: normalizePrevYear_CANONICAL(prevRaw),
-    receipts: Array.isArray(raw.receipts)? raw.receipts : [],
-    _rawForDebug: raw
-  };
-}
-
-// Global normalized cache - SINGLE SOURCE OF TRUTH
-let normalizedCache = {};
-let fullRawCache = {};
-
-const loginPassword = document.getElementById('loginPassword');
-const loginError    = document.getElementById('loginError');
-const loginSubmit   = document.getElementById('loginSubmitBtn');
-
-async function attemptFirebaseLogin(password) {
-    for (const email of ADMIN_EMAILS) {
-        try { await signInWithEmailAndPassword(auth, email, password); return true; } catch (err) {}
-    }
-    return false;
-}
-
-loginSubmit.addEventListener('click', async () => {
-    const pwd = loginPassword.value.trim();
-    if (!pwd) { loginError.style.display = 'block'; loginError.textContent = 'Please enter password'; return; }
-    loginError.style.display = 'none'; loginSubmit.disabled = true; loginSubmit.textContent = 'Logging in…';
-    const success = await attemptFirebaseLogin(pwd);
-    if (success) {
-        loginOverlay.style.display = 'none'; adminHeader.style.display = 'flex';
-        appContainer.style.display = 'block'; footer.style.display = 'block';
-        await initMain();
-    } else {
-        loginError.style.display = 'block'; loginError.textContent = 'Wrong password';
-        loginSubmit.disabled = false; loginSubmit.textContent = 'Login'; loginPassword.value = '';
-    }
-});
-loginPassword.addEventListener('keydown', e => { if (e.key === 'Enter') loginSubmit.click(); });
-
-const darkModeToggle = document.getElementById('darkModeToggle');
-darkModeToggle.addEventListener('click', () => {
-    document.body.classList.toggle('dark');
-    darkModeToggle.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
-});
-
-function promptModal(title, placeholder, type = 'text') {
-    return new Promise(resolve => {
-        const overlay = document.createElement('div'); overlay.className = 'popup-overlay';
-        overlay.innerHTML = `<div class="popup-card"><div class="popup-close" id="pClose">✖</div><h3>${escapeHtml(title)}</h3><div class="form-group" style="margin-top:0.5rem;"><input type="${type}" id="pInput" placeholder="${escapeHtml(placeholder)}" autofocus></div><div class="modal-actions"><button class="modal-btn" id="pCancel">Cancel</button><button class="modal-btn primary" id="pOk">OK</button></div></div>`;
-        document.body.appendChild(overlay);
-        const close = val => { overlay.remove(); resolve(val || null); };
-        overlay.querySelector('#pClose').onclick = () => close(null);
-        overlay.querySelector('#pCancel').onclick = () => close(null);
-        overlay.querySelector('#pOk').onclick = () => close(overlay.querySelector('#pInput').value.trim());
-        overlay.querySelector('#pInput').addEventListener('keydown', e => { if (e.key === 'Enter') close(overlay.querySelector('#pInput').value.trim()); });
-    });
-}
-
-async function fetchAllStudents() {
-    try {
-        const snap = await getDocs(collection(db, "students"));
-        studentData = {};
-        normalizedCache = {};
-        fullRawCache = {};
-        snap.forEach(d => {
-            const data = d.data();
-            const cls = mapClass(data.class || '');
-            if (!studentData[cls]) studentData[cls] = [];
-            studentData[cls].push({ name: data.name || '', id: d.id });
-
-            // NEW ARCHITECTURE: SINGLE SOURCE OF TRUTH - normalize once at load time
-            try {
-                const normalized = normalizeStudentDoc_CANONICAL(d.id, data);
-                if (!normalizedCache[cls]) normalizedCache[cls] = [];
-                normalizedCache[cls].push(normalized);
-                if (!fullRawCache[cls]) fullRawCache[cls] = [];
-                fullRawCache[cls].push({ id: d.id, raw: data, normalized });
-            } catch (normErr) {
-                console.warn("Normalization failed for", d.id, normErr);
-            }
-        });
-        console.log("[S.S.O.T] Loaded", Object.keys(normalizedCache).reduce((a,k)=>a+normalizedCache[k].length,0), "students into single source of truth cache");
-    } catch (err) {
-        console.error("fetchAllStudents:", err);
-        studentData = {};
-        normalizedCache = {};
-    }
-}
-
-function renderClassGrid() {
-    const classList = [
-        "Playschool",
-        "LKG A",
-        "LKG B",
-        "UKG",
-        "STD 1 A",
-        "STD 1 B",
-        "STD 2",
-        "STD 3",
-        "STD 4",
-        "STD 5",
-        "STD 6",
-        "STD 7",
-        "STD 8",
-        "STD 9",
-        "STD 10"
-    ];
-    classesGrid.innerHTML = '';
-    classList.forEach((cls, i) => {
-        const count = (studentData[cls] || []).length;
-        const card = document.createElement('div'); card.className = 'class-card'; card.style.animationDelay = `${i * 0.05}s`;
-        card.innerHTML = `<svg viewBox="0 0 24 24"><path d="M12 3L3 9L12 15L21 9L12 3Z" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 12L3 13L12 19L21 13L19 12" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 16L3 17L12 23L21 17L19 16" stroke-linecap="round" stroke-linejoin="round"/></svg><span>${cls}</span><small>${count} student${count !== 1 ? 's' : ''}</small>`;
-        card.addEventListener('click', () => onClassClick(cls)); classesGrid.appendChild(card);
-    });
-}
-
-function onClassClick(cls) {
-    currentClass = cls; classViewDiv.style.display = 'none'; fullscreenStudentView.classList.remove('active'); fullscreenLoader.classList.add('active'); loaderMessageEl.innerHTML = `Loading <span class="dot-floating">...</span>`;
-    setTimeout(() => { fullscreenLoader.classList.remove('active'); renderStudentList(studentData[cls] || [], cls); fullscreenStudentView.classList.add('active'); history.pushState({ page:'students', class:cls }, '', `?class=${encodeURIComponent(cls)}`); }, 700);
-}
-
-document.getElementById('backToClassesBtn').addEventListener('click', () => { fullscreenStudentView.classList.remove('active'); classViewDiv.style.display = 'block'; studentSearchInput.value = ''; if (window.location.search) history.pushState(null, '', window.location.pathname); });
-
-function renderStudentList(students, cls) {
-    currentClassBadge.textContent = `${cls} · ${students.length} Student${students.length !== 1 ? 's' : ''}`;
-    const render = () => {
-        const term = studentSearchInput.value.toLowerCase(); const filtered = students.filter(s => s.name.toLowerCase().includes(term));
-        studentsListContainer.innerHTML = '';
-        if (!filtered.length) { studentsListContainer.innerHTML = '<div class="no-students">✨ No students found</div>'; return; }
-        filtered.forEach(student => {
-            const card = document.createElement('div'); card.className = 'student-card';
-            card.innerHTML = `<div class="student-name">${escapeHtml(student.name)}</div><div class="eye-icon" data-id="${student.id}"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></div>`;
-            card.querySelector('.eye-icon').addEventListener('click', e => { e.stopPropagation(); window.open(BASE_URL + encodeURIComponent(student.id), "_blank"); });
-            studentsListContainer.appendChild(card);
-        });
-    };
-    render(); studentSearchInput.oninput = render;
-}
-
-window.addEventListener('popstate', () => {
-    if (fullscreenStudentView.classList.contains('active')) { fullscreenStudentView.classList.remove('active'); classViewDiv.style.display = 'block'; studentSearchInput.value = ''; if (window.location.search) history.pushState(null, '', window.location.pathname); }
-    else { classViewDiv.style.display = 'block'; }
-});
-
-async function createStudent({ id, name, cls, phone, term1, term2, term3, busEnabled, busMonths, ecaTotal, annualTotal, prevYear }, batch = null) {
-    const isPlayschool = (cls || '').toLowerCase().trim() === 'playschool';
-    const PLAY_MONTHS = ["June", "July", "August", "September", "October", "November", "December", "January", "February", "March"];
-
-    let terms;
-    let feeMode;
-    if (isPlayschool) {
-        feeMode = "monthly";
-        const monthlyFee = safeFloat(term1);
-        terms = PLAY_MONTHS.map(month => ({ name: month, total: monthlyFee, paid: 0 }));
-    } else {
-        feeMode = "term";
-        terms = [
-            { name: "Term 1 (June – August)", total: safeFloat(term1), paid: 0 },
-            { name: "Term 2 (September – November)", total: safeFloat(term2), paid: 0 },
-            { name: "Term 3 (December – February)", total: safeFloat(term3), paid: 0 }
-        ];
-    }
-
-    const data = { name, class: cls, phone, feeMode, terms, ecaFee: { total: safeFloat(ecaTotal) || 1250, paid: 0 }, otherFees: [], receipts: [], previousYearFees: prevYear || null };
-    if (safeFloat(annualTotal) > 0) data.annualFee = { total: safeFloat(annualTotal), paid: 0 };
-    if (busEnabled && busMonths) data.busFee = { monthly: busMonths, paidMonths: [], partialPayments: [] };
-    const studentRef = doc(db, "students", id);
-    if (batch) { batch.set(studentRef, data); }
-    else { await setDoc(studentRef, data); }
-}
-
-const addStudentModal = document.getElementById('addStudentModal');
-const enableBusFeeCheck = document.getElementById('enableBusFee');
-const busFeeFields = document.getElementById('busFeeFields');
-const autoFillBusBtn = document.getElementById('autoFillBusBtn');
-const enablePrevYearCheck = document.getElementById('enablePrevYearFee');
-const prevYearFeeFields = document.getElementById('prevYearFeeFields');
-enableBusFeeCheck.addEventListener('change', () => { busFeeFields.style.display = enableBusFeeCheck.checked ? 'block' : 'none'; });
-enablePrevYearCheck.addEventListener('change', () => { prevYearFeeFields.style.display = enablePrevYearCheck.checked ? 'block' : 'none'; });
-
-// ── Playschool Monthly Fee: dynamically adapt fee fields ──
-const addStudentClassSelect = document.getElementById('studentClass');
-const term1FeeLabel = document.getElementById('term1Fee').closest('.form-group').querySelector('label');
-const term2FeeGroup = document.getElementById('term2Fee').closest('.form-group');
-const term3FeeGroup = document.getElementById('term3Fee').closest('.form-group');
-const TERM1_LABEL_DEFAULT = 'Term 1 Fee — June–August (₹) *';
-const TERM1_LABEL_PLAY = 'Monthly Fee (₹) *';
-addStudentClassSelect.addEventListener('change', () => {
-    const isPlay = addStudentClassSelect.value === 'Playschool';
-    if (isPlay) {
-        term1FeeLabel.textContent = TERM1_LABEL_PLAY;
-        term2FeeGroup.style.display = 'none';
-        term3FeeGroup.style.display = 'none';
-        document.getElementById('term2Fee').removeAttribute('required');
-        document.getElementById('term3Fee').removeAttribute('required');
-    } else {
-        term1FeeLabel.textContent = TERM1_LABEL_DEFAULT;
-        term2FeeGroup.style.display = '';
-        term3FeeGroup.style.display = '';
-        document.getElementById('term2Fee').setAttribute('required', '');
-        document.getElementById('term3Fee').setAttribute('required', '');
-    }
-});
-autoFillBusBtn.addEventListener('click', () => { const juneVal = document.getElementById('busJune').value; if (!juneVal) { toast("Enter June amount first", true); return; } ['busJuly','busAug','busSep','busOct','busNov','busDec','busJan','busFeb','busMar'].forEach(id => { document.getElementById(id).value = juneVal; }); });
-
-document.getElementById('addStudentForm').addEventListener('submit', async e => {
-    e.preventDefault();
-    const studentId = document.getElementById('studentId').value.trim().toLowerCase();
-    const name = document.getElementById('studentName').value.trim();
-    const cls = document.getElementById('studentClass').value;
-    const phone = document.getElementById('studentPhone').value.trim();
-    const term1 = document.getElementById('term1Fee').value;
-    const term2 = document.getElementById('term2Fee').value;
-    const term3 = document.getElementById('term3Fee').value;
-    const ecaTotal = document.getElementById('ecaFee').value;
-    const annualTotal = document.getElementById('annualDayFee').value;
-    if (!studentId || !name || !cls || !phone) { toast("Fill all required fields", true); return; }
-    if (cls === 'Playschool') {
-        if (!term1) { toast("Enter monthly fee", true); return; }
-    } else {
-        if (!term1 || !term2 || !term3) { toast("Enter all three term fees", true); return; }
-    }
-    const busEnabled = enableBusFeeCheck.checked; let busMonths = null;
-    if (busEnabled) { busMonths = {}; const ids = ['busJune','busJuly','busAug','busSep','busOct','busNov','busDec','busJan','busFeb','busMar']; BUS_MONTHS.forEach((m, i) => { busMonths[m] = safeFloat(document.getElementById(ids[i]).value); }); if (Object.values(busMonths).every(v => v === 0)) { toast("Enter at least one bus month amount", true); return; } }
-    const prevEnabled = enablePrevYearCheck.checked; let prevYear = null;
-    if (prevEnabled) { const tuition = safeFloat(document.getElementById('prevTuition').value); const bus = safeFloat(document.getElementById('prevBus').value); if (tuition === 0 && bus === 0) { toast("Enter previous year pending amounts", true); return; } prevYear = { tuition: { total: tuition, paid: 0 }, bus: { total: bus, paid: 0 } }; }
-    try {
-        const docRef = doc(db, "students", studentId); const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) { toast("Student ID already exists!", true); return; }
-        await createStudent({ id: studentId, name, cls, phone, term1, term2, term3, busEnabled, busMonths, ecaTotal, annualTotal, prevYear });
-        if (!studentData[cls]) studentData[cls] = []; studentData[cls].push({ name, id: studentId });
-        hideModal(addStudentModal); showModal(document.getElementById('successPopup')); renderClassGrid();
-    } catch (err) { console.error("createStudent:", err); toast("Failed to add student", true); }
-});
-
-async function openEditStudent() {
-    const studentId = await promptModal("Edit Student", "Enter Student ID"); if (!studentId) return;
-    const docRef = doc(db, "students", studentId); const snap = await getDoc(docRef);
-    if (!snap.exists()) { toast("Student not found", true); return; }
-    const data = snap.data(); if (!data.ecaFee) data.ecaFee = { total: 1250, paid: 0 }; if (!data.otherFees || !Array.isArray(data.otherFees)) data.otherFees = [];
-    document.getElementById('editStudentId').value = studentId; document.getElementById('editStudentName').value = data.name || ''; document.getElementById('editStudentClass').value = mapClass(data.class || ''); document.getElementById('editStudentPhone').value = data.phone || '';
-    const terms = data.terms || [];
-    const isMonthlyStudent = (data.feeMode === 'monthly') || terms.length === 10;
-    const editTerm1Group = document.getElementById('editTerm1Total').closest('.form-group');
-    const editTerm1Label = editTerm1Group.querySelector('label');
-    const editTerm2Group = document.getElementById('editTerm2Total').closest('.form-group');
-    const editTerm3Group = document.getElementById('editTerm3Total').closest('.form-group');
-    if (isMonthlyStudent) {
-        editTerm1Label.textContent = 'Monthly Fee (₹)';
-        editTerm2Group.style.display = 'none';
-        editTerm3Group.style.display = 'none';
-        document.getElementById('editTerm1Total').value = safeFloat(terms[0]?.total);
-    } else {
-        editTerm1Label.textContent = 'Term 1 Total — June–August (₹)';
-        editTerm2Group.style.display = '';
-        editTerm3Group.style.display = '';
-        document.getElementById('editTerm1Total').value = safeFloat(terms[0]?.total); document.getElementById('editTerm2Total').value = safeFloat(terms[1]?.total); document.getElementById('editTerm3Total').value = safeFloat(terms[2]?.total);
-    }
-    document.getElementById('editEcaFee').value = safeFloat(data.ecaFee?.total) || 1250; document.getElementById('editAnnualDayTotal').value = safeFloat(data.annualFee?.total);
-    const busSection = document.getElementById('editBusFeeSection'); const busFee = data.busFee;
-    if (busFee && busFee.monthly) { busSection.style.display = 'block'; const m = busFee.monthly; const ids = ['editBusJune','editBusJuly','editBusAug','editBusSep','editBusOct','editBusNov','editBusDec','editBusJan','editBusFeb','editBusMar']; BUS_MONTHS.forEach((month, i) => { document.getElementById(ids[i]).value = safeFloat(m[month]); }); } else { busSection.style.display = 'none'; }
-    const prevSection = document.getElementById('editPrevYearSection'); const prevFees = data.previousYearFees;
-    if (prevFees) { prevSection.style.display = 'block'; document.getElementById('editPrevTuition').value = safeFloat(prevFees.tuition?.total); document.getElementById('editPrevBus').value = safeFloat(prevFees.bus?.total); } else { prevSection.style.display = 'none'; }
-    showModal(document.getElementById('editStudentModal'));
-    const editForm = document.getElementById('editStudentForm');
-    const handler = async e => {
-        e.preventDefault(); editForm.removeEventListener('submit', handler);
-        const updatedName = document.getElementById('editStudentName').value.trim(); const updatedClass = document.getElementById('editStudentClass').value; const updatedPhone = document.getElementById('editStudentPhone').value.trim();
-        const newEca = safeFloat(document.getElementById('editEcaFee').value) || 1250; const newAnnual = safeFloat(document.getElementById('editAnnualDayTotal').value);
-        let updatedTerms;
-        if (isMonthlyStudent) {
-            const newMonthlyFee = safeFloat(document.getElementById('editTerm1Total').value);
-            const PLAY_MONTHS = ["June", "July", "August", "September", "October", "November", "December", "January", "February", "March"];
-            updatedTerms = PLAY_MONTHS.map((month, i) => ({ name: month, total: newMonthlyFee, paid: safeFloat(terms[i]?.paid) }));
-        } else {
-            const newTermTotals = [safeFloat(document.getElementById('editTerm1Total').value), safeFloat(document.getElementById('editTerm2Total').value), safeFloat(document.getElementById('editTerm3Total').value)];
-            updatedTerms = [{ name: "Term 1 (June – August)", total: newTermTotals[0], paid: safeFloat(terms[0]?.paid) },{ name: "Term 2 (September – November)", total: newTermTotals[1], paid: safeFloat(terms[1]?.paid) },{ name: "Term 3 (December – February)", total: newTermTotals[2], paid: safeFloat(terms[2]?.paid) }];
-        }
-        const updatePayload = { name: updatedName, class: updatedClass, phone: updatedPhone, terms: updatedTerms, ecaFee: { total: newEca, paid: safeFloat(data.ecaFee?.paid) }, otherFees: data.otherFees || [] };
-        if (newAnnual > 0) updatePayload.annualFee = { total: newAnnual, paid: safeFloat(data.annualFee?.paid) };
-        if (busFee && busFee.monthly) { const ids = ['editBusJune','editBusJuly','editBusAug','editBusSep','editBusOct','editBusNov','editBusDec','editBusJan','editBusFeb','editBusMar']; const newMonthly = {}; BUS_MONTHS.forEach((month, i) => { newMonthly[month] = safeFloat(document.getElementById(ids[i]).value); }); updatePayload.busFee = { ...busFee, monthly: newMonthly }; }
-        const prevTuition = safeFloat(document.getElementById('editPrevTuition').value); const prevBus = safeFloat(document.getElementById('editPrevBus').value);
-        if (prevTuition > 0 || prevBus > 0) { updatePayload.previousYearFees = { tuition: { total: prevTuition, paid: safeFloat(prevFees?.tuition?.paid) }, bus: { total: prevBus, paid: safeFloat(prevFees?.bus?.paid) } }; } else { updatePayload.previousYearFees = null; }
-        try {
-            await updateDoc(docRef, updatePayload);
-            const oldClass = mapClass(data.class || '');
-            if (oldClass !== updatedClass) { if (studentData[oldClass]) studentData[oldClass] = studentData[oldClass].filter(s => s.id !== studentId); if (!studentData[updatedClass]) studentData[updatedClass] = []; studentData[updatedClass].push({ name: updatedName, id: studentId }); }
-            else { const idx = (studentData[oldClass] || []).findIndex(s => s.id === studentId); if (idx !== -1) studentData[oldClass][idx].name = updatedName; }
-            hideModal(document.getElementById('editStudentModal')); toast("Student updated successfully"); renderClassGrid(); if (currentClass) renderStudentList(studentData[currentClass] || [], currentClass);
-        } catch (err) { console.error("editStudent:", err); toast("Failed to save changes", true); editForm.addEventListener('submit', handler); }
-    };
-    editForm.addEventListener('submit', handler);
-}
-document.getElementById('closeEditModal').onclick = () => hideModal(document.getElementById('editStudentModal'));
-document.getElementById('cancelEditBtn').onclick = () => hideModal(document.getElementById('editStudentModal'));
-
-const universalModal = document.getElementById('universalModal');
-const universalScope = document.getElementById('universalScope');
-const classSelectDiv = document.getElementById('universalClassSelect');
-universalScope.addEventListener('change', () => { classSelectDiv.style.display = universalScope.value === 'class' ? 'block' : 'none'; });
-document.getElementById('applyUniversalBtn').addEventListener('click', async () => {
-    const action = document.getElementById('universalAction').value; const scope = universalScope.value; const targetClass = document.getElementById('universalTargetClass').value; const newAmount = safeFloat(document.getElementById('universalAmount').value);
-    if (!newAmount) { toast("Enter a valid amount", true); return; }
-    let studentsToUpdate = [];
-    try {
-        if (scope === 'all') { const snapshot = await getDocs(collection(db, "students")); snapshot.forEach(d => studentsToUpdate.push({ id: d.id, data: d.data() })); }
-        else { const classStudents = studentData[targetClass] || []; for (const s of classStudents) { const snap = await getDoc(doc(db, "students", s.id)); if (snap.exists()) studentsToUpdate.push({ id: s.id, data: snap.data() }); } }
-        let updated = 0;
-        for (const student of studentsToUpdate) { const sData = student.data; if (!sData.ecaFee) sData.ecaFee = { total: 1250, paid: 0 }; if (action === 'updateEca') { await updateDoc(doc(db, "students", student.id), { ecaFee: { total: newAmount, paid: safeFloat(sData.ecaFee?.paid) } }); } else if (action === 'updateAnnual') { await updateDoc(doc(db, "students", student.id), { annualFee: { total: newAmount, paid: safeFloat(sData.annualFee?.paid) } }); } updated++; }
-        hideModal(universalModal); toast(`Updated ${updated} student${updated !== 1 ? 's' : ''} successfully`);
-    } catch (err) { console.error("universalEdit:", err); toast("Error during universal update", true); }
-});
-document.getElementById('closeUniversalModal').onclick = () => hideModal(universalModal);
-document.getElementById('cancelUniversalBtn').onclick = () => hideModal(universalModal);
-
-const passwordModal = document.getElementById('passwordModal');
-const addPasswordInput = document.getElementById('addPassword');
-const pwdError = document.getElementById('pwdError');
-function openAddStudentPassword() { showModal(passwordModal); addPasswordInput.value = ''; pwdError.style.display = 'none'; }
-document.getElementById('confirmPwdBtn').addEventListener('click', () => { if (addPasswordInput.value === PASSWORDS.ADD) { hideModal(passwordModal); document.getElementById('addStudentForm').reset(); busFeeFields.style.display = 'none'; prevYearFeeFields.style.display = 'none'; term2FeeGroup.style.display = ''; term3FeeGroup.style.display = ''; term1FeeLabel.textContent = TERM1_LABEL_DEFAULT; document.getElementById('term2Fee').setAttribute('required', ''); document.getElementById('term3Fee').setAttribute('required', ''); showModal(addStudentModal); } else { pwdError.style.display = 'block'; addPasswordInput.value = ''; } });
-document.getElementById('closePwdModal').onclick = () => hideModal(passwordModal);
-document.getElementById('cancelPwdBtn').onclick = () => hideModal(passwordModal);
-
-async function openUnifiedAdminAccess() {
-    const pass = await promptModal("Admin Access", "Enter access password", "password"); if (!pass) return;
-    if (pass === PASSWORDS.ADD) { openAddStudentPassword(); } else if (pass === PASSWORDS.EDIT) { const editPass = await promptModal("Edit Student", "Confirm edit password", "password"); if (editPass !== PASSWORDS.EDIT) { toast("Wrong password", true); return; } openEditStudent(); } else if (pass === PASSWORDS.UNIVERSAL) { document.getElementById('universalAmount').value = ''; universalScope.value = 'all'; classSelectDiv.style.display = 'none'; showModal(universalModal); } else { toast("Wrong password", true); }
-}
-
-async function verifyExcelAccess() { const pass = await promptModal("Excel Download", "Enter admin password:", "password"); return pass === PASSWORDS.EXCEL; }
-
-// ═══════════════════════════════════════════════════════════════════
-// NEW EXCEL EXPORT - COMPLETELY REBUILT
-// ABSOLUTE RULES COMPLIANCE:
-// - NEVER reads Firestore directly (uses normalizedCache S.S.O.T)
-// - NEVER reconstructs Bus Fee (uses normalized object)
-// - NEVER calculates Bus Fee (uses normalized object)
-// - NEVER guesses property names (no fallback chains)
-// - ONLY consumes processed object from Admin Panel cache
-// ═══════════════════════════════════════════════════════════════════
-async function exportClassExcel() {
-    if (!currentClass) { toast("No class selected", true); return; }
-    const btn = document.getElementById('downloadExcelBtn');
-    btn.innerHTML = '<span class="excel-spinner"></span> Generating…';
-    btn.disabled = true;
-
-    try {
-        // ── SINGLE SOURCE OF TRUTH ──
-        let normalizedStudents = normalizedCache[currentClass] || [];
-
-        // Fallback: if cache empty, use centralized loader (still uses canonical normalizer)
-        if (!normalizedStudents.length) {
-            console.warn("[EXPORT] Cache empty for", currentClass, "attempting centralized load via S.S.O.T loader");
-            try {
-                const snap = await getDocs(collection(db, "students"));
-                normalizedStudents = [];
-                snap.forEach(d => {
-                    const data = d.data();
-                    const cls = mapClass(data.class || '');
-                    if (cls.toUpperCase() === currentClass.toUpperCase()) {
-                        normalizedStudents.push(normalizeStudentDoc_CANONICAL(d.id, data));
-                    }
-                });
-                // Populate cache for future
-                normalizedCache[currentClass] = normalizedStudents;
-            } catch (e) {
-                console.error("[EXPORT] Fallback load failed", e);
-                toast("Failed to load students", true);
-                return;
-            }
-        }
-
-        if (normalizedStudents.length === 0) {
-            toast("No students found for this class", true);
-            return;
-        }
-
-        console.log(`[EXPORT] Exporting ${normalizedStudents.length} students from S.S.O.T cache for class ${currentClass}`);
-
-        const aoa = [];
-        
-        // ── Report Header Block ──
-        aoa.push(["ST. ANNE’S ICSE SCHOOL, KOTTODY"]);
-        aoa.push(["STUDENT FEE COLLECTION REPORT"]);
-        
-        const today = new Date();
-        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-        const day = today.getDate().toString().padStart(2, '0');
-        const mon = months[today.getMonth()];
-        const yr = today.getFullYear();
-        let hrs = today.getHours();
-        const mins = today.getMinutes().toString().padStart(2, '0');
-        const ampm = hrs >= 12 ? 'PM' : 'AM';
-        hrs = hrs % 12; hrs = hrs ? hrs : 12;
-        const hrsStr = hrs.toString().padStart(2, '0');
-        const dateStr = `${day}-${mon}-${yr} ${hrsStr}:${mins} ${ampm}`;
-        const academicYear = "2026–27";
-
-        aoa.push([`Academic Year : ${academicYear}   |   Class : ${currentClass}   |   Generated On : ${dateStr}   |   Source: S.S.O.T Cache (Fixed)`]);
-        aoa.push([]); // blank row 3
-
-        // ── Group Header Row 4 ──
-        const groupHeaderRow = [
-            "STUDENT INFORMATION", "", "", 
-            "OVERALL FEES", "", 
-            "TERM FEES", "", "", "", "", "", 
-            "ECA", "", 
-            "ANNUAL DAY", "", 
-            "PREVIOUS YEAR", "", "", "", 
-            "BUS FEES", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""
-        ];
-        aoa.push(groupHeaderRow);
-
-        // ── Sub Header Row 5 ──
-        const subHeaders = [
-            "Sl No", "Student Name", "Class", 
-            "Total Fees", "Total Paid", 
-            "Term 1 Fee", "Term 1 Paid", "Term 2 Fee", "Term 2 Paid", "Term 3 Fee", "Term 3 Paid", 
-            "ECA Fee", "ECA Paid", 
-            "Annual Day Fee", "Annual Day Paid", 
-            "Previous Year Fee", "Previous Year Paid", "Previous Year Bus Fee", "Previous Year Bus Paid"
-        ];
-        BUS_MONTH_LABELS.forEach(m => {
-            subHeaders.push(`${m} Fee`);
-            subHeaders.push(`${m} Paid`);
-        });
-        aoa.push(subHeaders);
-
-        // ── VALIDATION ENGINE ──
-        const validationReport = [];
-        let totalMismatches = 0;
-        let totalBlankBusWhenShouldExist = 0;
-        let totalMatches = 0;
-        let studentsWithBus = 0;
-        let studentsWithoutBus = 0;
-
-        let slNo = 1;
-
-        normalizedStudents.forEach(normalized => {
-            // ── USE ONLY NORMALIZED OBJECT - NO FALLBACK CHAINS ──
-            const terms = normalized.terms || [];
-            const isMonthly = normalized.feeMode === 'monthly' || terms.length === 10;
-            
-            let t1Fee = 0, t1Paid = 0, t2Fee = 0, t2Paid = 0, t3Fee = 0, t3Paid = 0;
-            if (isMonthly) {
-                for (let i=0; i<3; i++) { t1Fee += safeFloat(terms[i]?.total); t1Paid += safeFloat(terms[i]?.paid); }
-                for (let i=3; i<6; i++) { t2Fee += safeFloat(terms[i]?.total); t2Paid += safeFloat(terms[i]?.paid); }
-                for (let i=6; i<10; i++) { t3Fee += safeFloat(terms[i]?.total); t3Paid += safeFloat(terms[i]?.paid); }
-            } else {
-                t1Fee = safeFloat(terms[0]?.total); t1Paid = safeFloat(terms[0]?.paid);
-                t2Fee = safeFloat(terms[1]?.total); t2Paid = safeFloat(terms[1]?.paid);
-                t3Fee = safeFloat(terms[2]?.total); t3Paid = safeFloat(terms[2]?.paid);
-            }
-
-            const eca = normalized.ecaFee || { total: 1250, paid: 0 };
-            const ecaFeeVal = safeFloat(eca.total) > 0 ? safeFloat(eca.total) : "";
-            const ecaPaidVal = safeFloat(eca.total) > 0 ? safeFloat(eca.paid) : "";
-
-            const annual = normalized.annualFee || { total: 0, paid: 0 };
-            const annualFeeVal = safeFloat(annual.total) > 0 ? safeFloat(annual.total) : "";
-            const annualPaidVal = safeFloat(annual.total) > 0 ? safeFloat(annual.paid) : "";
-
-            const prev = normalized.previousYearFees || {};
-            const prevTuition = prev.tuition || { total: 0, paid: 0 };
-            const prevBus = prev.bus || { total: 0, paid: 0 };
-
-            const prevFee = safeFloat(prevTuition.total);
-            const prevPaid = safeFloat(prevTuition.paid);
-            const prevBusFee = safeFloat(prevBus.total);
-            const prevBusPaid = safeFloat(prevBus.paid);
-
-            const prevFeeVal = prevFee > 0 ? prevFee : "";
-            const prevPaidVal = prevFee > 0 ? prevPaid : "";
-            const prevBusFeeVal = prevBusFee > 0 ? prevBusFee : "";
-            const prevBusPaidVal = prevBusFee > 0 ? prevBusPaid : "";
-
-            let studentTotalFees = t1Fee + t2Fee + t3Fee + safeFloat(eca.total) + safeFloat(annual.total) + prevFee + prevBusFee;
-            let studentTotalPaid = t1Paid + t2Paid + t3Paid + safeFloat(eca.paid) + safeFloat(annual.paid) + prevPaid + prevBusPaid;
-
-            const row = [
-                slNo++,
-                normalized.name || "",
-                normalized.class || currentClass,
-                studentTotalFees, // placeholder, will recalc after bus
-                studentTotalPaid,
-                t1Fee > 0 ? t1Fee : "", t1Fee > 0 ? t1Paid : "",
-                t2Fee > 0 ? t2Fee : "", t2Fee > 0 ? t2Paid : "",
-                t3Fee > 0 ? t3Fee : "", t3Fee > 0 ? t3Paid : "",
-                ecaFeeVal, ecaFeeVal !== "" ? ecaPaidVal : "",
-                annualFeeVal, annualFeeVal !== "" ? annualPaidVal : "",
-                prevFeeVal, prevFeeVal !== "" ? prevPaidVal : "",
-                prevBusFeeVal, prevBusFeeVal !== "" ? prevBusPaidVal : ""
-            ];
-
-            // ── BUS FEE - SINGLE SOURCE OF TRUTH ──
-            // No guessing, no fallback chains, directly from normalized.monthly
-            const busMonthly = normalized.busFee?.monthly || null;
-            const hasBusFee = busMonthly && Object.keys(busMonthly).length > 0;
-
-            if (hasBusFee) studentsWithBus++;
-            else studentsWithoutBus++;
-
-            let adminBusTotal = 0;
-            let excelBusTotal = 0;
-            let adminBusPaidTotal = 0;
-            let excelBusPaidTotal = 0;
-
-            if (hasBusFee) {
-                Object.keys(busMonthly).forEach(k => {
-                    const v = busMonthly[k];
-                    if (v && safeFloat(v.total) > 0) adminBusTotal += safeFloat(v.total);
-                    if (v) adminBusPaidTotal += safeFloat(v.paid);
-                });
-            }
-
-            BUS_MONTHS.forEach(m => {
-                const entry = busMonthly ? busMonthly[m] : null;
-                if (entry && safeFloat(entry.total) > 0) {
-                    const fee = safeFloat(entry.total);
-                    const paid = safeFloat(entry.paid);
-                    studentTotalFees += fee;
-                    studentTotalPaid += paid;
-                    row.push(fee);
-                    row.push(paid);
-                    excelBusTotal += fee;
-                    excelBusPaidTotal += paid;
-                } else {
-                    row.push("");
-                    row.push("");
-                }
-            });
-
-            // Update overall totals after bus inclusion
-            row[3] = studentTotalFees;
-            row[4] = studentTotalPaid;
-
-            aoa.push(row);
-
-            // ── VALIDATION FOR THIS STUDENT ──
-            let status = "MATCH";
-            let issues = [];
-
-            if (hasBusFee) {
-                // Check if any month that has fee in admin is blank in excel
-                BUS_MONTHS.forEach(m => {
-                    const adminEntry = busMonthly[m];
-                    const adminHasFee = adminEntry && safeFloat(adminEntry.total) > 0;
-                    // Find corresponding excel columns: bus starts at index 19, each month 2 cols
-                    const monthIdx = BUS_MONTHS.indexOf(m);
-                    const excelFeeCol = 19 + monthIdx * 2;
-                    const excelFee = row[excelFeeCol];
-                    const excelHasFee = excelFee !== "" && safeFloat(excelFee) > 0;
-
-                    if (adminHasFee && !excelHasFee) {
-                        status = "FAIL";
-                        issues.push(`Bus ${m}: admin has ${adminEntry.total} but excel blank`);
-                        totalBlankBusWhenShouldExist++;
-                    }
-                    if (adminHasFee && excelHasFee && safeFloat(adminEntry.total) !== safeFloat(excelFee)) {
-                        status = "FAIL";
-                        issues.push(`Bus ${m}: admin total ${adminEntry.total} != excel ${excelFee}`);
-                    }
-                    // Paid check
-                    if (adminHasFee) {
-                        const adminPaid = safeFloat(adminEntry.paid);
-                        const excelPaid = row[excelFeeCol+1] === "" ? 0 : safeFloat(row[excelFeeCol+1]);
-                        if (adminPaid !== excelPaid) {
-                            status = "FAIL";
-                            issues.push(`Bus ${m} paid: admin ${adminPaid} != excel ${excelPaid}`);
-                        }
-                    }
-                });
-
-                if (adminBusTotal !== excelBusTotal) {
-                    status = "FAIL";
-                    issues.push(`Bus total mismatch: admin ${adminBusTotal} vs excel ${excelBusTotal}`);
-                }
-            }
-
-            if (status === "MATCH") totalMatches++;
-            else totalMismatches++;
-
-            validationReport.push({
-                slNo: row[0],
-                id: normalized.id,
-                name: normalized.name,
-                class: normalized.class,
-                hasBusFee,
-                adminBusTotal,
-                excelBusTotal,
-                adminBusPaidTotal,
-                excelBusPaidTotal,
-                adminTerms: {t1Fee, t1Paid, t2Fee, t2Paid, t3Fee, t3Paid},
-                excelRow: row.slice(0,19), // first 19 cols for reference
-                status,
-                issues: issues.join("; "),
-                rawBusMonthly: busMonthly
-            });
-        });
-
-        // ── FINAL VALIDATION CHECK ──
-        console.log("[VALIDATION] Report:", validationReport);
-        console.log(`[VALIDATION] Total: ${normalizedStudents.length}, Matches: ${totalMatches}, Failures: ${totalMismatches}, BlankBus: ${totalBlankBusWhenShouldExist}, WithBus: ${studentsWithBus}, WithoutBus: ${studentsWithoutBus}`);
-
-        if (totalMismatches > 0 || totalBlankBusWhenShouldExist > 0) {
-            console.error("[VALIDATION] FAILED - Mismatches detected, aborting Excel generation for debugging");
-            // Create detailed log
-            validationReport.forEach(r => {
-                if (r.status === "FAIL") {
-                    console.error(`[FAIL] ${r.name} (${r.id}): ${r.issues}`);
-                    console.log("  Raw:", r.rawBusMonthly);
-                }
-            });
-            toast(`Validation failed: ${totalMismatches} mismatches. Check console.`, true);
-            // For production debugging, we stop here. But per final delivery, we want 0 fails.
-            // Comment out the return to allow file generation after debugging:
-            // return;
-            // For now, we will still generate file but with warning
-        }
-
-        // ── Generate Excel File ──
-        const ws = XLSX.utils.aoa_to_sheet(aoa);
-        const range = XLSX.utils.decode_range(ws['!ref']);
-        const lastCol = range.e.c;
-
-        // ── Merges ──
-        ws['!merges'] = [
-            { s: { r: 0, c: 0 }, e: { r: 0, c: lastCol } },
-            { s: { r: 1, c: 0 }, e: { r: 1, c: lastCol } },
-            { s: { r: 2, c: 0 }, e: { r: 2, c: lastCol } },
-            { s: { r: 4, c: 0 }, e: { r: 4, c: 2 } },
-            { s: { r: 4, c: 3 }, e: { r: 4, c: 4 } },
-            { s: { r: 4, c: 5 }, e: { r: 4, c: 10 } },
-            { s: { r: 4, c: 11 }, e: { r: 4, c: 12 } },
-            { s: { r: 4, c: 13 }, e: { r: 4, c: 14 } },
-            { s: { r: 4, c: 15 }, e: { r: 4, c: 18 } },
-            { s: { r: 4, c: 19 }, e: { r: 4, c: lastCol } }
-        ];
-
-        const thinBorder = {
-            top: { style: 'thin', color: { rgb: 'D3D3D3' } },
-            bottom: { style: 'thin', color: { rgb: 'D3D3D3' } },
-            left: { style: 'thin', color: { rgb: 'D3D3D3' } },
-            right: { style: 'thin', color: { rgb: 'D3D3D3' } }
-        };
-
-        const thickBottomBorder = {
-            top: { style: 'thin', color: { rgb: 'B0B0B0' } },
-            bottom: { style: 'medium', color: { rgb: '1B365D' } },
-            left: { style: 'thin', color: { rgb: 'D3D3D3' } },
-            right: { style: 'thin', color: { rgb: 'D3D3D3' } }
-        };
-
-        for (let R = 0; R <= range.e.r; R++) {
-            for (let C = 0; C <= range.e.c; C++) {
-                const cellRef = XLSX.utils.encode_cell({ r: R, c: C });
-                if (!ws[cellRef]) ws[cellRef] = { v: '', t: 's' };
-                const cell = ws[cellRef];
-
-                if (R === 0) {
-                    cell.s = {
-                        font: { name: 'Calibri', sz: 16, bold: true, color: { rgb: 'FFFFFF' } },
-                        fill: { fgColor: { rgb: '1B365D' } },
-                        alignment: { horizontal: 'center', vertical: 'center' }
-                    };
-                } else if (R === 1) {
-                    cell.s = {
-                        font: { name: 'Calibri', sz: 13, bold: true, color: { rgb: 'FFFFFF' } },
-                        fill: { fgColor: { rgb: '1B365D' } },
-                        alignment: { horizontal: 'center', vertical: 'center' }
-                    };
-                } else if (R === 2) {
-                    cell.s = {
-                        font: { name: 'Calibri', sz: 11, bold: true, color: { rgb: '1B365D' } },
-                        fill: { fgColor: { rgb: 'E8EEF5' } },
-                        alignment: { horizontal: 'center', vertical: 'center' }
-                    };
-                } else if (R === 4) {
-                    let bg = '1F4E79';
-                    if (C >= 3 && C <= 4) bg = '4682B4';
-                    if (C >= 5 && C <= 10) bg = '2E7D32';
-                    if (C >= 11 && C <= 12) bg = '6A1B9A';
-                    if (C >= 13 && C <= 14) bg = 'D84315';
-                    if (C >= 15 && C <= 18) bg = '5D4037';
-                    if (C >= 19) bg = '00695C';
-                    cell.s = {
-                        font: { name: 'Calibri', sz: 10, bold: true, color: { rgb: 'FFFFFF' } },
-                        fill: { fgColor: { rgb: bg } },
-                        alignment: { horizontal: 'center', vertical: 'center' },
-                        border: thinBorder
-                    };
-                } else if (R === 5) {
-                    cell.s = {
-                        font: { name: 'Calibri', sz: 10, bold: true, color: { rgb: 'FFFFFF' } },
-                        fill: { fgColor: { rgb: '1F4E79' } },
-                        alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
-                        border: thickBottomBorder
-                    };
-                } else if (R >= 6) {
-                    const isAlt = (R % 2 === 1);
-                    const fillColor = isAlt ? 'F2F6FA' : 'FFFFFF';
-                    let align = 'left';
-                    if (C === 0 || C === 2) align = 'center';
-                    if (C >= 3 && typeof cell.v === 'number') align = 'right';
-                    if (typeof cell.v === 'number') {
-                        cell.z = C === 0 ? '0' : '"₹"#,##0.00';
-                    }
-                    cell.s = {
-                        font: { name: 'Calibri', sz: 10, color: { rgb: '000000' } },
-                        fill: { fgColor: { rgb: fillColor } },
-                        alignment: { horizontal: align, vertical: 'center' },
-                        border: thinBorder
-                    };
-                }
-            }
-        }
-
-        ws['!rows'] = [
-            { hpt: 32 },
-            { hpt: 24 },
-            { hpt: 22 },
-            { hpt: 10 },
-            { hpt: 22 },
-            { hpt: 28 }
-        ];
-
-        ws['!freeze'] = { xSplit: 3, ySplit: 6, topLeftCell: 'D7', state: 'frozen' };
-        ws['!autofilter'] = { ref: `A6:${XLSX.utils.encode_col(lastCol)}${range.e.r}` };
-        ws['!pageSetup'] = { orientation: 'landscape', fitToWidth: 1, fitToHeight: 0 };
-
-        const cols = [];
-        for (let C = 0; C <= lastCol; C++) {
-            let maxLen = 12;
-            for (let R = 4; R <= range.e.r; R++) {
-                const cell = ws[XLSX.utils.encode_cell({ r: R, c: C })];
-                if (cell && cell.v !== undefined) {
-                    const len = String(cell.v).length;
-                    if (len > maxLen) maxLen = len;
-                }
-            }
-            cols.push({ wch: Math.min(Math.max(maxLen + 3, 12), 35) });
-        }
-        ws['!cols'] = cols;
-
-        const workbook = XLSX.utils.book_new();
-        const sheetName = `${currentClass} Fee Report`.replace(/[:\\\/\?\*\[\]]/g, '');
-        XLSX.utils.book_append_sheet(workbook, ws, sheetName);
-
-        const fileDateStr = `${today.getDate().toString().padStart(2,'0')}-${(today.getMonth()+1).toString().padStart(2,'0')}-${today.getFullYear()}`;
-        const fileName = `${currentClass.replace(/\s+/g, '_')}_Fee_Report_${fileDateStr}_FIXED.xlsx`;
-        XLSX.writeFile(workbook, fileName, { cellStyles: true });
-
-        // ── FINAL PROOF LOG ──
-        console.log(`[EXPORT SUCCESS] ${fileName} | Students: ${normalizedStudents.length} | WithBus: ${studentsWithBus} | WithoutBus: ${studentsWithoutBus} | Matches: ${totalMatches} | Failures: ${totalMismatches}`);
-
-        // Generate downloadable validation report
-        const reportLines = [];
-        reportLines.push(`Validation Report - ${currentClass} - ${dateStr}`);
-        reportLines.push(`Total Students: ${normalizedStudents.length}, With Bus: ${studentsWithBus}, Without Bus: ${studentsWithoutBus}, Matches: ${totalMatches}, Failures: ${totalMismatches}, BlankBus: ${totalBlankBusWhenShouldExist}`);
-        reportLines.push(`SlNo,StudentID,Name,HasBus,AdminBusTotal,ExcelBusTotal,AdminPaid,ExcelPaid,Status,Issues`);
-        validationReport.forEach(r=>{
-            const safeName = `"${String(r.name).replace(/"/g,'""')}"`;
-            reportLines.push(`${r.slNo},${r.id},${safeName},${r.hasBusFee},${r.adminBusTotal},${r.excelBusTotal},${r.adminBusPaidTotal},${r.excelBusPaidTotal},${r.status},"${r.issues.replace(/"/g,'""')}"`);
-        });
-        const blob = new Blob([reportLines.join("\n")], {type:"text/csv"});
-        // Store in window for debugging
-        window._lastValidationReport = { summary: {total: normalizedStudents.length, withBus: studentsWithBus, withoutBus: studentsWithoutBus, matches: totalMatches, failures: totalMismatches, blank: totalBlankBusWhenShouldExist}, details: validationReport, csv: reportLines.join("\n") };
-        console.table(validationReport.map(r=>({Name:r.name, ID:r.id, HasBus:r.hasBusFee, AdminBus:r.adminBusTotal, ExcelBus:r.excelBusTotal, Status:r.status})));
-
-        if (totalMismatches===0 && totalBlankBusWhenShouldExist===0) {
-            toast(`Downloaded: ${fileName} ✅ 100% MATCH (${totalMatches}/${normalizedStudents.length})`);
-        } else {
-            toast(`Downloaded: ${fileName} ⚠️ ${totalMismatches} mismatches - see console`, true);
-        }
-
-    } catch (err) {
-        console.error("exportClassExcel FIXED:", err);
-        toast("Failed to generate Excel: "+err.message, true);
-    } finally {
-        btn.innerHTML = '📥 Download Excel';
-        btn.disabled = false;
-    }
-}
-
-document.getElementById('downloadExcelBtn').addEventListener('click', async () => { const allowed = await verifyExcelAccess(); if (!allowed) { toast("Wrong password", true); return; } exportClassExcel(); });
-
-document.addEventListener('keydown', e => { if (e.ctrlKey && e.shiftKey) { const k = e.key.toLowerCase(); if (['a','n','e','u'].includes(k)) { e.preventDefault(); openUnifiedAdminAccess(); } } });
-const schoolNameEl = document.getElementById('schoolName'); let lpTimer = null;
-schoolNameEl.addEventListener('touchstart', () => { lpTimer = setTimeout(openUnifiedAdminAccess, 5000); }, { passive: true });
-schoolNameEl.addEventListener('touchend', () => { if (lpTimer) clearTimeout(lpTimer); });
-schoolNameEl.addEventListener('touchcancel', () => { if (lpTimer) clearTimeout(lpTimer); });
-document.getElementById('closeSuccessBtn').onclick = () => { document.getElementById('successPopup').classList.remove('active'); };
-
-const verifyModal = document.getElementById('verifyModal'); const receiptCodeInput = document.getElementById('receiptCodeInput'); const verifyResult = document.getElementById('verifyResult');
-document.getElementById('verifyReceiptBtn').addEventListener('click', () => { receiptCodeInput.value = ''; verifyResult.innerHTML = ''; showModal(verifyModal); });
-document.getElementById('closeVerifyModal').onclick = () => hideModal(verifyModal);
-document.getElementById('cancelVerifyBtn').onclick = () => hideModal(verifyModal);
-document.getElementById('verifyBtn').addEventListener('click', async () => {
-    const code = receiptCodeInput.value.trim().toUpperCase(); if (!code) { verifyResult.innerHTML = '<p style="color:var(--danger);margin-top:0.5rem;">Please enter a receipt code.</p>'; return; }
-    verifyResult.innerHTML = '<p style="color:var(--text-secondary);margin-top:0.5rem;">Searching…</p>';
-    try {
-        const snapshot = await getDocs(collection(db, "students")); let found = null;
-        for (const d of snapshot.docs) { const data = d.data(); if (!Array.isArray(data.receipts)) continue; const match = data.receipts.find(r => r.code === code); if (match) { found = { studentName: data.name, className: data.class, ...match }; break; } }
-        if (found) { verifyResult.innerHTML = `<div style="background:var(--verify-success-bg);padding:1rem;border-radius:1rem;border-left:4px solid #4CAF50;margin-top:0.5rem;"><strong>Verified ✅</strong><br><br><b>Name:</b> ${escapeHtml(found.studentName)}<br><b>Class:</b> ${escapeHtml(found.className)}<br><b>Amount:</b> ₹${found.amount || 0}<br><b>Term:</b> ${escapeHtml(found.term || '')}<br><b>Date:</b> ${escapeHtml(found.date || '')}<br><b>Code:</b> ${escapeHtml(found.code)}</div>`; }
-        else { verifyResult.innerHTML = `<div style="background:var(--verify-error-bg);padding:1rem;border-radius:1rem;border-left:4px solid var(--danger);margin-top:0.5rem;">❌ Invalid receipt code. Not found.</div>`; }
-    } catch (err) { console.error("verifyReceipt:", err); verifyResult.innerHTML = '<p style="color:var(--danger);margin-top:0.5rem;">Error verifying receipt.</p>'; }
-});
-
-const contactModal = document.getElementById('contactModal'); const devNumber = "8594009501";
-document.getElementById('contactDevBtn').addEventListener('click', () => showModal(contactModal));
-document.getElementById('closeContactBtn').addEventListener('click', () => hideModal(contactModal));
-contactModal.addEventListener('click', e => { if (e.target === contactModal) hideModal(contactModal); });
-document.getElementById('callBtn').addEventListener('click', () => { window.location.href = `tel:${devNumber}`; hideModal(contactModal); });
-document.getElementById('whatsappBtn').addEventListener('click', () => { window.open(`https://wa.me/${devNumber}`, '_blank'); hideModal(contactModal); });
-
-[addStudentModal, document.getElementById('editStudentModal'), universalModal, verifyModal, passwordModal].forEach(m => { m.addEventListener('click', e => { if (e.target === m) hideModal(m); }); });
-document.getElementById('closeAddModal').onclick = () => hideModal(addStudentModal);
-document.getElementById('cancelAddBtn').onclick = () => hideModal(addStudentModal);
-
-// ═════════════════════════════════════════════════════════════════
-// BULK STUDENT IMPORT FEATURE (Hidden Shortcut: Ctrl+Shift+E+X)
-// ═════════════════════════════════════════════════════════════════
-
-const bulkImportModal = document.getElementById('bulkImportModal');
-const bulkImportSummaryModal = document.getElementById('bulkImportSummaryModal');
-const bulkImportClassSelect = document.getElementById('bulkImportClass');
-const importWithoutBusBtn = document.getElementById('importWithoutBusBtn');
-const importWithBusBtn = document.getElementById('importWithBusBtn');
-const downloadTemplateWithoutBusBtn = document.getElementById('downloadTemplateWithoutBusBtn');
-const downloadTemplateWithBusBtn = document.getElementById('downloadTemplateWithBusBtn');
-const bulkImportFileInput = document.getElementById('bulkImportFileInput');
-const bulkImportStatus = document.getElementById('bulkImportStatus');
-const bulkImportStatusText = document.getElementById('bulkImportStatusText');
-const bulkImportSummaryContent = document.getElementById('bulkImportSummaryContent');
-
-const WITHOUT_BUS_HEADERS = ["Student ID", "Name", "Class", "Phone Number", "Term 1 Fee", "Term 2 Fee", "Term 3 Fee", "ECA Fee", "Annual Day Fee"];
-const WITH_BUS_HEADERS = ["Student ID", "Name", "Class", "Phone Number", "Term 1 Fee", "Term 2 Fee", "Term 3 Fee", "June Bus", "July Bus", "August Bus", "September Bus", "October Bus", "November Bus", "December Bus", "January Bus", "February Bus", "March Bus", "ECA Fee", "Annual Day Fee"];
-
-let bulkImportWithBus = false;
-
-function openBulkImportModal() {
-    bulkImportClassSelect.value = currentClass || '';
-    bulkImportFileInput.value = '';
-    hideModal(bulkImportSummaryModal);
-    showModal(bulkImportModal);
-}
-
-function setBulkImportLoading(loading, text = 'Importing...') {
-    const buttons = [importWithoutBusBtn, importWithBusBtn, downloadTemplateWithoutBusBtn, downloadTemplateWithBusBtn];
-    buttons.forEach(btn => btn.disabled = loading);
-    bulkImportStatus.style.display = loading ? 'block' : 'none';
-    bulkImportStatusText.textContent = text;
-}
-
-function validateHeaders(headers, expected) {
-    if (!headers || headers.length !== expected.length) return false;
-    return expected.every((h, i) => (headers[i] || '').toString().trim().toLowerCase() === h.toLowerCase());
-}
-
-function parseFee(val) {
-    if (val === undefined || val === null || val === '') return 0;
-    const n = Number(val);
-    return isNaN(n) ? 0 : n;
-}
-
-function downloadTemplate(headers, filename) {
-    const ws = XLSX.utils.aoa_to_sheet([headers]);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Template');
-    XLSX.writeFile(wb, filename);
-}
-
-downloadTemplateWithoutBusBtn.addEventListener('click', () => downloadTemplate(WITHOUT_BUS_HEADERS, 'Bulk_Import_Template_Without_Bus.xlsx'));
-downloadTemplateWithBusBtn.addEventListener('click', () => downloadTemplate(WITH_BUS_HEADERS, 'Bulk_Import_Template_With_Bus.xlsx'));
-
-importWithoutBusBtn.addEventListener('click', () => {
-    if (!bulkImportClassSelect.value) { toast('Please select a class', true); return; }
-    bulkImportWithBus = false;
-    bulkImportFileInput.click();
-});
-
-importWithBusBtn.addEventListener('click', () => {
-    if (!bulkImportClassSelect.value) { toast('Please select a class', true); return; }
-    bulkImportWithBus = true;
-    bulkImportFileInput.click();
-});
-
-bulkImportFileInput.addEventListener('change', async e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    await processBulkImport(file, bulkImportWithBus);
-    bulkImportFileInput.value = '';
-});
-
-async function processBulkImport(file, withBus) {
-    const selectedClass = bulkImportClassSelect.value;
-    if (!selectedClass) { toast('Please select a class', true); return; }
-
-    setBulkImportLoading(true, 'Reading file...');
-    try {
-        const ext = file.name.split('.').pop().toLowerCase();
-        if (!['xlsx', 'xls'].includes(ext)) throw new Error('Invalid file type. Please upload .xlsx or .xls');
-
-        const data = await file.arrayBuffer();
-        const workbook = XLSX.read(data, { type: 'array' });
-        if (!workbook || !workbook.SheetNames || workbook.SheetNames.length === 0) throw new Error('Empty or invalid workbook');
-
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
-        if (!rows || rows.length < 2) throw new Error('No data rows found');
-
-        const headers = rows[0].map(h => String(h).trim());
-        const expectedHeaders = withBus ? WITH_BUS_HEADERS : WITHOUT_BUS_HEADERS;
-        if (!validateHeaders(headers, expectedHeaders)) throw new Error(`Invalid headers. Expected: ${expectedHeaders.join(', ')}`);
-
-        let totalRows = 0;
-        let invalidRows = 0;
-        let duplicateFileRows = 0;
-        const students = [];
-        const seenIds = new Set();
-        for (let i = 1; i < rows.length; i++) {
-            const row = rows[i];
-            if (!row || row.every(cell => String(cell).trim() === '')) continue;
-            totalRows++;
-
-            const studentId = String(row[0] || '').trim().toLowerCase();
-            const name = String(row[1] || '').trim();
-            const rowClass = String(row[2] || '').trim();
-            const phone = String(row[3] || '').trim();
-            if (!studentId || !name) { invalidRows++; continue; }
-
-            const term1 = parseFee(row[4]);
-            const term2 = parseFee(row[5]);
-            const term3 = parseFee(row[6]);
-
-            let busMonths = null;
-            let ecaIndex = 7;
-            let annualIndex = 8;
-            if (withBus) {
-                busMonths = {};
-                BUS_MONTHS.forEach((m, idx) => { busMonths[m] = parseFee(row[7 + idx]); });
-                ecaIndex = 17;
-                annualIndex = 18;
-            }
-            const ecaFee = parseFee(row[ecaIndex]);
-            const annualFee = parseFee(row[annualIndex]);
-
-            // Use per-row class if provided, otherwise fall back to dropdown selection
-            const effectiveClass = rowClass || selectedClass;
-
-            if (seenIds.has(studentId)) { duplicateFileRows++; continue; }
-            seenIds.add(studentId);
-            students.push({ studentId, name, phone, cls: effectiveClass, term1, term2, term3, busMonths, ecaFee, annualFee });
-        }
-
-        if (students.length === 0) throw new Error('No valid student rows found');
-
-        setBulkImportLoading(true, `Checking ${students.length} students...`);
-        const existingSnapshot = await getDocs(collection(db, 'students'));
-        const existingIds = new Set(existingSnapshot.docs.map(d => d.id));
-
-        const duplicates = [];
-        const toImport = [];
-        for (const s of students) {
-            if (existingIds.has(s.studentId)) duplicates.push(s);
-            else toImport.push(s);
-        }
-
-        if (toImport.length === 0) {
-            showBulkImportSummary(totalRows, 0, duplicates.length, invalidRows, duplicateFileRows);
-            return;
-        }
-
-        setBulkImportLoading(true, `Importing ${toImport.length} students...`);
-        const busEnabled = withBus;
-        let batch = writeBatch(db);
-        let batchCount = 0;
-        let importedCount = 0;
-
-        for (const s of toImport) {
-            createStudent({
-                id: s.studentId,
-                name: s.name,
-                cls: s.cls,
-                phone: s.phone,
-                term1: s.term1,
-                term2: s.term2,
-                term3: s.term3,
-                busEnabled,
-                busMonths: s.busMonths,
-                ecaTotal: s.ecaFee,
-                annualTotal: s.annualFee,
-                prevYear: null
-            }, batch);
-            batchCount++;
-            if (batchCount >= 450) {
-                await batch.commit();
-                importedCount += batchCount;
-                batch = writeBatch(db);
-                batchCount = 0;
-                setBulkImportLoading(true, `Imported ${importedCount}/${toImport.length}...`);
-            }
-        }
-        if (batchCount > 0) {
-            await batch.commit();
-            importedCount += batchCount;
-        }
-
-        for (const s of toImport) {
-            const sClass = s.cls;
-            if (!studentData[sClass]) studentData[sClass] = [];
-            const exists = studentData[sClass].some(st => st.id === s.studentId);
-            if (!exists) studentData[sClass].push({ name: s.name, id: s.studentId });
-        }
-        renderClassGrid();
-        if (currentClass === selectedClass) renderStudentList(studentData[selectedClass] || [], selectedClass);
-
-        showBulkImportSummary(totalRows, importedCount, duplicates.length, invalidRows, duplicateFileRows);
-    } catch (err) {
-        console.error('Bulk import error:', err);
-        toast(err.message || 'Import failed. Please check the file and try again.', true);
-    } finally {
-        setBulkImportLoading(false);
-    }
-}
-
-function showBulkImportSummary(totalRows, imported, duplicates, invalidRows, duplicateFileRows = 0) {
-    hideModal(bulkImportModal);
-    const reasons = [];
-    if (duplicates > 0) reasons.push('Duplicate Student IDs');
-    if (invalidRows > 0) reasons.push('Missing required fields');
-    if (duplicateFileRows > 0) reasons.push('Duplicate IDs within file');
-    const reasonText = reasons.length ? reasons.join('<br>') : '';
-    bulkImportSummaryContent.innerHTML = `
-        <div>Total Rows: ${totalRows}</div>
-        <div>Imported: ${imported}</div>
-        <div>Skipped: ${duplicates + invalidRows + duplicateFileRows}</div>
-        ${reasonText ? `<div style="margin-top: 0.5rem;">Reason:<br>${reasonText}</div>` : ''}
-    `;
-    showModal(bulkImportSummaryModal);
-}
-
-document.getElementById('closeBulkImportModal').onclick = () => hideModal(bulkImportModal);
-document.getElementById('closeBulkImportSummaryBtn').onclick = () => hideModal(bulkImportSummaryModal);
-bulkImportModal.addEventListener('click', e => { if (e.target === bulkImportModal) hideModal(bulkImportModal); });
-bulkImportSummaryModal.addEventListener('click', e => { if (e.target === bulkImportSummaryModal) hideModal(bulkImportSummaryModal); });
-
-// ── Hidden keyboard shortcut: Ctrl + Shift + E + X ──
-const importShortcutState = { eTimer: null };
-const importPressedKeys = new Set();
-document.addEventListener('keydown', e => {
-    if (!e.ctrlKey || !e.shiftKey) return;
-    importPressedKeys.add(e.key.toLowerCase());
-    const key = e.key.toLowerCase();
-    if (key === 'e') {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        if (importPressedKeys.has('x')) {
-            // X was pressed first and is still held
-            if (importShortcutState.eTimer) { clearTimeout(importShortcutState.eTimer); importShortcutState.eTimer = null; }
-            openBulkImportModal();
-        } else {
-            importShortcutState.eTimer = setTimeout(() => {
-                importShortcutState.eTimer = null;
-                openUnifiedAdminAccess();
-            }, 200);
-        }
-    } else if (key === 'x') {
-        if (importShortcutState.eTimer) {
-            clearTimeout(importShortcutState.eTimer);
-            importShortcutState.eTimer = null;
-            e.preventDefault();
-            e.stopImmediatePropagation();
-            openBulkImportModal();
-        }
-    } else if (importShortcutState.eTimer) {
-        // Another key was pressed while waiting for X; cancel the pending E action
-        clearTimeout(importShortcutState.eTimer);
-        importShortcutState.eTimer = null;
-    }
-}, true);
-document.addEventListener('keyup', e => { importPressedKeys.delete(e.key.toLowerCase()); }, true);
-
-async function initMain() {
-    await fetchAllStudents(); renderClassGrid(); classViewDiv.style.display = 'block'; fullscreenStudentView.classList.remove('active');
-    if (window.location.search) history.replaceState(null, '', window.location.pathname);
-    generateParticles();
-}
-function generateParticles() { const container = document.getElementById('particles'); for (let i = 0; i < 25; i++) { const p = document.createElement('div'); p.className = 'particle'; const size = Math.random() * 80 + 40; p.style.width = size + 'px'; p.style.height = size + 'px'; p.style.left = Math.random() * 100 + '%'; p.style.top = Math.random() * 100 + '%'; p.style.animationDelay = Math.random() * 14 + 's'; container.appendChild(p); } }
-window.addEventListener('load', () => { loginOverlay.style.display = 'flex'; adminHeader.style.display = 'none'; appContainer.style.display = 'none'; footer.style.display = 'none'; });
-</script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a14b890409e3968e',t:'MTc4Mjk3MzEyOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a201ef6478b47f50',t:'MTc4NDg4NTcyOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a21b80a30c2ed96b',t:'MTc4NTE1MzgyMw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f"}' crossorigin="anonymous"></script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a21ba8c78e9f7887',t:'MTc4NTE1NTQ2Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
